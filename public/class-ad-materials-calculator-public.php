@@ -1,0 +1,125 @@
+<?php
+
+/**
+ * The public-facing functionality of the plugin.
+ *
+ * @link       https://agencydigital.tech/
+ * @since      1.0.0
+ *
+ * @package    Ad_Materials_Calculator
+ * @subpackage Ad_Materials_Calculator/public
+ */
+
+/**
+ * The public-facing functionality of the plugin.
+ *
+ * Defines the plugin name, version, and two examples hooks for how to
+ * enqueue the public-facing stylesheet and JavaScript.
+ *
+ * @package    Ad_Materials_Calculator
+ * @subpackage Ad_Materials_Calculator/public
+ * @author     Agency Digital <info@agencydigital.tech>
+ */
+class Ad_Materials_Calculator_Public {
+
+	/**
+	 * The ID of this plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 * @var      string    $plugin_name    The ID of this plugin.
+	 */
+	private $plugin_name;
+
+	/**
+	 * The version of this plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 * @var      string    $version    The current version of this plugin.
+	 */
+	private $version;
+
+	/**
+	 * Initialize the class and set its properties.
+	 *
+	 * @since    1.0.0
+	 * @param      string    $plugin_name       The name of the plugin.
+	 * @param      string    $version    The version of this plugin.
+	 */
+	public function __construct( $plugin_name, $version ) {
+
+		$this->plugin_name = $plugin_name;
+		$this->version = $version;
+
+		$this->load_public_dependencies();
+
+	}
+
+	/**
+	 * Load the public-facing calculator dependencies.
+	 *
+	 * @since    1.0.0
+	 */
+	private function load_public_dependencies() {
+
+		require_once plugin_dir_path( __FILE__ ) . 'calculator/results-shortcode-and-helper-functions.php';
+		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-1.php';
+		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-2.php';
+		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-3.php';
+		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-4.php';
+		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-5.php';
+		require_once plugin_dir_path( __FILE__ ) . 'wpforms/rewrite-wpforms-redirect-url.php';
+		require_once plugin_dir_path( __FILE__ ) . 'wpforms/capture-submitted-fields-to-wc-session.php';
+		require_once plugin_dir_path( __FILE__ ) . 'wpforms/dynamic-image-choices-pigment-color.php';
+		require_once plugin_dir_path( __FILE__ ) . 'wpforms/make-locked-terrazzo-system-field-read-only.php';
+
+	}
+
+	/**
+	 * Register the stylesheets for the public-facing side of the site.
+	 *
+	 * @since    1.0.0
+	 */
+	public function enqueue_styles() {
+
+		/**
+		 * This function is provided for demonstration purposes only.
+		 *
+		 * An instance of this class should be passed to the run() function
+		 * defined in Ad_Materials_Calculator_Loader as all of the hooks are defined
+		 * in that particular class.
+		 *
+		 * The Ad_Materials_Calculator_Loader will then create the relationship
+		 * between the defined hooks and the functions defined in this
+		 * class.
+		 */
+
+		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ad-materials-calculator-public.css', array(), $this->version, 'all' );
+
+	}
+
+	/**
+	 * Register the JavaScript for the public-facing side of the site.
+	 *
+	 * @since    1.0.0
+	 */
+	public function enqueue_scripts() {
+
+		/**
+		 * This function is provided for demonstration purposes only.
+		 *
+		 * An instance of this class should be passed to the run() function
+		 * defined in Ad_Materials_Calculator_Loader as all of the hooks are defined
+		 * in that particular class.
+		 *
+		 * The Ad_Materials_Calculator_Loader will then create the relationship
+		 * between the defined hooks and the functions defined in this
+		 * class.
+		 */
+
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ad-materials-calculator-public.js', array( 'jquery' ), $this->version, false );
+
+	}
+
+}
