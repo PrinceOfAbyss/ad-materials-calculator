@@ -11,9 +11,7 @@
  */
 
 /**
- * =========================================================
- * CASE 3 OUTPUT
- * =========================================================
+ * Case 3 - Output
  */
 function ad_materials_calc_case_3_output( array $answers ) {
 
@@ -42,9 +40,7 @@ function ad_materials_calc_case_3_output( array $answers ) {
 }
 
 /**
- * =========================================================
- * CASE 3 BUILD LINE ITEMS
- * =========================================================
+ * Case 3 Build line items
  */
 function ad_materials_calc_case_3_line_items( array $answers ) {
 

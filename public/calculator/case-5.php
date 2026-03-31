@@ -11,9 +11,7 @@
  */
 
 /**
- * =========================================================
- * CASE 5 OUTPUT
- * =========================================================
+ * Case 5 - Output
  */
 function ad_materials_calc_case_5_output( array $answers ) {
 
@@ -48,9 +46,7 @@ function ad_materials_calc_case_5_output( array $answers ) {
 }
 
 /**
- * =========================================================
- * CASE 5 BUILD LINE ITEMS
- * =========================================================
+ * Case 5 Build line items
  */
 function ad_materials_calc_case_5_line_items( array $answers ) {
 
@@ -107,7 +103,7 @@ function ad_materials_calc_case_5_line_items( array $answers ) {
     // Epoxy Primer pair (20kg / 10kg)
     // -----------------------------------------------------
     $primer_components = [0.300];
-    $primer_kg       = round( $sqm * array_sum( $primer_components ), 2 );
+    $primer_kg         = round( $sqm * array_sum( $primer_components ), 2 );
 
     $primer_bucket_prices = [
         20 => ad_materials_calc_get_product_price_by_sku( '5200433500534' ) + ad_materials_calc_get_product_price_by_sku( '5200433501692' ),
@@ -430,8 +426,8 @@ function ad_materials_calc_case_5_line_items( array $answers ) {
     // Pool Sealer pair (10kg only)
     // -----------------------------------------------------
     $pool_sealer_components = [0.800];
-    $pool_sealer_kg       = round( $sqm * array_sum( $pool_sealer_components ), 2 );
-    $pool_sealer_qty      = (int) ceil( $pool_sealer_kg / 10 );
+    $pool_sealer_kg         = round( $sqm * array_sum( $pool_sealer_components ), 2 );
+    $pool_sealer_qty        = (int) ceil( $pool_sealer_kg / 10 );
 
     $debug['lines'][] = [
         'line'               => 'Pool Sealer pair',

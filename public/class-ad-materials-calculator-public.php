@@ -64,6 +64,7 @@ class Ad_Materials_Calculator_Public {
 	private function load_public_dependencies() {
 
 		require_once plugin_dir_path( __FILE__ ) . 'calculator/results-shortcode-and-helper-functions.php';
+		require_once plugin_dir_path( __FILE__ ) . 'calculator/add-to-cart-mechanism.php';
 		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-1.php';
 		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-2.php';
 		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-3.php';

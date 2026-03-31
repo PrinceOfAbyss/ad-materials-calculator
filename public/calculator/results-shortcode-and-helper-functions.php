@@ -62,6 +62,10 @@ function ad_materials_calc_results_shortcode() {
 
     $output = '<pre>' . print_r( $answers, true ) . '</pre>' . $output;
 
+    if ( function_exists( 'ad_materials_calc_render_add_to_cart_block' ) ) {
+        $output .= ad_materials_calc_render_add_to_cart_block( $answers );
+    }
+
     // Clear the stored calculator answers after rendering the results
     WC()->session->set( 'materials_calc_answers', null );
 
@@ -86,11 +90,8 @@ function ad_materials_calc_format_fraction_debug( $numerator, $denominator ) {
 }
 
 /**
- * =========================================================
- * PRODUCT / TABLE HELPERS
- * =========================================================
+ * Product and table helpers
  */
-
 function ad_materials_calc_render_results_table( array $items ) {
 
     if ( empty( $items ) ) {
@@ -183,7 +184,6 @@ function ad_materials_calc_get_line_item_display_name( $product ) {
 
     // For variations, show parent product name + readable variation attributes
     if ( $product->is_type( 'variation' ) ) {
-
         $parent_id = $product->get_parent_id();
         $parent    = $parent_id ? wc_get_product( $parent_id ) : false;
 
@@ -257,6 +257,7 @@ function ad_materials_calc_get_product_thumb_html( $product ) {
 
     if ( ! $image_id && method_exists( $product, 'get_parent_id' ) && $product->get_parent_id() ) {
         $parent = wc_get_product( $product->get_parent_id() );
+
         if ( $parent ) {
             $image_id = (int) $parent->get_image_id();
         }
@@ -266,9 +267,12 @@ function ad_materials_calc_get_product_thumb_html( $product ) {
         return '';
     }
 
-    $image_html = wp_get_attachment_image( $image_id, 'woocommerce_thumbnail', false, ['style' => 'width:80px;min-width:80px;max-width:80px;height:auto;'] );
+    $image_html = wp_get_attachment_image( $image_id, 'woocommerce_thumbnail', false, [
+        'style' => 'width:80px;min-width:80px;max-width:80px;height:auto;'
+    ] );
 
     $url = '';
+
     if ( function_exists( 'ad_materials_calc_get_line_item_url' ) ) {
         $url = ad_materials_calc_get_line_item_url( $product );
     }
@@ -317,8 +321,8 @@ function ad_materials_calc_expand_combo_to_line_items( array $combo, array $sku_
     }
 
     foreach ( $combo['bucket_counts'] as $bucket_size => $count ) {
-
         $count = (int) $count;
+
         if ( $count <= 0 ) {
             continue;
         }
@@ -330,6 +334,7 @@ function ad_materials_calc_expand_combo_to_line_items( array $combo, array $sku_
         }
 
         $product = ad_materials_calc_get_product_by_sku( $sku_map[$bucket_key] );
+
         if ( ! $product ) {
             continue;
         }
@@ -394,23 +399,26 @@ function ad_materials_calc_find_pigment_product_by_label( $system_label, $pigmen
     $variations = $parent->get_available_variations();
 
     foreach ( $variations as $variation_data ) {
-
         $variation_id = isset( $variation_data['variation_id'] ) ? (int) $variation_data['variation_id'] : 0;
+
         if ( ! $variation_id ) {
             continue;
         }
 
         $variation = wc_get_product( $variation_id );
+
         if ( ! $variation ) {
             continue;
         }
 
         $color_slug = $variation->get_attribute( 'pa_color' );
+
         if ( $color_slug === '' ) {
             continue;
         }
 
         $term = get_term_by( 'slug', $color_slug, 'pa_color' );
+
         if ( ! $term || is_wp_error( $term ) ) {
             continue;
         }
@@ -457,11 +465,8 @@ function ad_materials_calc_get_silica_notice_html( $silica_packages ) {
 }
 
 /**
- * =========================================================
- * BUCKET HELPERS
- * =========================================================
+ * Bucket helpers
  */
-
 function ad_materials_calc_get_best_2bucket_combo( $target_weight, array $bucket_prices ) {
 
     $target_weight = (float) $target_weight;
@@ -580,16 +585,17 @@ function ad_materials_calc_get_best_3bucket_combo( $target_weight, array $bucket
 
     for ( $l = 0; $l <= $max_large; $l++ ) {
         for ( $m = 0; $m <= $max_middle; $m++ ) {
-
             $covered   = ( $l * $large_kg ) + ( $m * $middle_kg );
             $remaining = $target_weight - $covered;
 
             $s = 0;
+
             if ( $remaining > 0 ) {
                 $s = (int) ceil( $remaining / $small_kg );
             }
 
             $total_weight = ( $l * $large_kg ) + ( $m * $middle_kg ) + ( $s * $small_kg );
+
             if ( $total_weight < $target_weight ) {
                 continue;
             }

@@ -11,9 +11,7 @@
  */
 
 /**
- * =========================================================
- * CASE 1 OUTPUT
- * =========================================================
+ * Case 1 - Output
  */
 function ad_materials_calc_case_1_output( array $answers ) {
 
@@ -42,9 +40,7 @@ function ad_materials_calc_case_1_output( array $answers ) {
 }
 
 /**
- * =========================================================
- * CASE 1 BUILD LINE ITEMS
- * =========================================================
+ * Case 1 Build line items
  */
 function ad_materials_calc_case_1_line_items( array $answers ) {
 
@@ -300,7 +296,7 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
         $system_counters['medium_small'] = ad_materials_calc_get_combo_bucket_count( $medium_combo, 1 );
 
         $fine_components = [0.450];
-        $fine_kg       = round( $sqm * array_sum( $fine_components ), 2 );
+        $fine_kg         = round( $sqm * array_sum( $fine_components ), 2 );
 
         $fine_bucket_prices = [
             10 => ad_materials_calc_get_product_price_by_sku( '5200433500008' ),
@@ -492,8 +488,8 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
     // -----------------------------------------------------
     if ( $code === 'matte_standard' ) {
         $sealer_components = [0.220];
-        $sealer_kg       = round( $sqm * array_sum( $sealer_components ), 2 );
-        $sealer_qty      = (int) ceil( $sealer_kg / 3 );
+        $sealer_kg         = round( $sqm * array_sum( $sealer_components ), 2 );
+        $sealer_qty        = (int) ceil( $sealer_kg / 3 );
 
         $debug['lines'][] = [
             'line'               => 'Sealer a1 - XMATTE A+B',
@@ -550,8 +546,8 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
 
     if ( $code === 'semigloss_standard' ) {
         $sealer_components = [0.170];
-        $sealer_kg       = round( $sqm * array_sum( $sealer_components ), 2 );
-        $sealer_qty      = (int) ceil( $sealer_kg / 5 );
+        $sealer_kg         = round( $sqm * array_sum( $sealer_components ), 2 );
+        $sealer_qty        = (int) ceil( $sealer_kg / 5 );
 
         $debug['lines'][] = [
             'line'               => 'Sealer b1 - Semi Gloss',
@@ -600,7 +596,7 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
 
     if ( $code === 'satin_standard' ) {
         $sealer_components = [0.197];
-        $sealer_kg       = round( $sqm * array_sum( $sealer_components ), 2 );
+        $sealer_kg         = round( $sqm * array_sum( $sealer_components ), 2 );
 
         $satin_bucket_prices = [
             10 => ad_materials_calc_get_product_price_by_sku( '5200433500053' ),
