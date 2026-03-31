@@ -626,24 +626,24 @@ function ad_materials_calc_get_silica_notice_html( $silica_packages ) {
         return '';
     }
 
-    $notice = '<strong>' . esc_html__( 'Silica sand notice:', 'woodmart-child' ) . '</strong> ';
+    $notice = '<strong>' . esc_html__( 'Silica sand notice:', 'ad-materials-calculator' ) . '</strong> ';
     $notice .= sprintf(
         wp_kses_post(
             _n(
                 'For this project, <strong>%d</strong> package of silica sand will be needed, sold separately.',
                 'For this project, <strong>%d</strong> packages of silica sand will be needed, sold separately.',
                 $silica_packages,
-                'woodmart-child'
+                'ad-materials-calculator'
             )
         ),
         $silica_packages
     );
     $notice .= ' ';
     $notice .= wp_kses_post(
-        __( 'For the calculations, a <strong>50lb / 23kg</strong> silica sand package was used.', 'woodmart-child' )
+        __( 'For the calculations, a <strong>50lb / 23kg</strong> silica sand package was used.', 'ad-materials-calculator' )
     );
 
-    $notice .= '<br><br><strong>' . esc_html__( 'Indicative Sources For Silica Sand', 'woodmart-child' ) . '</strong>';
+    $notice .= '<br><br><strong>' . esc_html__( 'Indicative Sources For Silica Sand', 'ad-materials-calculator' ) . '</strong>';
     $notice .= '<br><a href="https://www.homedepot.com/p/Quikrete-50-lb-All-Purpose-Sand-115251/100318450" target="_blank" rel="noopener noreferrer">Home Depot - Quikrete 50 lb All-Purpose Sand</a>';
     $notice .= '<br><a href="https://www.oeg.net/en/quartz-filter-sand-0-4-0-8-mm-650001244" target="_blank" rel="noopener noreferrer">OEG - Quartz Filter Sand 0.4–0.8 mm</a>';
     $notice .= '<br><a href="https://floorguardproducts.com/large-silica-sand-20-40-mesh-50-lb-bag/" target="_blank" rel="noopener noreferrer">Floor Guard Products - Large Silica Sand 20/40 Mesh 50 lb Bag</a>';

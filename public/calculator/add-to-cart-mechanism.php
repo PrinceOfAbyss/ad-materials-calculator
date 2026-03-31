@@ -38,7 +38,7 @@ function ad_materials_calc_render_add_to_cart_block( array $answers, array $calc
     $html .= '<input type="hidden" name="ad_materials_calc_action" value="add_group_to_cart">';
     $html .= '<input type="hidden" name="ad_materials_calc_payload" value="' . esc_attr( $encoded_payload ) . '">';
     $html .= '<button type="submit" class="single_add_to_cart_button button alt">';
-    $html .= esc_html__( 'Add calculated materials to cart', 'woodmart-child' );
+    $html .= esc_html__( 'Add calculated materials to cart', 'ad-materials-calculator' );
     $html .= '</button>';
     $html .= '</form>';
     $html .= '</div>';
@@ -102,7 +102,7 @@ function ad_materials_calc_build_group_label( array $payload ) {
     }
 
     if ( empty( $parts ) ) {
-        return __( 'Calculated materials group', 'woodmart-child' );
+        return __( 'Calculated materials group', 'ad-materials-calculator' );
     }
 
     return implode( ' | ', $parts );
@@ -164,7 +164,7 @@ function ad_materials_calc_handle_add_group_to_cart() {
     $payload         = ad_materials_calc_decode_cart_payload( $encoded_payload );
 
     if ( empty( $payload ) || empty( $payload['items'] ) || ! is_array( $payload['items'] ) ) {
-        wc_add_notice( __( 'We could not add the calculated materials to the cart. Please calculate again and try once more.', 'woodmart-child' ), 'error' );
+        wc_add_notice( __( 'We could not add the calculated materials to the cart. Please calculate again and try once more.', 'ad-materials-calculator' ), 'error' );
         wp_safe_redirect( wc_get_cart_url() );
         exit;
     }
@@ -221,9 +221,9 @@ function ad_materials_calc_handle_add_group_to_cart() {
     }
 
     if ( $added_any ) {
-        wc_add_notice( __( 'The calculated materials were added to your cart as a grouped calculation.', 'woodmart-child' ), 'success' );
+        wc_add_notice( __( 'The calculated materials were added to your cart as a grouped calculation.', 'ad-materials-calculator' ), 'success' );
     } else {
-        wc_add_notice( __( 'We could not add the calculated materials to the cart. Please calculate again and try once more.', 'woodmart-child' ), 'error' );
+        wc_add_notice( __( 'We could not add the calculated materials to the cart. Please calculate again and try once more.', 'ad-materials-calculator' ), 'error' );
     }
 
     wp_safe_redirect( wc_get_cart_url() );
@@ -255,7 +255,7 @@ function ad_materials_calc_block_single_group_item_removal() {
         return;
     }
 
-    wc_add_notice( __( 'Calculated materials can only be removed as a whole group.', 'woodmart-child' ), 'notice' );
+    wc_add_notice( __( 'Calculated materials can only be removed as a whole group.', 'ad-materials-calculator' ), 'notice' );
     wp_safe_redirect( wc_get_cart_url() );
     exit;
 }
@@ -290,7 +290,7 @@ function ad_materials_calc_handle_group_remove_request() {
         }
     }
 
-    wc_add_notice( __( 'The calculated materials group was removed from your cart.', 'woodmart-child' ), 'success' );
+    wc_add_notice( __( 'The calculated materials group was removed from your cart.', 'ad-materials-calculator' ), 'success' );
     wp_safe_redirect( wc_get_cart_url() );
     exit;
 }
@@ -319,7 +319,7 @@ function ad_materials_calc_block_group_quantity_updates( $passed, $cart_item_key
     }
 
     if ( (int) $quantity !== (int) $cart_item['quantity'] ) {
-        wc_add_notice( __( 'Calculated materials quantities cannot be edited individually. Please remove the whole group and calculate again if needed.', 'woodmart-child' ), 'error' );
+        wc_add_notice( __( 'Calculated materials quantities cannot be edited individually. Please remove the whole group and calculate again if needed.', 'ad-materials-calculator' ), 'error' );
         return false;
     }
 
@@ -365,7 +365,7 @@ function ad_materials_calc_render_group_meta_under_first_item( $cart_item, $cart
         return;
     }
 
-    $group_label = ! empty( $cart_item['ad_materials_calc_group_label'] ) ? (string) $cart_item['ad_materials_calc_group_label'] : __( 'Calculated materials group', 'woodmart-child' );
+    $group_label = ! empty( $cart_item['ad_materials_calc_group_label'] ) ? (string) $cart_item['ad_materials_calc_group_label'] : __( 'Calculated materials group', 'ad-materials-calculator' );
 
     $remove_url = wp_nonce_url(
         add_query_arg(
@@ -380,6 +380,6 @@ function ad_materials_calc_render_group_meta_under_first_item( $cart_item, $cart
 
     echo '<div class="ad-materials-calc-group-meta" style="margin-top:8px;">';
     echo '<div style="font-size:12px;opacity:.8;">' . esc_html( $group_label ) . '</div>';
-    echo '<a href="' . esc_url( $remove_url ) . '" style="font-size:12px;">' . esc_html__( 'Remove calculation group', 'woodmart-child' ) . '</a>';
+    echo '<a href="' . esc_url( $remove_url ) . '" style="font-size:12px;">' . esc_html__( 'Remove calculation group', 'ad-materials-calculator' ) . '</a>';
     echo '</div>';
 }
