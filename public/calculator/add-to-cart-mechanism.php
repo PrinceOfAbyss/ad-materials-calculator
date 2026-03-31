@@ -14,9 +14,13 @@
 /**
  * Render the add-to-cart block below the calculator results
  */
-function ad_materials_calc_render_add_to_cart_block( array $answers ) {
+function ad_materials_calc_render_add_to_cart_block( array $answers, array $calc = [] ) {
 
-    $payload = ad_materials_calc_build_cart_payload_from_answers( $answers );
+    if ( empty( $calc ) ) {
+        $calc = ad_materials_calc_get_calculation_from_answers( $answers );
+    }
+
+    $payload = ad_materials_calc_build_cart_payload_from_calc( $calc, $answers );
 
     if ( empty( $payload ) || empty( $payload['items'] ) ) {
         return '';
@@ -28,7 +32,7 @@ function ad_materials_calc_render_add_to_cart_block( array $answers ) {
         return '';
     }
 
-    $html  = '<div class="materials-calc-add-to-cart" style="margin-top:20px;">';
+    $html = '<div class="materials-calc-add-to-cart" style="margin-top:20px;">';
     $html .= '<form method="post">';
     $html .= wp_nonce_field( 'ad_materials_calc_add_group_to_cart', 'ad_materials_calc_add_group_nonce', true, false );
     $html .= '<input type="hidden" name="ad_materials_calc_action" value="add_group_to_cart">';
@@ -40,76 +44,6 @@ function ad_materials_calc_render_add_to_cart_block( array $answers ) {
     $html .= '</div>';
 
     return $html;
-}
-
-/**
- * Build the cart payload from the current calculator answers
- */
-function ad_materials_calc_build_cart_payload_from_answers( array $answers ) {
-
-    $surface_type = isset( $answers['surface_type'] ) ? (string) $answers['surface_type'] : '';
-
-    if ( $surface_type === '' ) {
-        return [];
-    }
-
-    $calc = [];
-
-    switch ( $surface_type ) {
-        case 'Interior / Exterior Walls':
-            $calc = ad_materials_calc_case_1_line_items( $answers );
-            break;
-
-        case 'Wet Area Walls':
-            $calc = ad_materials_calc_case_2_line_items( $answers );
-            break;
-
-        case 'Interior Floor':
-            $calc = ad_materials_calc_case_3_line_items( $answers );
-            break;
-
-        case 'Exterior Floor (incl. Pool Decks)':
-            $calc = ad_materials_calc_case_4_line_items( $answers );
-            break;
-
-        case 'Pool Interior':
-            $calc = ad_materials_calc_case_5_line_items( $answers );
-            break;
-    }
-
-    if ( empty( $calc ) || ! empty( $calc['error'] ) || empty( $calc['items'] ) || ! is_array( $calc['items'] ) ) {
-        return [];
-    }
-
-    $payload_items = [];
-
-    foreach ( $calc['items'] as $item ) {
-        $sku = isset( $item['sku'] ) ? trim( (string) $item['sku'] ) : '';
-        $qty = isset( $item['qty'] ) ? (int) $item['qty'] : 0;
-
-        if ( $sku === '' || $qty <= 0 ) {
-            continue;
-        }
-
-        $payload_items[] = [
-            'sku' => $sku,
-            'qty' => $qty,
-        ];
-    }
-
-    if ( empty( $payload_items ) ) {
-        return [];
-    }
-
-    $system_label = isset( $answers['terrazzo_system'] ) ? (string) $answers['terrazzo_system'] : '';
-    $area_sqft    = isset( $answers['total_area_sqft'] ) ? (float) $answers['total_area_sqft'] : 0;
-
-    return [
-        'surface_type' => $surface_type,
-        'system_label' => $system_label,
-        'area_sqft'    => $area_sqft,
-        'items'        => $payload_items,
-    ];
 }
 
 /**
@@ -313,11 +247,11 @@ function ad_materials_calc_block_single_group_item_removal() {
     $cart_item_key = wc_clean( wp_unslash( $_GET['remove_item'] ) );
     $cart          = WC()->cart->get_cart();
 
-    if ( empty( $cart[ $cart_item_key ] ) ) {
+    if ( empty( $cart[$cart_item_key] ) ) {
         return;
     }
 
-    if ( ! ad_materials_calc_is_grouped_cart_item( $cart[ $cart_item_key ] ) ) {
+    if ( ! ad_materials_calc_is_grouped_cart_item( $cart[$cart_item_key] ) ) {
         return;
     }
 
@@ -404,11 +338,11 @@ function ad_materials_calc_hide_grouped_item_remove_link( $remove_link, $cart_it
 
     $cart = WC()->cart->get_cart();
 
-    if ( empty( $cart[ $cart_item_key ] ) ) {
+    if ( empty( $cart[$cart_item_key] ) ) {
         return $remove_link;
     }
 
-    if ( ! ad_materials_calc_is_grouped_cart_item( $cart[ $cart_item_key ] ) ) {
+    if ( ! ad_materials_calc_is_grouped_cart_item( $cart[$cart_item_key] ) ) {
         return $remove_link;
     }
 

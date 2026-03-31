@@ -15,28 +15,7 @@
  */
 function ad_materials_calc_case_2_output( array $answers ) {
 
-    $calc = ad_materials_calc_case_2_line_items( $answers );
-
-    if ( isset( $calc['error'] ) ) {
-        $error_output = isset( $calc['clause'] ) && $calc['clause'] !== '' ? esc_html( $calc['clause'] ) . '<br>' . esc_html( $calc['error'] ) : esc_html( $calc['error'] );
-
-        return '<div class="materials-calc-results"><pre style="white-space:pre-wrap;margin:0;">' . $error_output . '</pre></div>';
-    }
-
-    $html = '<div class="materials-calc-results">';
-    $html .= '<div style="margin-bottom:14px;">';
-    $html .= '<strong>Matched clause:</strong><br>' . esc_html( $calc['clause'] );
-    $html .= '</div>';
-    $html .= ad_materials_calc_render_results_table( $calc['items'] );
-
-    if ( ! empty( $calc['debug'] ) ) {
-        $html .= '<div style="margin-top:20px;"><strong>Case 2 calculation debug:</strong></div>';
-        $html .= '<pre style="white-space:pre-wrap;margin:10px 0 0;">' . esc_html( print_r( $calc['debug'], true ) ) . '</pre>';
-    }
-
-    $html .= '</div>';
-
-    return $html;
+    return ad_materials_calc_render_calculation_result( ad_materials_calc_get_calculation_from_answers( $answers ) );
 }
 
 /**
@@ -416,28 +395,8 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
             return ['error' => 'Case 2 error: Could not resolve the selected pigment variation "' . $pigment_label . '".'];
         }
 
-        $colorant_qty = 0;
-
-        if ( $system_label === 'Terrazzo Granitech Medium' ) {
-            $small_fraction = $system_counters['medium_small'] / 19;
-            $colorant_qty   = $system_counters['medium_large'] + (int) ceil( $small_fraction );
-        }
-
-        if ( $system_label === 'Terrazzo Granitech Fine' ) {
-            $small_fraction = 0;
-            $small_fraction += $system_counters['medium_small'] / 19;
-            $small_fraction += $system_counters['fine_small'] / 10;
-
-            $colorant_qty =
-            $system_counters['medium_large'] +
-            $system_counters['fine_large'] +
-            (int) ceil( $small_fraction );
-        }
-
-        if ( $system_label === 'Terrazzo Granitech Microterrazzo' ) {
-            $small_fraction = $system_counters['micro_small'] / 22;
-            $colorant_qty   = $system_counters['micro_large'] + (int) ceil( $small_fraction );
-        }
+        $colorant_data = ad_materials_calc_get_colorant_quantity_data( $system_label, $system_counters );
+        $colorant_qty  = $colorant_data['qty'];
 
         $debug['lines'][] = [
             'line'                  => 'Colorant',
@@ -446,9 +405,9 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
             'final_qty'             => $colorant_qty,
             'variation_sku'         => $pigment_product->get_sku(),
             'unit_price'            => (float) wc_get_price_to_display( $pigment_product ),
-            'medium_small_fraction' => ad_materials_calc_format_fraction_debug( $system_counters['medium_small'], 19 ),
-            'fine_small_fraction'   => ad_materials_calc_format_fraction_debug( $system_counters['fine_small'], 10 ),
-            'micro_small_fraction'  => ad_materials_calc_format_fraction_debug( $system_counters['micro_small'], 22 ),
+            'medium_small_fraction' => $colorant_data['medium_small_fraction'],
+            'fine_small_fraction'   => $colorant_data['fine_small_fraction'],
+            'micro_small_fraction'  => $colorant_data['micro_small_fraction'],
         ];
 
         if ( $colorant_qty > 0 ) {

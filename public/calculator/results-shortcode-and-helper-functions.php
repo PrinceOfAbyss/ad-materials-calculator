@@ -28,48 +28,193 @@ function ad_materials_calc_results_shortcode() {
         return '<div class="materials-calc-results">We couldn\'t retrieve your previous answers. Please fill in the calculator form and try again.</div>';
     }
 
-    $surface_type = isset( $answers['surface_type'] ) ? (string) $answers['surface_type'] : '';
-
-    if ( $surface_type === '' ) {
-        return '<div class="materials-calc-results">Surface Type is missing.</div>';
-    }
-
-    switch ( $surface_type ) {
-        case 'Interior / Exterior Walls':
-            $output = ad_materials_calc_case_1_output( $answers );
-            break;
-
-        case 'Wet Area Walls':
-            $output = ad_materials_calc_case_2_output( $answers );
-            break;
-
-        case 'Interior Floor':
-            $output = ad_materials_calc_case_3_output( $answers );
-            break;
-
-        case 'Exterior Floor (incl. Pool Decks)':
-            $output = ad_materials_calc_case_4_output( $answers );
-            break;
-
-        case 'Pool Interior':
-            $output = ad_materials_calc_case_5_output( $answers );
-            break;
-
-        default:
-            $output = '<div class="materials-calc-results">Unsupported Surface Type: ' . esc_html( $surface_type ) . '</div>';
-            break;
-    }
+    $calc   = ad_materials_calc_get_calculation_from_answers( $answers );
+    $output = ad_materials_calc_render_calculation_result( $calc );
 
     $output = '<pre>' . print_r( $answers, true ) . '</pre>' . $output;
 
     if ( function_exists( 'ad_materials_calc_render_add_to_cart_block' ) ) {
-        $output .= ad_materials_calc_render_add_to_cart_block( $answers );
+        $output .= ad_materials_calc_render_add_to_cart_block( $answers, $calc );
     }
 
     // Clear the stored calculator answers after rendering the results
     WC()->session->set( 'materials_calc_answers', null );
 
     return $output;
+}
+
+function ad_materials_calc_get_calculation_from_answers( array $answers ) {
+
+    $surface_type = isset( $answers['surface_type'] ) ? (string) $answers['surface_type'] : '';
+
+    if ( $surface_type === '' ) {
+        return [
+            'error' => 'Surface Type is missing.',
+        ];
+    }
+
+    $case_map = [
+        'Interior / Exterior Walls'         => [
+            'callback'    => 'ad_materials_calc_case_1_line_items',
+            'debug_title' => 'Case 1 calculation debug:',
+        ],
+        'Wet Area Walls'                    => [
+            'callback'    => 'ad_materials_calc_case_2_line_items',
+            'debug_title' => 'Case 2 calculation debug:',
+        ],
+        'Interior Floor'                    => [
+            'callback'    => 'ad_materials_calc_case_3_line_items',
+            'debug_title' => 'Case 3 calculation debug:',
+        ],
+        'Exterior Floor (incl. Pool Decks)' => [
+            'callback'    => 'ad_materials_calc_case_4_line_items',
+            'debug_title' => 'Case 4 calculation debug:',
+        ],
+        'Pool Interior'                     => [
+            'callback'    => 'ad_materials_calc_case_5_line_items',
+            'debug_title' => 'Case 5 calculation debug:',
+        ],
+    ];
+
+    if ( empty( $case_map[$surface_type] ) ) {
+        return [
+            'error' => 'Unsupported Surface Type: ' . $surface_type,
+        ];
+    }
+
+    $case_config = $case_map[$surface_type];
+    $callback    = $case_config['callback'];
+
+    if ( ! function_exists( $callback ) ) {
+        return [
+            'error' => 'Calculation callback is unavailable for Surface Type: ' . $surface_type,
+        ];
+    }
+
+    $calc = $callback( $answers );
+
+    if ( ! is_array( $calc ) ) {
+        return [
+            'error' => 'Calculation did not return a valid result for Surface Type: ' . $surface_type,
+        ];
+    }
+
+    $calc['surface_type'] = $surface_type;
+    $calc['debug_title']  = $case_config['debug_title'];
+
+    return $calc;
+}
+
+function ad_materials_calc_render_calculation_result( array $calc ) {
+
+    if ( isset( $calc['error'] ) ) {
+        $error_output = isset( $calc['clause'] ) && $calc['clause'] !== '' ? esc_html( $calc['clause'] ) . '<br>' . esc_html( $calc['error'] ) : esc_html( $calc['error'] );
+
+        return '<div class="materials-calc-results"><pre style="white-space:pre-wrap;margin:0;">' . $error_output . '</pre></div>';
+    }
+
+    $html = '<div class="materials-calc-results">';
+    $html .= '<div style="margin-bottom:14px;">';
+    $html .= '<strong>Matched clause:</strong><br>' . esc_html( isset( $calc['clause'] ) ? $calc['clause'] : '' );
+    $html .= '</div>';
+    $html .= ad_materials_calc_render_results_table( isset( $calc['items'] ) && is_array( $calc['items'] ) ? $calc['items'] : [] );
+
+    if ( ! empty( $calc['notice'] ) ) {
+        $html .= '<div style="margin-top:16px;padding:12px;border:1px solid #ddd;border-radius:4px;background:#fafafa;">';
+        $html .= wp_kses_post( $calc['notice'] );
+        $html .= '</div>';
+    }
+
+    if ( ! empty( $calc['debug'] ) ) {
+        $debug_title = ! empty( $calc['debug_title'] ) ? (string) $calc['debug_title'] : 'Calculation debug:';
+        $html .= '<div style="margin-top:20px;"><strong>' . esc_html( $debug_title ) . '</strong></div>';
+        $html .= '<pre style="white-space:pre-wrap;margin:10px 0 0;">' . esc_html( print_r( $calc['debug'], true ) ) . '</pre>';
+    }
+
+    $html .= '</div>';
+
+    return $html;
+}
+
+function ad_materials_calc_build_cart_payload_from_calc( array $calc, array $answers ) {
+
+    if ( empty( $calc ) || ! empty( $calc['error'] ) || empty( $calc['items'] ) || ! is_array( $calc['items'] ) ) {
+        return [];
+    }
+
+    $payload_items = [];
+
+    foreach ( $calc['items'] as $item ) {
+        $sku = isset( $item['sku'] ) ? trim( (string) $item['sku'] ) : '';
+        $qty = isset( $item['qty'] ) ? (int) $item['qty'] : 0;
+
+        if ( $sku === '' || $qty <= 0 ) {
+            continue;
+        }
+
+        $payload_items[] = [
+            'sku' => $sku,
+            'qty' => $qty,
+        ];
+    }
+
+    if ( empty( $payload_items ) ) {
+        return [];
+    }
+
+    return [
+        'surface_type' => isset( $calc['surface_type'] ) ? (string) $calc['surface_type'] : ( isset( $answers['surface_type'] ) ? (string) $answers['surface_type'] : '' ),
+        'system_label' => isset( $answers['terrazzo_system'] ) ? (string) $answers['terrazzo_system'] : '',
+        'area_sqft'    => isset( $answers['total_area_sqft'] ) ? (float) $answers['total_area_sqft'] : 0,
+        'items'        => $payload_items,
+    ];
+}
+
+function ad_materials_calc_build_cart_payload_from_answers( array $answers ) {
+
+    $calc = ad_materials_calc_get_calculation_from_answers( $answers );
+
+    return ad_materials_calc_build_cart_payload_from_calc( $calc, $answers );
+}
+
+function ad_materials_calc_get_colorant_quantity_data( $system_label, array $system_counters ) {
+
+    $result = [
+        'qty'                   => 0,
+        'medium_small_fraction' => '',
+        'fine_small_fraction'   => '',
+        'micro_small_fraction'  => '',
+    ];
+
+    if ( $system_label === 'Terrazzo Granitech Medium' ) {
+        $small_fraction                  = isset( $system_counters['medium_small'] ) ? ( (int) $system_counters['medium_small'] / 19 ) : 0;
+        $result['qty']                   = ( isset( $system_counters['medium_large'] ) ? (int) $system_counters['medium_large'] : 0 ) + (int) ceil( $small_fraction );
+        $result['medium_small_fraction'] = ad_materials_calc_format_fraction_debug( isset( $system_counters['medium_small'] ) ? $system_counters['medium_small'] : 0, 19 );
+
+        return $result;
+    }
+
+    if ( $system_label === 'Terrazzo Granitech Fine' ) {
+        $medium_small                    = isset( $system_counters['medium_small'] ) ? (int) $system_counters['medium_small'] : 0;
+        $fine_small                      = isset( $system_counters['fine_small'] ) ? (int) $system_counters['fine_small'] : 0;
+        $small_fraction                  = ( $medium_small / 19 ) + ( $fine_small / 10 );
+        $result['qty']                   = ( isset( $system_counters['medium_large'] ) ? (int) $system_counters['medium_large'] : 0 ) + ( isset( $system_counters['fine_large'] ) ? (int) $system_counters['fine_large'] : 0 ) + (int) ceil( $small_fraction );
+        $result['medium_small_fraction'] = ad_materials_calc_format_fraction_debug( $medium_small, 19 );
+        $result['fine_small_fraction']   = ad_materials_calc_format_fraction_debug( $fine_small, 10 );
+
+        return $result;
+    }
+
+    if ( $system_label === 'Terrazzo Granitech Microterrazzo' ) {
+        $micro_small                    = isset( $system_counters['micro_small'] ) ? (int) $system_counters['micro_small'] : 0;
+        $small_fraction                 = $micro_small / 22;
+        $result['qty']                  = ( isset( $system_counters['micro_large'] ) ? (int) $system_counters['micro_large'] : 0 ) + (int) ceil( $small_fraction );
+        $result['micro_small_fraction'] = ad_materials_calc_format_fraction_debug( $micro_small, 22 );
+
+        return $result;
+    }
+
+    return $result;
 }
 
 function ad_materials_calc_format_fraction_debug( $numerator, $denominator ) {
@@ -268,7 +413,7 @@ function ad_materials_calc_get_product_thumb_html( $product ) {
     }
 
     $image_html = wp_get_attachment_image( $image_id, 'woocommerce_thumbnail', false, [
-        'style' => 'width:80px;min-width:80px;max-width:80px;height:auto;'
+        'style' => 'width:80px;min-width:80px;max-width:80px;height:auto;',
     ] );
 
     $url = '';
@@ -286,30 +431,56 @@ function ad_materials_calc_get_product_thumb_html( $product ) {
 
 function ad_materials_calc_get_product_by_sku( $sku ) {
 
+    static $product_cache = [];
+
     $sku = trim( (string) $sku );
 
     if ( $sku === '' ) {
         return false;
     }
 
+    if ( array_key_exists( $sku, $product_cache ) ) {
+        return $product_cache[$sku];
+    }
+
     $product_id = wc_get_product_id_by_sku( $sku );
 
     if ( ! $product_id ) {
+        $product_cache[$sku] = false;
+
         return false;
     }
 
-    return wc_get_product( $product_id );
+    $product_cache[$sku] = wc_get_product( $product_id );
+
+    return $product_cache[$sku];
 }
 
 function ad_materials_calc_get_product_price_by_sku( $sku ) {
 
-    $product = ad_materials_calc_get_product_by_sku( $sku );
+    static $price_cache = [];
 
-    if ( ! $product ) {
+    $sku = trim( (string) $sku );
+
+    if ( $sku === '' ) {
         return 0.0;
     }
 
-    return (float) wc_get_price_to_display( $product );
+    if ( array_key_exists( $sku, $price_cache ) ) {
+        return $price_cache[$sku];
+    }
+
+    $product = ad_materials_calc_get_product_by_sku( $sku );
+
+    if ( ! $product ) {
+        $price_cache[$sku] = 0.0;
+
+        return 0.0;
+    }
+
+    $price_cache[$sku] = (float) wc_get_price_to_display( $product );
+
+    return $price_cache[$sku];
 }
 
 function ad_materials_calc_expand_combo_to_line_items( array $combo, array $sku_map ) {
@@ -374,10 +545,18 @@ function ad_materials_calc_is_unpigmented( $pigment_label ) {
  */
 function ad_materials_calc_find_pigment_product_by_label( $system_label, $pigment_label ) {
 
+    static $pigment_cache = [];
+
     $pigment_label = trim( (string) $pigment_label );
 
     if ( ad_materials_calc_is_unpigmented( $pigment_label ) ) {
         return false;
+    }
+
+    $cache_key = $system_label . '|' . $pigment_label;
+
+    if ( array_key_exists( $cache_key, $pigment_cache ) ) {
+        return $pigment_cache[$cache_key];
     }
 
     $parent_product_id = 0;
@@ -387,12 +566,16 @@ function ad_materials_calc_find_pigment_product_by_label( $system_label, $pigmen
     } elseif ( $system_label === 'Terrazzo Granitech Fine' || $system_label === 'Terrazzo Granitech Microterrazzo' ) {
         $parent_product_id = 9932;
     } else {
+        $pigment_cache[$cache_key] = false;
+
         return false;
     }
 
     $parent = wc_get_product( $parent_product_id );
 
     if ( ! $parent || ! $parent->is_type( 'variable' ) ) {
+        $pigment_cache[$cache_key] = false;
+
         return false;
     }
 
@@ -424,9 +607,13 @@ function ad_materials_calc_find_pigment_product_by_label( $system_label, $pigmen
         }
 
         if ( $term->name === $pigment_label ) {
-            return $variation;
+            $pigment_cache[$cache_key] = $variation;
+
+            return $pigment_cache[$cache_key];
         }
     }
+
+    $pigment_cache[$cache_key] = false;
 
     return false;
 }
