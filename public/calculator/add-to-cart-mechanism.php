@@ -3,7 +3,7 @@
  * Materials Calculator - Add to cart mechanism
  *
  * Notes:
- * - Renders an "Add calculated materials to cart" form based on the current calculator results
+ * - Renders an "Add all to cart" form based on the current calculator results
  * - Adds all calculated items to the WooCommerce cart as one locked calculator group
  * - Prevents grouped calculator items from merging with other calculator runs
  * - Prevents grouped calculator items from being edited or removed individually
@@ -38,7 +38,7 @@ function ad_materials_calc_render_add_to_cart_block( array $answers, array $calc
     $html .= '<input type="hidden" name="ad_materials_calc_action" value="add_group_to_cart">';
     $html .= '<input type="hidden" name="ad_materials_calc_payload" value="' . esc_attr( $encoded_payload ) . '">';
     $html .= '<button type="submit" class="single_add_to_cart_button button alt">';
-    $html .= esc_html__( 'Add calculated materials to cart', 'ad-materials-calculator' );
+    $html .= esc_html__( 'Add all to cart', 'ad-materials-calculator' );
     $html .= '</button>';
     $html .= '</form>';
     $html .= '</div>';
@@ -140,6 +140,24 @@ function ad_materials_calc_is_first_group_item( $cart_item_key, $group_id ) {
     }
 
     return false;
+}
+
+/**
+ * Set whether a grouped calculator cart mutation is in progress for this request
+ */
+function ad_materials_calc_set_bulk_cart_mutation_active( $is_active ) {
+
+    $GLOBALS['ad_materials_calc_bulk_cart_mutation_active'] = (bool) $is_active;
+
+    return $GLOBALS['ad_materials_calc_bulk_cart_mutation_active'];
+}
+
+/**
+ * Check whether a grouped calculator cart mutation is in progress for this request
+ */
+function ad_materials_calc_is_bulk_cart_mutation_active() {
+
+    return ! empty( $GLOBALS['ad_materials_calc_bulk_cart_mutation_active'] );
 }
 
 /**
@@ -259,8 +277,8 @@ function ad_materials_calc_suspend_shippo_rate_triggers() {
         ];
 
         $removed = ( $callback['type'] === 'filter' )
-            ? remove_filter( $callback['hook'], $callable, $callback['priority'] )
-            : remove_action( $callback['hook'], $callable, $callback['priority'] );
+        ? remove_filter( $callback['hook'], $callable, $callback['priority'] )
+        : remove_action( $callback['hook'], $callable, $callback['priority'] );
 
         if ( $removed ) {
             $removed_callbacks[] = $callback;
@@ -298,6 +316,32 @@ function ad_materials_calc_restore_shippo_rate_triggers( array $state ) {
 }
 
 /**
+ * Skip shipping calculation while the calculator is mutating the cart in bulk
+ */
+add_filter( 'woocommerce_cart_ready_to_calc_shipping', 'ad_materials_calc_skip_shipping_during_bulk_cart_mutation', 999 );
+function ad_materials_calc_skip_shipping_during_bulk_cart_mutation( $ready ) {
+
+    if ( ! ad_materials_calc_is_bulk_cart_mutation_active() ) {
+        return $ready;
+    }
+
+    return false;
+}
+
+/**
+ * Prevent WooCommerce from building shipping packages during bulk cart mutation
+ */
+add_filter( 'woocommerce_shipping_packages', 'ad_materials_calc_skip_shipping_packages_during_bulk_cart_mutation', 999 );
+function ad_materials_calc_skip_shipping_packages_during_bulk_cart_mutation( $packages ) {
+
+    if ( ! ad_materials_calc_is_bulk_cart_mutation_active() ) {
+        return $packages;
+    }
+
+    return [];
+}
+
+/**
  * Handle the request that adds one calculated group to the cart
  */
 add_action( 'wp', 'ad_materials_calc_handle_add_group_to_cart' );
@@ -324,10 +368,11 @@ function ad_materials_calc_handle_add_group_to_cart() {
         exit;
     }
 
-    $group_id    = 'mc_' . wp_generate_uuid4();
-    $group_label = ad_materials_calc_build_group_label( $payload );
-    $added_any   = false;
+    $group_id     = 'mc_' . wp_generate_uuid4();
+    $group_label  = ad_materials_calc_build_group_label( $payload );
+    $added_any    = false;
     $shippo_state = ad_materials_calc_suspend_shippo_rate_triggers();
+    ad_materials_calc_set_bulk_cart_mutation_active( true );
 
     try {
         foreach ( $payload['items'] as $payload_item ) {
@@ -377,6 +422,7 @@ function ad_materials_calc_handle_add_group_to_cart() {
             }
         }
     } finally {
+        ad_materials_calc_set_bulk_cart_mutation_active( false );
         ad_materials_calc_restore_shippo_rate_triggers( $shippo_state );
     }
 
@@ -445,6 +491,7 @@ function ad_materials_calc_handle_group_remove_request() {
     }
 
     $shippo_state = ad_materials_calc_suspend_shippo_rate_triggers();
+    ad_materials_calc_set_bulk_cart_mutation_active( true );
 
     try {
         foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
@@ -453,6 +500,7 @@ function ad_materials_calc_handle_group_remove_request() {
             }
         }
     } finally {
+        ad_materials_calc_set_bulk_cart_mutation_active( false );
         ad_materials_calc_restore_shippo_rate_triggers( $shippo_state );
     }
 
