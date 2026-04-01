@@ -143,9 +143,164 @@ function ad_materials_calc_is_first_group_item( $cart_item_key, $group_id ) {
 }
 
 /**
+ * Temporarily suspend Shippo cart/shipping listeners during bulk calculator cart mutations
+ */
+function ad_materials_calc_suspend_shippo_rate_triggers() {
+
+    if ( ! class_exists( '\AgencyDigital\ShippoRates\Plugin' ) ) {
+        return [];
+    }
+
+    $plugin = \AgencyDigital\ShippoRates\Plugin::instance();
+
+    if ( ! method_exists( $plugin, 'getRatesProvider' ) ) {
+        return [];
+    }
+
+    $rates_provider = $plugin->getRatesProvider();
+
+    if ( ! is_object( $rates_provider ) ) {
+        return [];
+    }
+
+    $callbacks = [
+        [
+            'hook'     => 'woocommerce_package_rates',
+            'method'   => 'addRatesToPackage',
+            'priority' => 10,
+            'type'     => 'filter',
+        ],
+        [
+            'hook'     => 'woocommerce_cart_ready_to_calc_shipping',
+            'method'   => 'cartReadyToCalcShipping',
+            'priority' => 999,
+            'type'     => 'filter',
+        ],
+        [
+            'hook'     => 'woocommerce_checkout_init',
+            'method'   => 'ensureCheckoutShipping',
+            'priority' => 10,
+            'type'     => 'action',
+        ],
+        [
+            'hook'     => 'wp',
+            'method'   => 'maybeCalculateShipping',
+            'priority' => 5,
+            'type'     => 'action',
+        ],
+        [
+            'hook'     => 'woocommerce_before_cart',
+            'method'   => 'ensureCartShipping',
+            'priority' => 5,
+            'type'     => 'action',
+        ],
+        [
+            'hook'     => 'woocommerce_checkout_update_order_review',
+            'method'   => 'forceShippingOnAddressUpdate',
+            'priority' => 1,
+            'type'     => 'action',
+        ],
+        [
+            'hook'     => 'woocommerce_checkout_process',
+            'method'   => 'ensureShippingBeforeCheckout',
+            'priority' => 1,
+            'type'     => 'action',
+        ],
+        [
+            'hook'     => 'woocommerce_before_calculate_totals',
+            'method'   => 'forceShippingCalculationBeforeTotals',
+            'priority' => 1,
+            'type'     => 'action',
+        ],
+        [
+            'hook'     => 'woocommerce_cart_loaded_from_session',
+            'method'   => 'resetCalculationFlag',
+            'priority' => 1,
+            'type'     => 'action',
+        ],
+        [
+            'hook'     => 'woocommerce_update_shipping_method',
+            'method'   => 'ensureShippingInFragments',
+            'priority' => 10,
+            'type'     => 'filter',
+        ],
+        [
+            'hook'     => 'woocommerce_cart_item_set_quantity',
+            'method'   => 'immediateShippingRecalc',
+            'priority' => 999,
+            'type'     => 'action',
+        ],
+        [
+            'hook'     => 'woocommerce_after_cart_item_quantity_update',
+            'method'   => 'immediateShippingRecalc',
+            'priority' => 999,
+            'type'     => 'action',
+        ],
+        [
+            'hook'     => 'woocommerce_cart_item_removed',
+            'method'   => 'immediateShippingRecalc',
+            'priority' => 999,
+            'type'     => 'action',
+        ],
+        [
+            'hook'     => 'woocommerce_cart_item_restored',
+            'method'   => 'immediateShippingRecalc',
+            'priority' => 999,
+            'type'     => 'action',
+        ],
+    ];
+
+    $removed_callbacks = [];
+
+    foreach ( $callbacks as $callback ) {
+        $callable = [
+            $rates_provider,
+            $callback['method'],
+        ];
+
+        $removed = ( $callback['type'] === 'filter' )
+            ? remove_filter( $callback['hook'], $callable, $callback['priority'] )
+            : remove_action( $callback['hook'], $callable, $callback['priority'] );
+
+        if ( $removed ) {
+            $removed_callbacks[] = $callback;
+        }
+    }
+
+    return [
+        'rates_provider' => $rates_provider,
+        'callbacks'      => $removed_callbacks,
+    ];
+}
+
+/**
+ * Restore Shippo cart/shipping listeners after bulk calculator cart mutations
+ */
+function ad_materials_calc_restore_shippo_rate_triggers( array $state ) {
+
+    if ( empty( $state['rates_provider'] ) || ! is_object( $state['rates_provider'] ) || empty( $state['callbacks'] ) || ! is_array( $state['callbacks'] ) ) {
+        return;
+    }
+
+    foreach ( $state['callbacks'] as $callback ) {
+        $callable = [
+            $state['rates_provider'],
+            $callback['method'],
+        ];
+
+        if ( $callback['type'] === 'filter' ) {
+            add_filter( $callback['hook'], $callable, $callback['priority'], 999 );
+        } else {
+            add_action( $callback['hook'], $callable, $callback['priority'], 999 );
+        }
+    }
+
+}
+
+/**
  * Handle the request that adds one calculated group to the cart
  */
-add_action( 'wp_loaded', 'ad_materials_calc_handle_add_group_to_cart', 5 );
+add_action( 'wp', 'ad_materials_calc_handle_add_group_to_cart' );
 function ad_materials_calc_handle_add_group_to_cart() {
 
     if ( empty( $_POST['ad_materials_calc_action'] ) || $_POST['ad_materials_calc_action'] !== 'add_group_to_cart' ) {
@@ -172,52 +327,57 @@ function ad_materials_calc_handle_add_group_to_cart() {
     $group_id    = 'mc_' . wp_generate_uuid4();
     $group_label = ad_materials_calc_build_group_label( $payload );
     $added_any   = false;
+    $shippo_state = ad_materials_calc_suspend_shippo_rate_triggers();
 
-    foreach ( $payload['items'] as $payload_item ) {
-        $sku = isset( $payload_item['sku'] ) ? trim( (string) $payload_item['sku'] ) : '';
-        $qty = isset( $payload_item['qty'] ) ? (int) $payload_item['qty'] : 0;
+    try {
+        foreach ( $payload['items'] as $payload_item ) {
+            $sku = isset( $payload_item['sku'] ) ? trim( (string) $payload_item['sku'] ) : '';
+            $qty = isset( $payload_item['qty'] ) ? (int) $payload_item['qty'] : 0;
 
-        if ( $sku === '' || $qty <= 0 ) {
-            continue;
+            if ( $sku === '' || $qty <= 0 ) {
+                continue;
+            }
+
+            $product = ad_materials_calc_get_product_by_sku( $sku );
+
+            if ( ! $product ) {
+                continue;
+            }
+
+            $cart_item_data = [
+                'ad_materials_calc_group_id'    => $group_id,
+                'ad_materials_calc_group_label' => $group_label,
+                'ad_materials_calc_grouped'     => 1,
+            ];
+
+            if ( $product->is_type( 'variation' ) ) {
+                $parent_id    = $product->get_parent_id();
+                $variation_id = $product->get_id();
+                $attributes   = $product->get_variation_attributes();
+
+                $added = WC()->cart->add_to_cart(
+                    $parent_id,
+                    $qty,
+                    $variation_id,
+                    $attributes,
+                    $cart_item_data
+                );
+            } else {
+                $added = WC()->cart->add_to_cart(
+                    $product->get_id(),
+                    $qty,
+                    0,
+                    [],
+                    $cart_item_data
+                );
+            }
+
+            if ( $added ) {
+                $added_any = true;
+            }
         }
-
-        $product = ad_materials_calc_get_product_by_sku( $sku );
-
-        if ( ! $product ) {
-            continue;
-        }
-
-        $cart_item_data = [
-            'ad_materials_calc_group_id'    => $group_id,
-            'ad_materials_calc_group_label' => $group_label,
-            'ad_materials_calc_grouped'     => 1,
-        ];
-
-        if ( $product->is_type( 'variation' ) ) {
-            $parent_id    = $product->get_parent_id();
-            $variation_id = $product->get_id();
-            $attributes   = $product->get_variation_attributes();
-
-            $added = WC()->cart->add_to_cart(
-                $parent_id,
-                $qty,
-                $variation_id,
-                $attributes,
-                $cart_item_data
-            );
-        } else {
-            $added = WC()->cart->add_to_cart(
-                $product->get_id(),
-                $qty,
-                0,
-                [],
-                $cart_item_data
-            );
-        }
-
-        if ( $added ) {
-            $added_any = true;
-        }
+    } finally {
+        ad_materials_calc_restore_shippo_rate_triggers( $shippo_state );
     }
 
     if ( $added_any ) {
@@ -233,7 +393,7 @@ function ad_materials_calc_handle_add_group_to_cart() {
 /**
  * Block single-item removal for grouped calculator items
  */
-add_action( 'wp_loaded', 'ad_materials_calc_block_single_group_item_removal', 1 );
+add_action( 'wp', 'ad_materials_calc_block_single_group_item_removal' );
 function ad_materials_calc_block_single_group_item_removal() {
 
     if ( empty( $_GET['remove_item'] ) ) {
@@ -263,7 +423,7 @@ function ad_materials_calc_block_single_group_item_removal() {
 /**
  * Handle the request that removes a whole calculated group
  */
-add_action( 'wp_loaded', 'ad_materials_calc_handle_group_remove_request', 6 );
+add_action( 'wp', 'ad_materials_calc_handle_group_remove_request' );
 function ad_materials_calc_handle_group_remove_request() {
 
     if ( empty( $_GET['ad_materials_calc_action'] ) || $_GET['ad_materials_calc_action'] !== 'remove_group' ) {
@@ -284,10 +444,16 @@ function ad_materials_calc_handle_group_remove_request() {
         return;
     }
 
-    foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-        if ( ad_materials_calc_get_group_id_from_cart_item( $cart_item ) === $group_id ) {
-            WC()->cart->remove_cart_item( $cart_item_key );
+    $shippo_state = ad_materials_calc_suspend_shippo_rate_triggers();
+
+    try {
+        foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+            if ( ad_materials_calc_get_group_id_from_cart_item( $cart_item ) === $group_id ) {
+                WC()->cart->remove_cart_item( $cart_item_key );
+            }
         }
+    } finally {
+        ad_materials_calc_restore_shippo_rate_triggers( $shippo_state );
     }
 
     wc_add_notice( __( 'The calculated materials group was removed from your cart.', 'ad-materials-calculator' ), 'success' );
