@@ -163,10 +163,12 @@ function ad_materials_calc_build_cart_payload_from_calc( array $calc, array $ans
     }
 
     return [
-        'surface_type' => isset( $calc['surface_type'] ) ? (string) $calc['surface_type'] : ( isset( $answers['surface_type'] ) ? (string) $answers['surface_type'] : '' ),
-        'system_label' => isset( $answers['terrazzo_system'] ) ? (string) $answers['terrazzo_system'] : '',
-        'area_sqft'    => isset( $answers['total_area_sqft'] ) ? (float) $answers['total_area_sqft'] : 0,
-        'items'        => $payload_items,
+        'surface_type'  => isset( $calc['surface_type'] ) ? (string) $calc['surface_type'] : ( isset( $answers['surface_type'] ) ? (string) $answers['surface_type'] : '' ),
+        'system_label'  => isset( $answers['terrazzo_system'] ) ? (string) $answers['terrazzo_system'] : '',
+        'project_title' => ad_materials_calc_build_project_title_from_answers( $answers ),
+        'project_meta'  => ad_materials_calc_build_project_meta_from_answers( $answers ),
+        'area_sqft'     => isset( $answers['total_area_sqft'] ) ? (float) $answers['total_area_sqft'] : 0,
+        'items'         => $payload_items,
     ];
 }
 
@@ -175,6 +177,133 @@ function ad_materials_calc_build_cart_payload_from_answers( array $answers ) {
     $calc = ad_materials_calc_get_calculation_from_answers( $answers );
 
     return ad_materials_calc_build_cart_payload_from_calc( $calc, $answers );
+}
+
+function ad_materials_calc_build_project_title_from_answers( array $answers ) {
+
+    $parts         = [];
+    $area_sqft     = isset( $answers['total_area_sqft'] ) ? (float) $answers['total_area_sqft'] : 0;
+    $surface_type  = isset( $answers['surface_type'] ) ? trim( (string) $answers['surface_type'] ) : '';
+    $system_label  = isset( $answers['terrazzo_system'] ) ? trim( (string) $answers['terrazzo_system'] ) : '';
+    $pigment_color = isset( $answers['pigment_color'] ) ? trim( (string) $answers['pigment_color'] ) : '';
+
+    if ( $area_sqft > 0 ) {
+        $parts[] = rtrim( rtrim( number_format( $area_sqft, 1, '.', '' ), '0' ), '.' ) . ' sq.ft.';
+    }
+
+    if ( $surface_type !== '' ) {
+        $parts[] = $surface_type;
+    }
+
+    if ( $system_label !== '' ) {
+        $parts[] = $system_label;
+    }
+
+    if ( $pigment_color !== '' && ! ad_materials_calc_is_unpigmented( $pigment_color ) ) {
+        $parts[] = $pigment_color;
+    }
+
+    $parts = array_values( array_unique( array_filter( $parts ) ) );
+
+    if ( empty( $parts ) ) {
+        return '';
+    }
+
+    return implode( ' / ', $parts );
+}
+
+function ad_materials_calc_build_project_meta_from_answers( array $answers ) {
+
+    $surface_type = isset( $answers['surface_type'] ) ? (string) $answers['surface_type'] : '';
+    $parts        = [];
+    $labels       = ad_materials_calc_get_project_answer_labels();
+
+    foreach ( ad_materials_calc_get_project_meta_keys( $surface_type ) as $key ) {
+        if ( empty( $answers[$key] ) ) {
+            continue;
+        }
+
+        $value = trim( (string) $answers[$key] );
+
+        if ( $value === '' ) {
+            continue;
+        }
+
+        if ( $key === 'pigment_color' && ad_materials_calc_is_unpigmented( $value ) ) {
+            continue;
+        }
+
+        $label   = isset( $labels[$key] ) ? $labels[$key] : ucwords( str_replace( '_', ' ', $key ) );
+        $parts[] = $label . ': ' . $value;
+    }
+
+    if ( empty( $parts ) ) {
+        return '';
+    }
+
+    return implode( '<br>', array_map( 'esc_html', $parts ) );
+}
+
+function ad_materials_calc_get_project_meta_keys( $surface_type ) {
+
+    $common_keys = [
+        'finish_color',
+    ];
+
+    $surface_specific_keys = [
+        'Interior / Exterior Walls'         => [
+            'substrate_type_wall',
+            'sheen_wall',
+            'usage_level_wall',
+        ],
+        'Wet Area Walls'                    => [
+            'existing_tile_wet_area',
+            'tile_joint_condition_wet_area',
+            'sheen_wet_area',
+            'usage_level_wet_area',
+        ],
+        'Interior Floor'                    => [
+            'existing_tile_interior_floor',
+            'tile_joint_condition_interior_floor',
+            'moisture_exposure_interior_floor',
+            'usage_level_interior_floor',
+            'sheen_interior_floor',
+        ],
+        'Exterior Floor (incl. Pool Decks)' => [
+            'existing_tile_exterior_floor',
+            'tile_joint_condition_exterior_floor',
+            'usage_level_exterior_floor',
+        ],
+        'Pool Interior'                     => [],
+    ];
+
+    if ( empty( $surface_specific_keys[$surface_type] ) ) {
+        return $common_keys;
+    }
+
+    return array_merge( $common_keys, $surface_specific_keys[$surface_type] );
+}
+
+function ad_materials_calc_get_project_answer_labels() {
+
+    return [
+        'finish_color'                        => 'Finish color',
+        'substrate_type_wall'                 => 'Substrate',
+        'sheen_wall'                          => 'Sheen',
+        'usage_level_wall'                    => 'Usage Level',
+        'existing_tile_wet_area'              => 'Existing Tile',
+        'tile_joint_condition_wet_area'       => 'Tile Joint Condition',
+        'sheen_wet_area'                      => 'Sheen',
+        'usage_level_wet_area'                => 'Usage Level',
+        'existing_tile_interior_floor'        => 'Existing Tile',
+        'tile_joint_condition_interior_floor' => 'Tile Joint Condition',
+        'moisture_exposure_interior_floor'    => 'Moisture Exposure',
+        'usage_level_interior_floor'          => 'Usage Level',
+        'sheen_interior_floor'                => 'Sheen',
+        'existing_tile_exterior_floor'        => 'Existing Tile',
+        'tile_joint_condition_exterior_floor' => 'Tile Joint Condition',
+        'usage_level_exterior_floor'          => 'Usage Level',
+    ];
 }
 
 function ad_materials_calc_get_colorant_quantity_data( $system_label, array $system_counters ) {

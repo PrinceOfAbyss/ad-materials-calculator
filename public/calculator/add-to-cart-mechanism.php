@@ -87,25 +87,11 @@ function ad_materials_calc_decode_cart_payload( $encoded_payload ) {
  */
 function ad_materials_calc_build_group_label( array $payload ) {
 
-    $parts = [];
-
-    if ( ! empty( $payload['surface_type'] ) ) {
-        $parts[] = (string) $payload['surface_type'];
+    if ( ! empty( $payload['project_meta'] ) ) {
+        return (string) $payload['project_meta'];
     }
 
-    if ( ! empty( $payload['system_label'] ) ) {
-        $parts[] = (string) $payload['system_label'];
-    }
-
-    if ( ! empty( $payload['area_sqft'] ) ) {
-        $parts[] = rtrim( rtrim( number_format( (float) $payload['area_sqft'], 1, '.', '' ), '0' ), '.' ) . ' sq.ft.';
-    }
-
-    if ( empty( $parts ) ) {
-        return __( 'Calculated materials group', 'ad-materials-calculator' );
-    }
-
-    return implode( ' | ', $parts );
+    return __( 'Calculated materials group', 'ad-materials-calculator' );
 }
 
 /**
@@ -392,6 +378,7 @@ function ad_materials_calc_handle_add_group_to_cart() {
             $cart_item_data = [
                 'ad_materials_calc_group_id'    => $group_id,
                 'ad_materials_calc_group_label' => $group_label,
+                'ad_materials_calc_group_title' => ! empty( $payload['project_title'] ) ? (string) $payload['project_title'] : $group_label,
                 'ad_materials_calc_grouped'     => 1,
             ];
 
