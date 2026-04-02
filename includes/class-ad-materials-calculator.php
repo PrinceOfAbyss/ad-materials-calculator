@@ -172,6 +172,7 @@ class Ad_Materials_Calculator {
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+		$this->loader->add_filter( 'woocommerce_locate_template', $plugin_public, 'locate_woocommerce_template', 10, 3 );
 
 	}
 

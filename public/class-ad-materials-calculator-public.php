@@ -123,4 +123,25 @@ class Ad_Materials_Calculator_Public {
 
 	}
 
+	/**
+	 * Load the plugin cart template override when WooCommerce asks for it
+	 *
+	 * @since    1.0.0
+	 */
+	public function locate_woocommerce_template( $template, $template_name, $template_path ) {
+
+		if ( $template_name !== 'cart/cart.php' ) {
+			return $template;
+		}
+
+		$plugin_template = dirname( plugin_dir_path( __FILE__ ) ) . '/woocommerce/cart/cart.php';
+
+		if ( file_exists( $plugin_template ) ) {
+			return $plugin_template;
+		}
+
+		return $template;
+
+	}
+
 }
