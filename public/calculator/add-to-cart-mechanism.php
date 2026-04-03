@@ -103,6 +103,22 @@ function ad_materials_calc_get_group_id_from_cart_item( array $cart_item ) {
 }
 
 /**
+ * Get the calculator group title from a cart item
+ */
+function ad_materials_calc_get_group_title_from_cart_item( array $cart_item ) {
+
+    return ! empty( $cart_item['ad_materials_calc_group_title'] ) ? (string) $cart_item['ad_materials_calc_group_title'] : '';
+}
+
+/**
+ * Get the calculator group subtitle/meta from a cart item
+ */
+function ad_materials_calc_get_group_label_from_cart_item( array $cart_item ) {
+
+    return ! empty( $cart_item['ad_materials_calc_group_label'] ) ? (string) $cart_item['ad_materials_calc_group_label'] : '';
+}
+
+/**
  * Check whether a cart item belongs to a calculator group
  */
 function ad_materials_calc_is_grouped_cart_item( array $cart_item ) {
@@ -111,21 +127,72 @@ function ad_materials_calc_is_grouped_cart_item( array $cart_item ) {
 }
 
 /**
+ * Get all cart item keys that belong to a calculator group
+ */
+function ad_materials_calc_get_group_cart_item_keys( $group_id ) {
+
+    static $group_item_keys_cache = [];
+
+    if ( $group_id === '' || ! function_exists( 'WC' ) || ! WC() || ! WC()->cart ) {
+        return [];
+    }
+
+    if ( array_key_exists( $group_id, $group_item_keys_cache ) ) {
+        return $group_item_keys_cache[$group_id];
+    }
+
+    $keys = [];
+
+    foreach ( WC()->cart->get_cart() as $key => $cart_item ) {
+        if ( ad_materials_calc_get_group_id_from_cart_item( $cart_item ) === $group_id ) {
+            $keys[] = $key;
+        }
+    }
+
+    $group_item_keys_cache[$group_id] = $keys;
+
+    return $group_item_keys_cache[$group_id];
+}
+
+/**
  * Check whether the current cart item is the first item of its calculator group
  */
 function ad_materials_calc_is_first_group_item( $cart_item_key, $group_id ) {
 
-    if ( ! function_exists( 'WC' ) || ! WC() || ! WC()->cart ) {
-        return false;
-    }
+    $group_item_keys = ad_materials_calc_get_group_cart_item_keys( $group_id );
 
-    foreach ( WC()->cart->get_cart() as $key => $cart_item ) {
-        if ( ad_materials_calc_get_group_id_from_cart_item( $cart_item ) === $group_id ) {
-            return $key === $cart_item_key;
-        }
-    }
+    return ! empty( $group_item_keys ) && reset( $group_item_keys ) === $cart_item_key;
+}
 
-    return false;
+/**
+ * Build the calculator group remove URL
+ */
+function ad_materials_calc_build_group_remove_url( $group_id ) {
+
+    return wp_nonce_url(
+        add_query_arg(
+            [
+                'ad_materials_calc_action' => 'remove_group',
+                'group_id'                 => $group_id,
+            ],
+            wc_get_cart_url()
+        ),
+        'ad_materials_calc_remove_group_' . $group_id
+    );
+}
+
+/**
+ * Build the calculator group remove link HTML for the cart remove column
+ */
+function ad_materials_calc_build_group_remove_link_html( $group_id ) {
+
+    $remove_url = ad_materials_calc_build_group_remove_url( $group_id );
+
+    return sprintf(
+        '<a href="%1$s" class="remove ad-materials-calc-group-remove" aria-label="%2$s">&times;</a>',
+        esc_url( $remove_url ),
+        esc_attr__( 'Remove calculation group', 'ad-materials-calculator' )
+    );
 }
 
 /**
@@ -414,7 +481,20 @@ function ad_materials_calc_handle_add_group_to_cart() {
     }
 
     if ( $added_any ) {
-        wc_add_notice( __( 'The calculated materials were added to your cart as a grouped calculation.', 'ad-materials-calculator' ), 'success' );
+        $calculator_url = home_url( '/materials-calculator/' );
+        $success_notice = sprintf(
+            wp_kses(
+                __( 'The calculated materials were added to your cart as a grouped calculation. <a href="%s">Add another one?</a>', 'ad-materials-calculator' ),
+                [
+                    'a' => [
+                        'href' => [],
+                    ],
+                ]
+            ),
+            esc_url( $calculator_url )
+        );
+
+        wc_add_notice( $success_notice, 'success' );
     } else {
         wc_add_notice( __( 'We could not add the calculated materials to the cart. Please calculate again and try once more.', 'ad-materials-calculator' ), 'error' );
     }
@@ -543,44 +623,11 @@ function ad_materials_calc_hide_grouped_item_remove_link( $remove_link, $cart_it
         return $remove_link;
     }
 
-    if ( ! ad_materials_calc_is_grouped_cart_item( $cart[$cart_item_key] ) ) {
+    $cart_item = $cart[$cart_item_key];
+
+    if ( ! ad_materials_calc_is_grouped_cart_item( $cart_item ) ) {
         return $remove_link;
     }
 
     return '';
-}
-
-/**
- * Render the group label and group remove link under the first grouped item
- */
-add_action( 'woocommerce_after_cart_item_name', 'ad_materials_calc_render_group_meta_under_first_item', 10, 2 );
-function ad_materials_calc_render_group_meta_under_first_item( $cart_item, $cart_item_key ) {
-
-    $group_id = ad_materials_calc_get_group_id_from_cart_item( $cart_item );
-
-    if ( $group_id === '' ) {
-        return;
-    }
-
-    if ( ! ad_materials_calc_is_first_group_item( $cart_item_key, $group_id ) ) {
-        return;
-    }
-
-    $group_label = ! empty( $cart_item['ad_materials_calc_group_label'] ) ? (string) $cart_item['ad_materials_calc_group_label'] : __( 'Calculated materials group', 'ad-materials-calculator' );
-
-    $remove_url = wp_nonce_url(
-        add_query_arg(
-            [
-                'ad_materials_calc_action' => 'remove_group',
-                'group_id'                 => $group_id,
-            ],
-            wc_get_cart_url()
-        ),
-        'ad_materials_calc_remove_group_' . $group_id
-    );
-
-    echo '<div class="ad-materials-calc-group-meta" style="margin-top:8px;">';
-    echo '<div style="font-size:12px;opacity:.8;">' . esc_html( $group_label ) . '</div>';
-    echo '<a href="' . esc_url( $remove_url ) . '" style="font-size:12px;">' . esc_html__( 'Remove calculation group', 'ad-materials-calculator' ) . '</a>';
-    echo '</div>';
 }

@@ -51,6 +51,8 @@ if ( woodmart_get_opt( 'update_cart_quantity_change' ) ) {
 				<?php do_action( 'woocommerce_before_cart_contents' ); ?>
 
 			<?php
+			$ad_materials_calc_rendered_cards = 0;
+
 			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 				$_product   = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
 				$product_id = apply_filters( 'woocommerce_cart_item_product_id', $cart_item['product_id'], $cart_item, $cart_item_key );
@@ -58,12 +60,77 @@ if ( woodmart_get_opt( 'update_cart_quantity_change' ) ) {
 					if ( $_product && $_product->exists() && $cart_item['quantity'] > 0 && apply_filters( 'woocommerce_cart_item_visible', true, $cart_item, $cart_item_key ) ) {
 						$product_permalink = apply_filters( 'woocommerce_cart_item_permalink', $_product->is_visible() ? $_product->get_permalink( $cart_item ) : '', $cart_item, $cart_item_key );
 						$product_name      = apply_filters( 'woocommerce_cart_item_name', $_product->get_name(), $cart_item, $cart_item_key );
+						$group_id       = function_exists( 'ad_materials_calc_get_group_id_from_cart_item' ) ? ad_materials_calc_get_group_id_from_cart_item( $cart_item ) : '';
+						$is_grouped     = ( $group_id !== '' );
+						$is_group_first = $is_grouped && function_exists( 'ad_materials_calc_is_first_group_item' ) && ad_materials_calc_is_first_group_item( $cart_item_key, $group_id );
+						$is_group_last  = false;
+						$is_card_start  = ! $is_grouped || $is_group_first;
+
+						if ( $is_grouped && function_exists( 'ad_materials_calc_get_group_cart_item_keys' ) ) {
+							$group_item_keys = ad_materials_calc_get_group_cart_item_keys( $group_id );
+							$is_group_last   = ! empty( $group_item_keys ) && end( $group_item_keys ) === $cart_item_key;
+						}
+
+						if ( $is_card_start && $ad_materials_calc_rendered_cards > 0 ) {
+						?>
+					<tr class="ad-materials-calc-card-gap" aria-hidden="true">
+						<td colspan="6"></td>
+					</tr>
+						<?php
+						}
+
+						if ( $is_group_first ) {
+							$group_title = function_exists( 'ad_materials_calc_get_group_title_from_cart_item' ) ? ad_materials_calc_get_group_title_from_cart_item( $cart_item ) : '';
+							$group_label = function_exists( 'ad_materials_calc_get_group_label_from_cart_item' ) ? ad_materials_calc_get_group_label_from_cart_item( $cart_item ) : '';
+
+							if ( $group_title === '' ) {
+								$group_title = esc_html__( 'Calculated materials group', 'ad-materials-calculator' );
+							}
+							?>
+					<tr class="ad-materials-calc-group-card-header">
+						<td class="product-remove">
+							<?php
+						if ( function_exists( 'ad_materials_calc_build_group_remove_link_html' ) ) {
+							echo ad_materials_calc_build_group_remove_link_html( $group_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						}
+						?>
+						</td>
+						<td colspan="5" class="ad-materials-calc-group-card-header__content">
+							<div class="ad-materials-calc-group-header">
+								<div class="ad-materials-calc-group-header__title"><?php echo esc_html( $group_title ); ?></div>
+								<?php if ( $group_label !== '' && $group_label !== $group_title ) {?>
+								<div class="ad-materials-calc-group-header__meta"><?php echo wp_kses( $group_label, ['br' => []] ); ?></div>
+								<?php }?>
+							</div>
+						</td>
+					</tr>
+					<?php
+					}
+
+					$row_classes = apply_filters( 'woocommerce_cart_item_class', 'cart_item', $cart_item, $cart_item_key );
+
+					if ( $is_grouped ) {
+						$row_classes .= $is_group_first ? ' ad-materials-calc-group-product-row ad-materials-calc-group-product-row-first' : ' ad-materials-calc-group-product-row ad-materials-calc-group-product-row-child';
+
+						if ( $is_group_last ) {
+							$row_classes .= ' ad-materials-calc-group-product-row-last';
+						}
+					} else {
+						$row_classes .= ' ad-materials-calc-standalone-product-row';
+					}
+
+					if ( $is_card_start ) {
+						$ad_materials_calc_rendered_cards++;
+					}
 						?>
 
-						<tr class="woocommerce-cart-form__cart-item <?php echo esc_attr( apply_filters( 'woocommerce_cart_item_class', 'cart_item', $cart_item, $cart_item_key ) ); ?>">
+						<tr class="woocommerce-cart-form__cart-item <?php echo esc_attr( trim( $row_classes ) ); ?>">
 
 							<td class="product-remove">
 								<?php
+								if ( $is_grouped ) {
+									echo '';
+								} else {
 									echo apply_filters( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 										'woocommerce_cart_item_remove_link',
 										sprintf(
@@ -76,6 +143,7 @@ if ( woodmart_get_opt( 'update_cart_quantity_change' ) ) {
 										),
 										$cart_item_key
 									);
+								}
 								?>
 							</td>
 
@@ -91,17 +159,18 @@ if ( woodmart_get_opt( 'update_cart_quantity_change' ) ) {
 
 							<td class="product-name" role="rowheader" data-title="<?php esc_attr_e( 'Product', 'woocommerce' ); ?>">
 								<?php
+									$product_name_html = '';
+
 									if ( ! $product_permalink ) {
-										echo wp_kses_post( $product_name . '&nbsp;' );
+										$product_name_html = wp_kses_post( $product_name . '&nbsp;' );
 									} else {
-										/**
-										 * This filter is documented above.
-										 *
-										 * @since 7.8.0
-										 * @param string $product_url URL the product in the cart.
-										 */
-										echo wp_kses_post( apply_filters( 'woocommerce_cart_item_name', sprintf( '<a href="%s">%s</a>', esc_url( $product_permalink ), $_product->get_name() ), $cart_item, $cart_item_key ) );
+										$product_name_html = wp_kses_post( apply_filters( 'woocommerce_cart_item_name', sprintf( '<a href="%s">%s</a>', esc_url( $product_permalink ), $_product->get_name() ), $cart_item, $cart_item_key ) );
 									}
+
+								$product_name_inner_class = $is_grouped ? 'ad-materials-calc-product-cell-inner ad-materials-calc-product-cell-inner--grouped' : 'ad-materials-calc-product-cell-inner';
+
+								echo '<div class="' . esc_attr( $product_name_inner_class ) . '">';
+								echo $product_name_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
 								do_action( 'woocommerce_after_cart_item_name', $cart_item, $cart_item_key );
 
@@ -112,6 +181,8 @@ if ( woodmart_get_opt( 'update_cart_quantity_change' ) ) {
 							if ( $_product->backorders_require_notification() && $_product->is_on_backorder( $cart_item['quantity'] ) ) {
 								echo wp_kses_post( apply_filters( 'woocommerce_cart_item_backorder_notification', '<p class="backorder_notification">' . esc_html__( 'Available on backorder', 'woocommerce' ) . '</p>', $product_id ) );
 							}
+
+							echo '</div>';
 							?>
 							</td>
 

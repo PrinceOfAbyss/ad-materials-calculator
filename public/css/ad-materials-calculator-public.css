@@ -43,3 +43,171 @@ span.wpforms-image-choices-image img {
 #wpforms-form-11307 input[type="number"] {
     text-align: left !important;
 }
+
+/* Base card background and remove default row borders */
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-standalone-product-row td,
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-product-row td {
+    background: #f6f6f6 !important;
+    border: 0 !important;
+}
+
+/* Remove the theme header separator above the first cart card */
+.woocommerce-cart .woocommerce-cart-form__contents thead th {
+    border-bottom: 0 !important;
+}
+
+/* Shared vertical spacing for standalone rows and grouped rows */
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-standalone-product-row td,
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-product-row td,
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-card-header td {
+    padding-bottom: 22px !important;
+    padding-top: 22px !important;
+}
+
+/* Narrow and pad the remove column */
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-standalone-product-row td:first-child,
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-product-row td:first-child,
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-card-header td:first-child {
+    padding-left: 14px !important;
+    padding-right: 8px !important;
+    width: 42px;
+}
+
+/* Keep some breathing room at the far right edge */
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-standalone-product-row td:last-child,
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-product-row td:last-child,
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-card-header td:last-child {
+    padding-right: 18px !important;
+}
+
+/* Add a little extra right padding to the grouped product column */
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-product-row td.product-name {
+    padding-right: 24px !important;
+}
+
+/* Align standalone and group-header remove cells to the vertical middle */
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-standalone-product-row td.product-remove,
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-card-header td.product-remove {
+    vertical-align: middle;
+}
+
+/* Real spacer rows between whole cards */
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-card-gap td {
+    background: transparent !important;
+    border: 0 !important;
+    height: 14px;
+    padding: 0 !important;
+}
+
+/* Round standalone cards on all four outer corners */
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-standalone-product-row td:first-child {
+    border-bottom-left-radius: 15px;
+    border-top-left-radius: 15px;
+}
+
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-standalone-product-row td:last-child {
+    border-bottom-right-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+/* Group header is its own faux row */
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-card-header td {
+    background: #dcdcdc !important;
+    border: 0 !important;
+    padding-bottom: 16px !important;
+    padding-top: 16px !important;
+}
+
+/* Round the top corners of grouped cards on the header row */
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-card-header td:first-child {
+    border-top-left-radius: 15px;
+}
+
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-card-header td:last-child {
+    border-top-right-radius: 15px;
+}
+
+/* Style the single group remove link like the normal Woo remove control */
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-card-header td.product-remove .remove {
+    color: #596457 !important;
+    display: inline-flex !important;
+    font-size: 0 !important;
+    font-weight: 400 !important;
+    height: 24px !important;
+    line-height: 1 !important;
+    width: 24px !important;
+}
+
+/* Darken the group remove icon on hover */
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-card-header td.product-remove .remove:hover {
+    color: #1f2a1f !important;
+}
+
+/* Give the group header cell breathing room */
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-card-header td.ad-materials-calc-group-card-header__content {
+    padding-left: 0 !important;
+    text-align: left !important;
+}
+
+/* Group header content now lives in its own table row */
+.woocommerce-cart .ad-materials-calc-group-header {
+    margin: 0;
+    text-align: left;
+}
+
+/* Main project title styling */
+.woocommerce-cart .ad-materials-calc-group-header__title {
+    color: #1d261d;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    line-height: 1.45;
+    max-width: 720px;
+    text-align: left;
+}
+
+/* Smaller subtitle beneath the project title */
+.woocommerce-cart .ad-materials-calc-group-header__meta {
+    color: #667267;
+    font-size: 12px;
+    line-height: 1.5;
+    margin-top: 7px;
+    text-align: left;
+}
+
+/* Indent grouped product content under the header row */
+.woocommerce-cart .ad-materials-calc-product-cell-inner--grouped {
+    padding-left: 18px;
+}
+
+/* Round the bottom corners of grouped cards on the last grouped row */
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-product-row-last td:first-child {
+    border-bottom-left-radius: 15px;
+}
+
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-product-row-last td:last-child {
+    border-bottom-right-radius: 15px;
+}
+
+/* Hide extra-options edit links for grouped products */
+.woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-product-row .tm-cart-edit-options {
+    display: none !important;
+}
+
+/* Keep the action row outside the card background styling */
+.woocommerce-cart .woocommerce-cart-form__contents tr.wd-cart-action-row td {
+    background: transparent !important;
+}
+
+@media (max-width: 767px) {
+
+    /* Slightly reduce the title size on mobile */
+    .woocommerce-cart .ad-materials-calc-group-header__title {
+        font-size: 14px;
+    }
+
+    /* Keep grouped rows only slightly indented on mobile */
+    .woocommerce-cart .ad-materials-calc-product-cell-inner--grouped {
+        padding-left: 10px;
+    }
+}
