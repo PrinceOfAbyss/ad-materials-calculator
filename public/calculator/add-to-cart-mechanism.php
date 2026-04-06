@@ -186,12 +186,13 @@ function ad_materials_calc_build_group_remove_url( $group_id ) {
  */
 function ad_materials_calc_build_group_remove_link_html( $group_id ) {
 
-    $remove_url = ad_materials_calc_build_group_remove_url( $group_id );
+    $remove_url  = ad_materials_calc_build_group_remove_url( $group_id );
+    $remove_text = esc_attr__( 'Remove group from the cart', 'ad-materials-calculator' );
 
     return sprintf(
-        '<a href="%1$s" class="remove ad-materials-calc-group-remove" aria-label="%2$s">&times;</a>',
+        '<a href="%1$s" class="remove ad-materials-calc-group-remove" aria-label="%2$s" title="%2$s">&times;</a>',
         esc_url( $remove_url ),
-        esc_attr__( 'Remove calculation group', 'ad-materials-calculator' )
+        $remove_text
     );
 }
 
@@ -608,7 +609,7 @@ function ad_materials_calc_block_group_quantity_updates( $passed, $cart_item_key
 }
 
 /**
- * Hide the default remove link for grouped calculator items
+ * Add remove-link titles and hide grouped item remove links
  */
 add_filter( 'woocommerce_cart_item_remove_link', 'ad_materials_calc_hide_grouped_item_remove_link', 10, 2 );
 function ad_materials_calc_hide_grouped_item_remove_link( $remove_link, $cart_item_key ) {
@@ -626,7 +627,12 @@ function ad_materials_calc_hide_grouped_item_remove_link( $remove_link, $cart_it
     $cart_item = $cart[$cart_item_key];
 
     if ( ! ad_materials_calc_is_grouped_cart_item( $cart_item ) ) {
-        return $remove_link;
+        return preg_replace(
+            '/<a\b(?![^>]*\btitle=)/',
+            '<a title="' . esc_attr__( 'Remove product from the cart', 'ad-materials-calculator' ) . '"',
+            $remove_link,
+            1
+        );
     }
 
     return '';
