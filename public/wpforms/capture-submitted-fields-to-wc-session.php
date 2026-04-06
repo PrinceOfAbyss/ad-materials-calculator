@@ -47,12 +47,18 @@ function ad_materials_calc_capture_answers( $fields, $entry, $form_data, $entry_
         $sheen_interior_floor = ad_materials_calc_get_entry_value( $entry_fields, 29 );
     }
 
+    $discount = ad_materials_calc_get_normalized_discount_from_entry_fields( $entry_fields );
+
     $answers = [
         'total_area_sqft'                     => $total_area,
         'surface_type'                        => $surface_type,
         'terrazzo_system'                     => $system,
         'pigment_color'                       => $pigment,
         'finish_color'                        => ad_materials_calc_get_entry_value( $entry_fields, 30 ),
+        'discount_type'                       => $discount['discount_type'],
+        'discount_label'                      => $discount['discount_label'],
+        'discount_value'                      => $discount['discount_value'],
+        'discount_allowed'                    => $discount['discount_allowed'],
 
         // Surface type option 1: Interior / Exterior Walls
         'substrate_type_wall'                 => ad_materials_calc_get_entry_value( $entry_fields, 3 ),
@@ -105,4 +111,61 @@ function ad_materials_calc_get_entry_value( $entry_fields, $field_id ) {
     }
 
     return is_string( $entry_fields[$field_id] ) ? trim( $entry_fields[$field_id] ) : (string) $entry_fields[$field_id];
+}
+
+function ad_materials_calc_current_user_can_use_discount() {
+
+    $allowed_user_ids = [
+        1,
+    ];
+
+    $user_id = get_current_user_id();
+
+    if ( ! $user_id ) {
+        return false;
+    }
+
+    return in_array( (int) $user_id, $allowed_user_ids, true );
+}
+
+function ad_materials_calc_get_normalized_discount_from_entry_fields( $entry_fields ) {
+
+    $result = [
+        'discount_type'    => 'none',
+        'discount_label'   => 'No discount',
+        'discount_value'   => 0.0,
+        'discount_allowed' => ad_materials_calc_current_user_can_use_discount(),
+    ];
+
+    if ( ! $result['discount_allowed'] ) {
+        return $result;
+    }
+
+    $discount_type = strtolower( ad_materials_calc_get_entry_value( $entry_fields, 35 ) );
+
+    if ( strpos( $discount_type, 'percentage' ) !== false ) {
+        $value = (float) wc_format_decimal( ad_materials_calc_get_entry_value( $entry_fields, 37 ), 2 );
+        $value = max( 0, min( 100, $value ) );
+
+        return [
+            'discount_type'    => 'percentage',
+            'discount_label'   => 'Percentage discount',
+            'discount_value'   => $value,
+            'discount_allowed' => true,
+        ];
+    }
+
+    if ( strpos( $discount_type, 'fixed' ) !== false ) {
+        $value = (float) wc_format_decimal( ad_materials_calc_get_entry_value( $entry_fields, 38 ), wc_get_price_decimals() );
+        $value = max( 0, $value );
+
+        return [
+            'discount_type'    => 'fixed',
+            'discount_label'   => 'Fixed discount',
+            'discount_value'   => $value,
+            'discount_allowed' => true,
+        ];
+    }
+
+    return $result;
 }

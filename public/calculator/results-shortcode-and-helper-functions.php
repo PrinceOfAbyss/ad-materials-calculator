@@ -29,7 +29,7 @@ function ad_materials_calc_results_shortcode() {
     }
 
     $calc   = ad_materials_calc_get_calculation_from_answers( $answers );
-    $output = ad_materials_calc_render_calculation_result( $calc );
+    $output = ad_materials_calc_render_calculation_result( $calc, $answers );
 
     $output = '<pre>' . print_r( $answers, true ) . '</pre>' . $output;
 
@@ -105,7 +105,7 @@ function ad_materials_calc_get_calculation_from_answers( array $answers ) {
     return $calc;
 }
 
-function ad_materials_calc_render_calculation_result( array $calc ) {
+function ad_materials_calc_render_calculation_result( array $calc, array $answers = [] ) {
 
     if ( isset( $calc['error'] ) ) {
         $error_output = isset( $calc['clause'] ) && $calc['clause'] !== '' ? esc_html( $calc['clause'] ) . '<br>' . esc_html( $calc['error'] ) : esc_html( $calc['error'] );
@@ -117,7 +117,10 @@ function ad_materials_calc_render_calculation_result( array $calc ) {
     $html .= '<div style="margin-bottom:14px;">';
     $html .= '<strong>Matched clause:</strong><br>' . esc_html( isset( $calc['clause'] ) ? $calc['clause'] : '' );
     $html .= '</div>';
-    $html .= ad_materials_calc_render_results_table( isset( $calc['items'] ) && is_array( $calc['items'] ) ? $calc['items'] : [] );
+    $html .= ad_materials_calc_render_results_table(
+        isset( $calc['items'] ) && is_array( $calc['items'] ) ? $calc['items'] : [],
+        $answers
+    );
 
     if ( ! empty( $calc['notice'] ) ) {
         $html .= '<div style="margin-top:16px;padding:12px;border:1px solid #ddd;border-radius:4px;background:#fafafa;">';
@@ -162,14 +165,73 @@ function ad_materials_calc_build_cart_payload_from_calc( array $calc, array $ans
         return [];
     }
 
+    $subtotal      = ad_materials_calc_get_items_subtotal( $calc['items'] );
+    $discount_data = ad_materials_calc_get_effective_discount_data( $answers, $subtotal );
+
     return [
-        'surface_type'  => isset( $calc['surface_type'] ) ? (string) $calc['surface_type'] : ( isset( $answers['surface_type'] ) ? (string) $answers['surface_type'] : '' ),
-        'system_label'  => isset( $answers['terrazzo_system'] ) ? (string) $answers['terrazzo_system'] : '',
-        'project_title' => ad_materials_calc_build_project_title_from_answers( $answers ),
-        'project_meta'  => ad_materials_calc_build_project_meta_from_answers( $answers ),
-        'area_sqft'     => isset( $answers['total_area_sqft'] ) ? (float) $answers['total_area_sqft'] : 0,
-        'items'         => $payload_items,
+        'surface_type'             => isset( $calc['surface_type'] ) ? (string) $calc['surface_type'] : ( isset( $answers['surface_type'] ) ? (string) $answers['surface_type'] : '' ),
+        'system_label'             => isset( $answers['terrazzo_system'] ) ? (string) $answers['terrazzo_system'] : '',
+        'project_title'            => ad_materials_calc_build_project_title_from_answers( $answers ),
+        'project_meta'             => ad_materials_calc_build_project_meta_from_answers( $answers ),
+        'area_sqft'                => isset( $answers['total_area_sqft'] ) ? (float) $answers['total_area_sqft'] : 0,
+        'discount_type'            => $discount_data['type'],
+        'discount_label'           => $discount_data['label'],
+        'discount_requested_value' => $discount_data['requested_value'],
+        'discount_applied_value'   => $discount_data['applied_value'],
+        'subtotal_before_discount' => $discount_data['subtotal_before_discount'],
+        'final_total'              => $discount_data['final_total'],
+        'items'                    => $payload_items,
     ];
+}
+
+function ad_materials_calc_get_items_subtotal( array $items ) {
+
+    $subtotal = 0.0;
+
+    foreach ( $items as $item ) {
+        $subtotal += isset( $item['partial'] ) ? (float) $item['partial'] : 0;
+    }
+
+    return max( 0, $subtotal );
+}
+
+function ad_materials_calc_get_effective_discount_data( array $answers, $subtotal ) {
+
+    $subtotal = max( 0, (float) $subtotal );
+    $result   = [
+        'type'                     => isset( $answers['discount_type'] ) ? (string) $answers['discount_type'] : 'none',
+        'label'                    => isset( $answers['discount_label'] ) ? (string) $answers['discount_label'] : 'No discount',
+        'requested_value'          => isset( $answers['discount_value'] ) ? (float) $answers['discount_value'] : 0.0,
+        'applied_value'            => 0.0,
+        'subtotal_before_discount' => $subtotal,
+        'final_total'              => $subtotal,
+    ];
+
+    if ( empty( $answers['discount_allowed'] ) ) {
+        return $result;
+    }
+
+    if ( $result['type'] === 'percentage' ) {
+        $requested = max( 0, min( 100, $result['requested_value'] ) );
+
+        $result['requested_value'] = $requested;
+        $result['applied_value']   = round( $subtotal * ( $requested / 100 ), wc_get_price_decimals() );
+        $result['final_total']     = max( 0, $subtotal - $result['applied_value'] );
+
+        return $result;
+    }
+
+    if ( $result['type'] === 'fixed' ) {
+        $requested = max( 0, (float) wc_format_decimal( $result['requested_value'], wc_get_price_decimals() ) );
+
+        $result['requested_value'] = $requested;
+        $result['applied_value']   = min( $requested, $subtotal );
+        $result['final_total']     = max( 0, $subtotal - $result['applied_value'] );
+
+        return $result;
+    }
+
+    return $result;
 }
 
 function ad_materials_calc_build_cart_payload_from_answers( array $answers ) {
@@ -366,13 +428,14 @@ function ad_materials_calc_format_fraction_debug( $numerator, $denominator ) {
 /**
  * Product and table helpers
  */
-function ad_materials_calc_render_results_table( array $items ) {
+function ad_materials_calc_render_results_table( array $items, array $answers = [] ) {
 
     if ( empty( $items ) ) {
         return '<div>No products were calculated.</div>';
     }
 
-    $total = 0;
+    $subtotal      = ad_materials_calc_get_items_subtotal( $items );
+    $discount_data = ad_materials_calc_get_effective_discount_data( $answers, $subtotal );
 
     $html = '<table class="shop_table shop_table_responsive shop-table-with-img cart woocommerce-cart-form__contents" cellspacing="0">';
     $html .= '<thead>';
@@ -387,8 +450,6 @@ function ad_materials_calc_render_results_table( array $items ) {
     $html .= '<tbody>';
 
     foreach ( $items as $item ) {
-        $total += (float) $item['partial'];
-
         $product_name_html = esc_html( $item['name'] );
 
         if ( ! empty( $item['url'] ) ) {
@@ -422,8 +483,30 @@ function ad_materials_calc_render_results_table( array $items ) {
     }
 
     $html .= '<tr class="wd-cart-action-row">';
+    $html .= '<td colspan="4" style="text-align:right;"><strong>Subtotal</strong></td>';
+    $html .= '<td class="product-subtotal"><strong>' . wp_kses_post( wc_price( $subtotal ) ) . '</strong></td>';
+    $html .= '</tr>';
+
+    if ( $discount_data['applied_value'] > 0 ) {
+        $discount_row_label = $discount_data['label'];
+
+        if ( $discount_data['type'] === 'percentage' && $discount_data['requested_value'] > 0 ) {
+            $discount_row_label = sprintf(
+                '%s (%s%%)',
+                $discount_data['label'],
+                rtrim( rtrim( number_format( $discount_data['requested_value'], 2, '.', '' ), '0' ), '.' )
+            );
+        }
+
+        $html .= '<tr class="wd-cart-action-row">';
+        $html .= '<td colspan="4" class="ad-materials-calc-results-discount-label" style="text-align:right;"><strong>' . esc_html( $discount_row_label ) . '</strong></td>';
+        $html .= '<td class="product-subtotal ad-materials-calc-results-discount-value"><strong>-' . wp_kses_post( wc_price( $discount_data['applied_value'] ) ) . '</strong></td>';
+        $html .= '</tr>';
+    }
+
+    $html .= '<tr class="wd-cart-action-row">';
     $html .= '<td colspan="4" style="text-align:right;"><strong>Total</strong></td>';
-    $html .= '<td class="product-subtotal"><strong>' . wp_kses_post( wc_price( $total ) ) . '</strong></td>';
+    $html .= '<td class="product-subtotal"><strong>' . wp_kses_post( wc_price( $discount_data['final_total'] ) ) . '</strong></td>';
     $html .= '</tr>';
 
     $html .= '</tbody>';

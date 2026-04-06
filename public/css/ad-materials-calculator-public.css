@@ -175,6 +175,17 @@ span.wpforms-image-choices-image img {
     text-align: left;
 }
 
+/* Highlight the group discount beneath the regular meta */
+.woocommerce-cart .ad-materials-calc-group-header__discount {
+    color: #b42318;
+    display: inline;
+}
+
+/* Keep calculator discount rows visually consistent */
+.materials-calc-results .ad-materials-calc-results-discount-label {
+    color: #b42318;
+}
+
 /* Indent grouped product content under the header row */
 .woocommerce-cart .ad-materials-calc-product-cell-inner--grouped {
     padding-left: 18px;

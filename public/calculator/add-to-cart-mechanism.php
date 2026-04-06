@@ -118,6 +118,56 @@ function ad_materials_calc_get_group_label_from_cart_item( array $cart_item ) {
     return ! empty( $cart_item['ad_materials_calc_group_label'] ) ? (string) $cart_item['ad_materials_calc_group_label'] : '';
 }
 
+function ad_materials_calc_get_group_discount_type_from_cart_item( array $cart_item ) {
+
+    return ! empty( $cart_item['ad_materials_calc_discount_type'] ) ? (string) $cart_item['ad_materials_calc_discount_type'] : 'none';
+}
+
+function ad_materials_calc_get_group_discount_label_from_cart_item( array $cart_item ) {
+
+    return ! empty( $cart_item['ad_materials_calc_discount_label'] ) ? (string) $cart_item['ad_materials_calc_discount_label'] : '';
+}
+
+function ad_materials_calc_get_group_discount_requested_value_from_cart_item( array $cart_item ) {
+
+    return isset( $cart_item['ad_materials_calc_discount_requested_value'] ) ? (float) $cart_item['ad_materials_calc_discount_requested_value'] : 0.0;
+}
+
+function ad_materials_calc_get_group_discount_applied_value_from_cart_item( array $cart_item ) {
+
+    return isset( $cart_item['ad_materials_calc_discount_applied_value'] ) ? (float) $cart_item['ad_materials_calc_discount_applied_value'] : 0.0;
+}
+
+function ad_materials_calc_get_group_discount_html_from_cart_item( array $cart_item ) {
+
+    $discount_type   = ad_materials_calc_get_group_discount_type_from_cart_item( $cart_item );
+    $discount_label  = ad_materials_calc_get_group_discount_label_from_cart_item( $cart_item );
+    $requested_value = ad_materials_calc_get_group_discount_requested_value_from_cart_item( $cart_item );
+    $applied_value   = ad_materials_calc_get_group_discount_applied_value_from_cart_item( $cart_item );
+
+    if ( $discount_type === 'percentage' && $requested_value > 0 ) {
+        return esc_html(
+            sprintf(
+                '%s: %s%%',
+                $discount_label !== '' ? $discount_label : __( 'Discount', 'ad-materials-calculator' ),
+                rtrim( rtrim( number_format( $requested_value, 2, '.', '' ), '0' ), '.' )
+            )
+        );
+    }
+
+    if ( $discount_type === 'fixed' && $applied_value > 0 ) {
+        return esc_html(
+            sprintf(
+                '%s: %s',
+                $discount_label !== '' ? $discount_label : __( 'Discount', 'ad-materials-calculator' ),
+                wp_strip_all_tags( wc_price( $applied_value ) )
+            )
+        );
+    }
+
+    return '';
+}
+
 /**
  * Check whether a cart item belongs to a calculator group
  */
@@ -444,10 +494,16 @@ function ad_materials_calc_handle_add_group_to_cart() {
             }
 
             $cart_item_data = [
-                'ad_materials_calc_group_id'    => $group_id,
-                'ad_materials_calc_group_label' => $group_label,
-                'ad_materials_calc_group_title' => ! empty( $payload['project_title'] ) ? (string) $payload['project_title'] : $group_label,
-                'ad_materials_calc_grouped'     => 1,
+                'ad_materials_calc_group_id'                 => $group_id,
+                'ad_materials_calc_group_label'              => $group_label,
+                'ad_materials_calc_group_title'              => ! empty( $payload['project_title'] ) ? (string) $payload['project_title'] : $group_label,
+                'ad_materials_calc_grouped'                  => 1,
+                'ad_materials_calc_discount_type'            => isset( $payload['discount_type'] ) ? (string) $payload['discount_type'] : 'none',
+                'ad_materials_calc_discount_label'           => isset( $payload['discount_label'] ) ? (string) $payload['discount_label'] : '',
+                'ad_materials_calc_discount_requested_value' => isset( $payload['discount_requested_value'] ) ? (float) $payload['discount_requested_value'] : 0.0,
+                'ad_materials_calc_discount_applied_value'   => isset( $payload['discount_applied_value'] ) ? (float) $payload['discount_applied_value'] : 0.0,
+                'ad_materials_calc_subtotal_before_discount' => isset( $payload['subtotal_before_discount'] ) ? (float) $payload['subtotal_before_discount'] : 0.0,
+                'ad_materials_calc_final_total'              => isset( $payload['final_total'] ) ? (float) $payload['final_total'] : 0.0,
             ];
 
             if ( $product->is_type( 'variation' ) ) {
@@ -636,4 +692,74 @@ function ad_materials_calc_hide_grouped_item_remove_link( $remove_link, $cart_it
     }
 
     return '';
+}
+
+add_action( 'woocommerce_cart_calculate_fees', 'ad_materials_calc_apply_group_discount_fees', 20 );
+function ad_materials_calc_apply_group_discount_fees( $cart ) {
+
+    if ( is_admin() && ! wp_doing_ajax() ) {
+        return;
+    }
+
+    if ( ! $cart || ! is_object( $cart ) ) {
+        return;
+    }
+
+    $seen_groups    = [];
+    $discount_total = 0.0;
+
+    foreach ( $cart->get_cart() as $cart_item ) {
+        $group_id = ad_materials_calc_get_group_id_from_cart_item( $cart_item );
+
+        if ( $group_id === '' || isset( $seen_groups[$group_id] ) ) {
+            continue;
+        }
+
+        $seen_groups[$group_id] = true;
+        $discount_total += max( 0, ad_materials_calc_get_group_discount_applied_value_from_cart_item( $cart_item ) );
+    }
+
+    if ( $discount_total <= 0 ) {
+        return;
+    }
+
+    $cart->add_fee( __( 'Calculator discount', 'ad-materials-calculator' ), -$discount_total, false );
+}
+
+add_action( 'woocommerce_checkout_create_order', 'ad_materials_calc_add_group_discount_order_meta', 20, 2 );
+function ad_materials_calc_add_group_discount_order_meta( $order, $data ) {
+
+    if ( ! function_exists( 'WC' ) || ! WC() || ! WC()->cart ) {
+        return;
+    }
+
+    $groups      = [];
+    $seen_groups = [];
+
+    foreach ( WC()->cart->get_cart() as $cart_item ) {
+        $group_id = ad_materials_calc_get_group_id_from_cart_item( $cart_item );
+
+        if ( $group_id === '' || isset( $seen_groups[$group_id] ) ) {
+            continue;
+        }
+
+        $seen_groups[$group_id] = true;
+
+        $groups[] = [
+            'group_id'                 => $group_id,
+            'group_title'              => ad_materials_calc_get_group_title_from_cart_item( $cart_item ),
+            'discount_type'            => ad_materials_calc_get_group_discount_type_from_cart_item( $cart_item ),
+            'discount_label'           => ad_materials_calc_get_group_discount_label_from_cart_item( $cart_item ),
+            'discount_requested_value' => ad_materials_calc_get_group_discount_requested_value_from_cart_item( $cart_item ),
+            'discount_applied_value'   => ad_materials_calc_get_group_discount_applied_value_from_cart_item( $cart_item ),
+            'subtotal_before_discount' => isset( $cart_item['ad_materials_calc_subtotal_before_discount'] ) ? (float) $cart_item['ad_materials_calc_subtotal_before_discount'] : 0.0,
+            'final_total'              => isset( $cart_item['ad_materials_calc_final_total'] ) ? (float) $cart_item['ad_materials_calc_final_total'] : 0.0,
+        ];
+    }
+
+    if ( empty( $groups ) ) {
+        return;
+    }
+
+    $order->update_meta_data( '_ad_materials_calc_groups', $groups );
 }

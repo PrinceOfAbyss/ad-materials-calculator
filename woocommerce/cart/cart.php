@@ -80,8 +80,9 @@ if ( woodmart_get_opt( 'update_cart_quantity_change' ) ) {
 						}
 
 						if ( $is_group_first ) {
-							$group_title = function_exists( 'ad_materials_calc_get_group_title_from_cart_item' ) ? ad_materials_calc_get_group_title_from_cart_item( $cart_item ) : '';
-							$group_label = function_exists( 'ad_materials_calc_get_group_label_from_cart_item' ) ? ad_materials_calc_get_group_label_from_cart_item( $cart_item ) : '';
+							$group_title    = function_exists( 'ad_materials_calc_get_group_title_from_cart_item' ) ? ad_materials_calc_get_group_title_from_cart_item( $cart_item ) : '';
+							$group_label    = function_exists( 'ad_materials_calc_get_group_label_from_cart_item' ) ? ad_materials_calc_get_group_label_from_cart_item( $cart_item ) : '';
+							$group_discount = function_exists( 'ad_materials_calc_get_group_discount_html_from_cart_item' ) ? ad_materials_calc_get_group_discount_html_from_cart_item( $cart_item ) : '';
 
 							if ( $group_title === '' ) {
 								$group_title = esc_html__( 'Calculated materials group', 'ad-materials-calculator' );
@@ -98,8 +99,18 @@ if ( woodmart_get_opt( 'update_cart_quantity_change' ) ) {
 						<td colspan="5" class="ad-materials-calc-group-card-header__content">
 							<div class="ad-materials-calc-group-header">
 								<div class="ad-materials-calc-group-header__title"><?php echo esc_html( $group_title ); ?></div>
-								<?php if ( $group_label !== '' && $group_label !== $group_title ) {?>
-								<div class="ad-materials-calc-group-header__meta"><?php echo wp_kses( $group_label, ['br' => []] ); ?></div>
+								<?php if ( ( $group_label !== '' && $group_label !== $group_title ) || $group_discount !== '' ) {?>
+								<div class="ad-materials-calc-group-header__meta">
+									<?php if ( $group_label !== '' && $group_label !== $group_title ) {?>
+									<?php echo wp_kses( $group_label, ['br' => []] ); ?>
+									<?php }?>
+									<?php if ( $group_discount !== '' ) {?>
+									<?php if ( $group_label !== '' && $group_label !== $group_title ) {?>
+									<br>
+									<?php }?>
+									<span class="ad-materials-calc-group-header__discount"><?php echo $group_discount; ?></span>
+									<?php }?>
+								</div>
 								<?php }?>
 							</div>
 						</td>
