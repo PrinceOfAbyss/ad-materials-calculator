@@ -42,3 +42,16 @@ span.wpforms-image-choices-image img {
 #wpforms-form-11307 input[type="number"] {
     text-align: left !important;
 }
+
+.ad-mc-disclaimer {
+    margin-top: -20px !important;
+}
+
+.ad-mc-disclaimer-prefix {
+    color: #c62828;
+    font-weight: 600;
+}
+
+.ad-mc-disclaimer-text {
+    color: #444;
+}
