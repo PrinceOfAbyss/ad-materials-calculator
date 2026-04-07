@@ -32,11 +32,18 @@ function ad_materials_calc_render_add_to_cart_block( array $answers, array $calc
         return '';
     }
 
+    $payload_signature = ad_materials_calc_sign_cart_payload( $encoded_payload );
+
+    if ( $payload_signature === '' ) {
+        return '';
+    }
+
     $html = '<div class="materials-calc-add-to-cart" style="margin-top:20px;">';
     $html .= '<form method="post">';
     $html .= wp_nonce_field( 'ad_materials_calc_add_group_to_cart', 'ad_materials_calc_add_group_nonce', true, false );
     $html .= '<input type="hidden" name="ad_materials_calc_action" value="add_group_to_cart">';
     $html .= '<input type="hidden" name="ad_materials_calc_payload" value="' . esc_attr( $encoded_payload ) . '">';
+    $html .= '<input type="hidden" name="ad_materials_calc_payload_signature" value="' . esc_attr( $payload_signature ) . '">';
     $html .= '<button type="submit" class="single_add_to_cart_button button alt">';
     $html .= esc_html__( 'Add all to cart', 'ad-materials-calculator' );
     $html .= '</button>';
@@ -80,6 +87,29 @@ function ad_materials_calc_decode_cart_payload( $encoded_payload ) {
     $payload = json_decode( $json, true );
 
     return is_array( $payload ) ? $payload : [];
+}
+
+function ad_materials_calc_sign_cart_payload( $encoded_payload ) {
+
+    $encoded_payload = is_string( $encoded_payload ) ? trim( $encoded_payload ) : '';
+
+    if ( $encoded_payload === '' ) {
+        return '';
+    }
+
+    return hash_hmac( 'sha256', $encoded_payload, wp_salt( 'ad_materials_calc_payload' ) );
+}
+
+function ad_materials_calc_is_valid_cart_payload_signature( $encoded_payload, $signature ) {
+
+    $signature = is_string( $signature ) ? trim( $signature ) : '';
+    $expected  = ad_materials_calc_sign_cart_payload( $encoded_payload );
+
+    if ( $signature === '' || $expected === '' ) {
+        return false;
+    }
+
+    return hash_equals( $expected, $signature );
 }
 
 /**
@@ -463,8 +493,16 @@ function ad_materials_calc_handle_add_group_to_cart() {
         return;
     }
 
-    $encoded_payload = isset( $_POST['ad_materials_calc_payload'] ) ? wp_unslash( $_POST['ad_materials_calc_payload'] ) : '';
-    $payload         = ad_materials_calc_decode_cart_payload( $encoded_payload );
+    $encoded_payload   = isset( $_POST['ad_materials_calc_payload'] ) ? wp_unslash( $_POST['ad_materials_calc_payload'] ) : '';
+    $payload_signature = isset( $_POST['ad_materials_calc_payload_signature'] ) ? wp_unslash( $_POST['ad_materials_calc_payload_signature'] ) : '';
+
+    if ( ! ad_materials_calc_is_valid_cart_payload_signature( $encoded_payload, $payload_signature ) ) {
+        wc_add_notice( __( 'We could not validate the calculated materials. Please calculate again and try once more.', 'ad-materials-calculator' ), 'error' );
+        wp_safe_redirect( wc_get_cart_url() );
+        exit;
+    }
+
+    $payload = ad_materials_calc_decode_cart_payload( $encoded_payload );
 
     if ( empty( $payload ) || empty( $payload['items'] ) || ! is_array( $payload['items'] ) ) {
         wc_add_notice( __( 'We could not add the calculated materials to the cart. Please calculate again and try once more.', 'ad-materials-calculator' ), 'error' );
