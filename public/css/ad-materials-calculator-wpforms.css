@@ -2,7 +2,7 @@
  * WPForms-specific public styles for the materials calculator
  */
 
-div.wpforms-container-full .wpforms-field.wpforms-field-radio ul {
+div.wpforms-container-full .wpforms-field.wpforms-field-radio ul.wpforms-image-choices-modern {
     gap: 0;
 }
 
