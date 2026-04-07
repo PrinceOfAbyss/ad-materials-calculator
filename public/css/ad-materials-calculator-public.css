@@ -3,6 +3,13 @@
  * included in this file.
  */
 
+/* Right-align numeric columns in the calculator results table */
+.materials-calc-results table .product-price,
+.materials-calc-results table .product-quantity,
+.materials-calc-results table .product-subtotal {
+    text-align: right;
+}
+
 /* Base card background and remove default row borders */
 .woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-standalone-product-row td,
 .woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-product-row td {
