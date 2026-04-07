@@ -97,6 +97,7 @@ class Ad_Materials_Calculator_Public {
 		 */
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ad-materials-calculator-public.css', array(), $this->version, 'all' );
+		wp_enqueue_style( $this->plugin_name . '-wpforms', plugin_dir_url( __FILE__ ) . 'css/ad-materials-calculator-wpforms.css', array( 'wpforms-modern-full' ), $this->version, 'all' );
 
 	}
 

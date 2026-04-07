@@ -1,0 +1,44 @@
+/**
+ * WPForms-specific public styles for the materials calculator
+ */
+
+div.wpforms-container-full .wpforms-field.wpforms-field-radio ul {
+    gap: 0;
+}
+
+.wpforms-container .wpforms-list-inline .wpforms-image-choices-modern li {
+    margin: 0 !important;
+}
+
+div.wpforms-container-full .wpforms-form ul.wpforms-image-choices-modern .wpforms-image-choices-item label .wpforms-image-choices-label {
+    font-size: 12px !important;
+    margin-top: 5px;
+    max-width: var(--ad-wpforms-pigment-color-tiles);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: var(--ad-label-lh);
+    min-height: calc(2 * var(--ad-label-lh) * 1em);
+}
+
+.wpforms-container .wpforms-image-choices-modern label:not(.wpforms-error) {
+    padding: 5px;
+}
+
+span.wpforms-image-choices-image {
+    width: var(--ad-wpforms-pigment-color-tiles);
+}
+
+span.wpforms-image-choices-image img {
+    border: 0.5px solid #ccc;
+}
+
+#wpforms-11307 {
+    --wpforms-button-background-color: #3e9e86;
+    --ad-wpforms-pigment-color-tiles: 80px;
+    --ad-label-lh: 1.15;
+}
+
+#wpforms-form-11307 input[type="number"] {
+    text-align: left !important;
+}
