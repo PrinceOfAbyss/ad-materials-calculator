@@ -47,6 +47,13 @@ function ad_materials_calc_capture_answers( $fields, $entry, $form_data, $entry_
         $sheen_interior_floor = ad_materials_calc_get_entry_value( $entry_fields, 29 );
     }
 
+    // Wet Area Walls usage level: Drop-down field (#9) or "locked" single-line text field (#39)
+    $usage_level_wet_area = ad_materials_calc_get_entry_value( $entry_fields, 9 );
+
+    if ( $usage_level_wet_area === '' ) {
+        $usage_level_wet_area = ad_materials_calc_get_entry_value( $entry_fields, 39 );
+    }
+
     $discount = ad_materials_calc_get_normalized_discount_from_entry_fields( $entry_fields );
 
     $answers = [
@@ -69,7 +76,7 @@ function ad_materials_calc_capture_answers( $fields, $entry, $form_data, $entry_
         'existing_tile_wet_area'              => ad_materials_calc_get_entry_value( $entry_fields, 6 ),
         'tile_joint_condition_wet_area'       => ad_materials_calc_get_entry_value( $entry_fields, 7 ),
         'sheen_wet_area'                      => ad_materials_calc_get_entry_value( $entry_fields, 8 ),
-        'usage_level_wet_area'                => ad_materials_calc_get_entry_value( $entry_fields, 9 ),
+        'usage_level_wet_area'                => $usage_level_wet_area,
 
         // Surface type option 3: Interior Floor
         'existing_tile_interior_floor'        => ad_materials_calc_get_entry_value( $entry_fields, 10 ),
