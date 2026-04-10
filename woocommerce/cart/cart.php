@@ -102,7 +102,7 @@ if ( woodmart_get_opt( 'update_cart_quantity_change' ) ) {
 								<?php if ( ( $group_label !== '' && $group_label !== $group_title ) || $group_discount !== '' ) {?>
 								<div class="ad-materials-calc-group-header__meta">
 									<?php if ( $group_label !== '' && $group_label !== $group_title ) {?>
-									<?php echo wp_kses( $group_label, ['br' => []] ); ?>
+									<?php echo wp_kses( $group_label, ['br' => [], 'span' => ['class' => []]] ); ?>
 									<?php }?>
 									<?php if ( $group_discount !== '' ) {?>
 									<?php if ( $group_label !== '' && $group_label !== $group_title ) {?>

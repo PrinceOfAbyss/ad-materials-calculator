@@ -21,12 +21,8 @@ function ad_materials_calc_capture_answers( $fields, $entry, $form_data, $entry_
     $total_area   = (float) ad_materials_calc_get_entry_value( $entry_fields, 1 );
     $surface_type = ad_materials_calc_get_entry_value( $entry_fields, 2 );
 
-    // System: Drop-down field (#16) or "locked" single-line text field (#28)
+    // System: Drop-down field (#16)
     $system = ad_materials_calc_get_entry_value( $entry_fields, 16 );
-
-    if ( $system === '' ) {
-        $system = ad_materials_calc_get_entry_value( $entry_fields, 28 );
-    }
 
     // Pigment: Medium (#23) or Fine (#24) – whichever is filled
     $pigment_medium = ad_materials_calc_get_entry_value( $entry_fields, 23 );

@@ -152,6 +152,29 @@
     color: #b42318;
 }
 
+/* Joint filler note below the calculator results table */
+.materials-calc-results .ad-materials-calc-results-note {
+    color: #444;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 12px;
+}
+
+.materials-calc-results .ad-materials-calc-results-note__prefix {
+    color: var(--wd-primary-color);
+    font-weight: 600;
+}
+
+.materials-calc-results .ad-materials-calc-results-note__text {
+    color: inherit;
+}
+
+/* Joint filler note inside grouped cart/order metadata */
+.woocommerce-cart .ad-materials-calc-group-header__joint-filler-note {
+    color: #667267;
+    display: inline;
+}
+
 /* Indent grouped product content under the header row */
 .woocommerce-cart .ad-materials-calc-product-cell-inner--grouped {
     padding-left: 18px;
