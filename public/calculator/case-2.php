@@ -43,7 +43,7 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
         return ['error' => 'Case 2 error: Unknown "Sheen" value: ' . $sheen];
     }
 
-    if ( $usage !== 'Standard Duty' && $usage !== 'Max Duty' ) {
+    if ( $usage !== 'Minimal Duty' && $usage !== 'Standard Duty' && $usage !== 'Max Duty' ) {
         return ['error' => 'Case 2 error: Unknown "Usage Level" value: ' . $usage];
     }
 
@@ -59,6 +59,8 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
         $code = 'satin_max';
     } elseif ( $sheen === 'Satin' && $usage === 'Standard Duty' ) {
         $code = 'satin_standard';
+    } elseif ( $sheen === 'Satin' && $usage === 'Minimal Duty' ) {
+        $code = 'satin_minimal';
     }
 
     if ( $code === '' ) {
@@ -77,6 +79,8 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
         $clause = 'Satin - (Max Duty, 3× Coats): Excel reference is row 138-144';
     } elseif ( $code === 'satin_standard' ) {
         $clause = 'Satin - (Standard Duty, 2× Coats): Excel reference is row 114-120';
+    } elseif ( $code === 'satin_minimal' ) {
+        $clause = 'Satin - (Minimal Duty, 1× Coat)';
     }
 
     $tile_joint_factor = 0;
@@ -534,6 +538,8 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
         } elseif ( $code === 'satin_max' ) {
             $satin_components = [0.441];
         } elseif ( $code === 'satin_standard' ) {
+            $satin_components = [0.341];
+        } elseif ( $code === 'satin_minimal' ) {
             $satin_components = [0.197];
         }
     }
@@ -548,8 +554,10 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
         } elseif ( $code === 'matte_single_standard' ) {
             $matte_components = [0.200];
         } elseif ( $code === 'satin_max' ) {
-            $satin_components = [0.120];
+            $satin_components = [0.180];
         } elseif ( $code === 'satin_standard' ) {
+            $satin_components = [0.120];
+        } elseif ( $code === 'satin_minimal' ) {
             $satin_components = [0.060];
         }
     }
