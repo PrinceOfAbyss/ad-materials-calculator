@@ -117,6 +117,11 @@ class Ad_Materials_Calculator {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-ad-materials-calculator-admin.php';
 
 		/**
+		 * The class responsible for defining the WooCommerce settings UI.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-ad-materials-calculator-settings.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
@@ -153,9 +158,13 @@ class Ad_Materials_Calculator {
 	private function define_admin_hooks() {
 
 		$plugin_admin = new Ad_Materials_Calculator_Admin( $this->get_plugin_name(), $this->get_version() );
+		$plugin_settings = new Ad_Materials_Calculator_Settings( $this->get_plugin_name(), $this->get_version() );
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		$this->loader->add_filter( 'woocommerce_settings_tabs_array', $plugin_settings, 'add_woocommerce_settings_tab', 50 );
+		$this->loader->add_action( 'woocommerce_settings_tabs_materials-calculator', $plugin_settings, 'render_woocommerce_settings_tab' );
+		$this->loader->add_action( 'woocommerce_update_options_materials-calculator', $plugin_settings, 'save_woocommerce_settings_tab' );
 
 	}
 

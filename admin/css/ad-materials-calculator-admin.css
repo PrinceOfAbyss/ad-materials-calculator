@@ -1,4 +1,129 @@
 /**
- * All of the CSS for your admin-specific functionality should be
- * included in this file.
+ * Admin styles for the Materials Calculator settings UI.
  */
+
+.ad-mc-settings-page {
+    margin-top: 24px;
+    max-width: 1240px;
+}
+
+.ad-mc-settings-page .ad-mc-settings-intro {
+    color: #50575e;
+    font-size: 14px;
+    margin-bottom: 24px;
+    max-width: 980px;
+}
+
+.ad-mc-settings-page .ad-mc-settings-case {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+
+.ad-mc-settings-page .ad-mc-settings-case:first-of-type {
+    margin-top: 12px;
+}
+
+.ad-mc-settings-page .ad-mc-settings-case__header {
+    background: #f6f7f7;
+    border-bottom: 1px solid #dcdcde;
+    padding: 18px 24px;
+}
+
+.ad-mc-settings-page .ad-mc-settings-case__header h3 {
+    margin: 0 0 6px;
+}
+
+.ad-mc-settings-page .ad-mc-settings-case__header p {
+    color: #50575e;
+    margin: 0;
+}
+
+.ad-mc-settings-page .ad-mc-settings-clause {
+    padding: 18px 24px 24px;
+}
+
+.ad-mc-settings-page .ad-mc-settings-clause+.ad-mc-settings-clause {
+    border-top: 1px solid #f0f0f1;
+}
+
+.ad-mc-settings-page .ad-mc-settings-clause__heading {
+    margin-bottom: 14px;
+}
+
+.ad-mc-settings-page .ad-mc-settings-clause__heading h4 {
+    margin: 0 0 4px;
+}
+
+.ad-mc-settings-page .ad-mc-settings-clause__heading p {
+    color: #646970;
+    margin: 0;
+}
+
+.ad-mc-settings-page .ad-mc-settings-table {
+    border-collapse: collapse;
+}
+
+.ad-mc-settings-page .ad-mc-settings-table th {
+    font-weight: 600;
+}
+
+.ad-mc-settings-page .ad-mc-settings-table td,
+.ad-mc-settings-page .ad-mc-settings-table th {
+    padding: 12px 14px;
+    vertical-align: top;
+}
+
+.ad-mc-settings-page .ad-mc-settings-table__label {
+    min-width: 280px;
+    width: 32%;
+}
+
+.ad-mc-settings-page .ad-mc-settings-table__material-name {
+    display: block;
+    font-weight: 600;
+}
+
+.ad-mc-settings-page .ad-mc-settings-table__material-hint {
+    color: #646970;
+    display: block;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.ad-mc-settings-page .ad-mc-settings-decimal {
+    min-width: 92px;
+    width: 100%;
+}
+
+@media (max-width: 782px) {
+    .ad-mc-settings-page .ad-mc-settings-clause {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .ad-mc-settings-page .ad-mc-settings-table,
+    .ad-mc-settings-page .ad-mc-settings-table tbody,
+    .ad-mc-settings-page .ad-mc-settings-table tr,
+    .ad-mc-settings-page .ad-mc-settings-table td,
+    .ad-mc-settings-page .ad-mc-settings-table th,
+    .ad-mc-settings-page .ad-mc-settings-table thead {
+        display: block;
+    }
+
+    .ad-mc-settings-page .ad-mc-settings-table thead {
+        display: none;
+    }
+
+    .ad-mc-settings-page .ad-mc-settings-table tr {
+        border: 1px solid #dcdcde;
+        margin-bottom: 12px;
+    }
+
+    .ad-mc-settings-page .ad-mc-settings-table td {
+        width: auto;
+    }
+}
