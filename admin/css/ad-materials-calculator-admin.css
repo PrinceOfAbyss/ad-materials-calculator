@@ -74,7 +74,7 @@
 .ad-mc-settings-page .ad-mc-settings-table td,
 .ad-mc-settings-page .ad-mc-settings-table th {
     padding: 12px 14px;
-    vertical-align: top;
+    vertical-align: middle;
 }
 
 .ad-mc-settings-page .ad-mc-settings-table__label {
@@ -97,6 +97,14 @@
 .ad-mc-settings-page .ad-mc-settings-decimal {
     min-width: 92px;
     width: 100%;
+}
+
+.ad-mc-settings-page .ad-mc-settings-table__sum {
+    color: #1d2327;
+    font-style: italic;
+    font-variant-numeric: tabular-nums;
+    font-weight: 400;
+    white-space: nowrap;
 }
 
 @media (max-width: 782px) {

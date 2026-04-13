@@ -118,6 +118,7 @@ class Ad_Materials_Calculator_Settings {
                 echo '<th>' . esc_html__( 'Coverage 1', 'ad-materials-calculator' ) . '</th>';
                 echo '<th>' . esc_html__( 'Coverage 2', 'ad-materials-calculator' ) . '</th>';
                 echo '<th>' . esc_html__( 'Coverage 3', 'ad-materials-calculator' ) . '</th>';
+                echo '<th>' . esc_html__( 'Total', 'ad-materials-calculator' ) . '</th>';
                 echo '</tr></thead>';
                 echo '<tbody>';
 
@@ -152,6 +153,7 @@ class Ad_Materials_Calculator_Settings {
                         echo '</td>';
                     }
 
+                    echo '<td class="ad-mc-settings-table__sum" data-row-sum>' . esc_html( $this->get_material_row_sum( $row_values ) ) . '</td>';
                     echo '</tr>';
                 }
 
@@ -242,6 +244,34 @@ class Ad_Materials_Calculator_Settings {
         }
 
         return $row_values;
+    }
+
+    /**
+     * Build the display value for the Total column of one material row.
+     *
+     * The total is shown when at least one coverage field is filled.
+     *
+     * @since    1.0.0
+     * @param    array $row_values Coverage row values.
+     * @return   string
+     */
+    private function get_material_row_sum( array $row_values ) {
+
+        $filled_values = [];
+
+        foreach ( $row_values as $value ) {
+            if ( $value === '' || $value === null ) {
+                continue;
+            }
+
+            $filled_values[] = (float) $value;
+        }
+
+        if ( empty( $filled_values ) ) {
+            return '';
+        }
+
+        return number_format( array_sum( $filled_values ), 3, '.', '' );
     }
 
     /**

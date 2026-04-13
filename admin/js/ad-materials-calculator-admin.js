@@ -29,4 +29,47 @@
 	 * practising this, we should strive to set a better example in our own work.
 	 */
 
+	function updateCoverageRowTotal($row) {
+		var total = 0;
+		var filledCount = 0;
+		var $sumCell = $row.find('[data-row-sum]');
+
+		$row.find('.ad-mc-settings-decimal').each(function () {
+			var rawValue = $(this).val();
+			var normalized = String(rawValue).replace(',', '.').trim();
+			var parsed;
+
+			if (normalized === '') {
+				return;
+			}
+
+			parsed = parseFloat(normalized);
+
+			if (Number.isNaN(parsed)) {
+				return;
+			}
+
+			total += parsed;
+			filledCount += 1;
+		});
+
+		if (filledCount === 0) {
+			$sumCell.text('');
+			return;
+		}
+
+		$sumCell.text(total.toFixed(3));
+	}
+
+	$(function () {
+		var $tables = $('.ad-mc-settings-table');
+
+		$tables.find('tbody tr').each(function () {
+			updateCoverageRowTotal($(this));
+		});
+
+		$tables.on('input change', '.ad-mc-settings-decimal', function () {
+			updateCoverageRowTotal($(this).closest('tr'));
+		});
+	});
 })( jQuery );
