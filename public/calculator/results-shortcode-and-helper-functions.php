@@ -1173,6 +1173,19 @@ function ad_materials_calc_get_saved_coverage_settings() {
     return $cached_settings;
 }
 
+function ad_materials_calc_get_wpforms_form_id() {
+
+    static $cached_form_id = null;
+
+    if ( null !== $cached_form_id ) {
+        return $cached_form_id;
+    }
+
+    $cached_form_id = absint( get_option( 'ad_materials_calculator_wpforms_form_id', 0 ) );
+
+    return $cached_form_id;
+}
+
 function ad_materials_calc_get_system_section_slug( $system_label ) {
 
     if ( 'Terrazzo Granitech Medium' === $system_label ) {

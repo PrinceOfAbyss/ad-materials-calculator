@@ -47,6 +47,15 @@ class Ad_Materials_Calculator_Settings {
     private $coverages_option_name = 'ad_materials_calculator_coverages_json';
 
     /**
+     * Option name used to persist the calculator WPForms form ID.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var      string
+     */
+    private $wpforms_form_id_option_name = 'ad_materials_calculator_wpforms_form_id';
+
+    /**
      * Initialize the class and set its properties.
      *
      * @since    1.0.0
@@ -164,6 +173,20 @@ class Ad_Materials_Calculator_Settings {
             echo '</section>';
         }
 
+        echo '<h2>' . esc_html__( 'WPForms Settings', 'ad-materials-calculator' ) . '</h2>';
+        echo '<table class="form-table" role="presentation"><tbody>';
+        echo '<tr>';
+        echo '<th scope="row"><label for="ad-materials-calculator-wpforms-form-id">' . esc_html__( 'Materials Calculator Form ID', 'ad-materials-calculator' ) . '</label></th>';
+        echo '<td>';
+        printf(
+            '<input type="number" min="1" step="1" class="small-text" id="ad-materials-calculator-wpforms-form-id" name="ad_materials_calculator_wpforms_form_id" value="%1$s" />',
+            esc_attr( $this->get_saved_wpforms_form_id() > 0 ? (string) $this->get_saved_wpforms_form_id() : '' )
+        );
+        echo '<p class="description">' . esc_html__( 'Set the WPForms form ID used by the materials calculator integration. If empty, the integration stays inactive.', 'ad-materials-calculator' ) . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        echo '</tbody></table>';
+
         echo '<input type="hidden" name="ad_materials_calculator_active_section" value="' . esc_attr( $active_section ) . '" />';
         echo '</div>';
     }
@@ -179,17 +202,22 @@ class Ad_Materials_Calculator_Settings {
             return;
         }
 
-        $active_section = $this->get_active_system_section();
-        $submitted      = isset( $_POST['ad_materials_calculator_coverages'] ) ? wp_unslash( $_POST['ad_materials_calculator_coverages'] ) : [];
-        $all_schema     = Ad_Materials_Calculator_Coverage_Schema::get_coverages_settings_schema();
-        $section_schema = Ad_Materials_Calculator_Coverage_Schema::filter_schema_for_system_section( $all_schema, $active_section );
-        $sanitized      = $this->sanitize_coverages_settings( $submitted, $section_schema, $active_section );
-        $existing       = $this->get_saved_coverages_settings();
-        $merged         = $this->merge_coverages_settings( $existing, $sanitized );
+        $active_section  = $this->get_active_system_section();
+        $submitted       = isset( $_POST['ad_materials_calculator_coverages'] ) ? wp_unslash( $_POST['ad_materials_calculator_coverages'] ) : [];
+        $all_schema      = Ad_Materials_Calculator_Coverage_Schema::get_coverages_settings_schema();
+        $section_schema  = Ad_Materials_Calculator_Coverage_Schema::filter_schema_for_system_section( $all_schema, $active_section );
+        $sanitized       = $this->sanitize_coverages_settings( $submitted, $section_schema, $active_section );
+        $existing        = $this->get_saved_coverages_settings();
+        $merged          = $this->merge_coverages_settings( $existing, $sanitized );
+        $wpforms_form_id = $this->get_submitted_wpforms_form_id();
 
         update_option( $this->coverages_option_name, wp_json_encode( $merged ) );
 
-        WC_Admin_Settings::add_message( __( 'Materials Calculator coverage settings saved.', 'ad-materials-calculator' ) );
+        if ( $wpforms_form_id > 0 ) {
+            update_option( $this->wpforms_form_id_option_name, $wpforms_form_id );
+        } else {
+            delete_option( $this->wpforms_form_id_option_name );
+        }
     }
 
     /**
@@ -209,6 +237,34 @@ class Ad_Materials_Calculator_Settings {
         $decoded = json_decode( $raw, true );
 
         return is_array( $decoded ) ? $decoded : [];
+    }
+
+    /**
+     * Return the saved calculator WPForms form ID.
+     *
+     * @since    1.0.0
+     * @return   int
+     */
+    private function get_saved_wpforms_form_id() {
+
+        return absint( get_option( $this->wpforms_form_id_option_name, 0 ) );
+    }
+
+    /**
+     * Read and sanitize the submitted calculator WPForms form ID.
+     *
+     * @since    1.0.0
+     * @return   int
+     */
+    private function get_submitted_wpforms_form_id() {
+
+        if ( ! isset( $_POST['ad_materials_calculator_wpforms_form_id'] ) ) {
+            return $this->get_saved_wpforms_form_id();
+        }
+
+        $submitted = absint( wp_unslash( $_POST['ad_materials_calculator_wpforms_form_id'] ) );
+
+        return $submitted > 0 ? $submitted : 0;
     }
 
     /**

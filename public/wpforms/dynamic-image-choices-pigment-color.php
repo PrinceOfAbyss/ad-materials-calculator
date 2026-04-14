@@ -3,7 +3,7 @@
  * Materials Calculator - Dynamic Image Choices (Pigment Color)
  *
  * Notes:
- * - Form  #11307
+ * - Configured materials calculator form
  * - Field #23 -> Product 9838 (Medium pigments)
  * - Field #24 -> Product 9932 (Fine pigments)
  */
@@ -11,7 +11,7 @@
 add_filter( 'wpforms_frontend_form_data', 'ad_wpforms_set_pigment_image_choices_frontend', 50, 1 );
 function ad_wpforms_set_pigment_image_choices_frontend( $form_data ) {
 
-    if ( empty( $form_data['id'] ) || (int) $form_data['id'] !== 11307 ) {
+    if ( empty( $form_data['id'] ) || absint( $form_data['id'] ) !== ad_materials_calc_get_wpforms_form_id() ) {
         return $form_data;
     }
 
@@ -21,7 +21,7 @@ function ad_wpforms_set_pigment_image_choices_frontend( $form_data ) {
 add_filter( 'wpforms_process_before_form_data', 'ad_wpforms_set_pigment_image_choices_process', 50, 2 );
 function ad_wpforms_set_pigment_image_choices_process( $form_data, $entry ) {
 
-    if ( empty( $form_data['id'] ) || (int) $form_data['id'] !== 11307 ) {
+    if ( empty( $form_data['id'] ) || absint( $form_data['id'] ) !== ad_materials_calc_get_wpforms_form_id() ) {
         return $form_data;
     }
 

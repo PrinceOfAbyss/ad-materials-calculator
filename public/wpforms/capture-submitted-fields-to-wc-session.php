@@ -11,7 +11,7 @@
 add_action( 'wpforms_process_complete', 'ad_materials_calc_capture_answers', 10, 4 );
 function ad_materials_calc_capture_answers( $fields, $entry, $form_data, $entry_id ) {
 
-    if ( empty( $form_data['id'] ) || absint( $form_data['id'] ) !== 11307 ) {
+    if ( empty( $form_data['id'] ) || absint( $form_data['id'] ) !== ad_materials_calc_get_wpforms_form_id() ) {
         return;
     }
 
