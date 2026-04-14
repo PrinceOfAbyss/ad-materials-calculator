@@ -56,6 +56,15 @@ class Ad_Materials_Calculator_Settings {
     private $wpforms_form_id_option_name = 'ad_materials_calculator_wpforms_form_id';
 
     /**
+     * Option name used to persist the user IDs with extended calculator privileges.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var      string
+     */
+    private $privileged_user_ids_option_name = 'ad_materials_calculator_privileged_user_ids';
+
+    /**
      * Initialize the class and set its properties.
      *
      * @since    1.0.0
@@ -187,6 +196,36 @@ class Ad_Materials_Calculator_Settings {
         echo '</tr>';
         echo '</tbody></table>';
 
+        $privileged_user_ids = $this->get_saved_privileged_user_ids();
+        $users               = get_users(
+            [
+                'orderby' => 'display_name',
+                'order'   => 'ASC',
+            ]
+        );
+
+        echo '<h2>' . esc_html__( 'Extended Privileges', 'ad-materials-calculator' ) . '</h2>';
+        echo '<table class="form-table" role="presentation"><tbody>';
+        echo '<tr>';
+        echo '<th scope="row"><label for="ad-materials-calculator-privileged-user-ids">' . esc_html__( 'Privileged Staff Members', 'ad-materials-calculator' ) . '</label></th>';
+        echo '<td>';
+        echo '<select id="ad-materials-calculator-privileged-user-ids" name="ad_materials_calculator_privileged_user_ids[]" class="ad-mc-settings-user-select" multiple="multiple" data-placeholder="' . esc_attr__( 'Select staff members...', 'ad-materials-calculator' ) . '">';
+
+        foreach ( $users as $user ) {
+            printf(
+                '<option value="%1$d"%2$s>%3$s</option>',
+                absint( $user->ID ),
+                selected( in_array( (int) $user->ID, $privileged_user_ids, true ), true, false ),
+                esc_html( sprintf( '%s (%s)', $user->display_name, $user->user_login ) )
+            );
+        }
+
+        echo '</select>';
+        echo '<p class="description">' . esc_html__( 'Selected users can apply discounts and create share links for calculated materials. If empty, these extended privileges stay inactive.', 'ad-materials-calculator' ) . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        echo '</tbody></table>';
+
         echo '<input type="hidden" name="ad_materials_calculator_active_section" value="' . esc_attr( $active_section ) . '" />';
         echo '</div>';
     }
@@ -210,6 +249,7 @@ class Ad_Materials_Calculator_Settings {
         $existing        = $this->get_saved_coverages_settings();
         $merged          = $this->merge_coverages_settings( $existing, $sanitized );
         $wpforms_form_id = $this->get_submitted_wpforms_form_id();
+        $privileged_ids  = $this->get_submitted_privileged_user_ids();
 
         update_option( $this->coverages_option_name, wp_json_encode( $merged ) );
 
@@ -217,6 +257,12 @@ class Ad_Materials_Calculator_Settings {
             update_option( $this->wpforms_form_id_option_name, $wpforms_form_id );
         } else {
             delete_option( $this->wpforms_form_id_option_name );
+        }
+
+        if ( ! empty( $privileged_ids ) ) {
+            update_option( $this->privileged_user_ids_option_name, $privileged_ids );
+        } else {
+            delete_option( $this->privileged_user_ids_option_name );
         }
     }
 
@@ -251,6 +297,23 @@ class Ad_Materials_Calculator_Settings {
     }
 
     /**
+     * Return the saved user IDs with extended calculator privileges.
+     *
+     * @since    1.0.0
+     * @return   array
+     */
+    private function get_saved_privileged_user_ids() {
+
+        $saved_ids = get_option( $this->privileged_user_ids_option_name, [] );
+
+        if ( ! is_array( $saved_ids ) ) {
+            return [];
+        }
+
+        return array_filter( array_map( 'absint', $saved_ids ) );
+    }
+
+    /**
      * Read and sanitize the submitted calculator WPForms form ID.
      *
      * @since    1.0.0
@@ -265,6 +328,23 @@ class Ad_Materials_Calculator_Settings {
         $submitted = absint( wp_unslash( $_POST['ad_materials_calculator_wpforms_form_id'] ) );
 
         return $submitted > 0 ? $submitted : 0;
+    }
+
+    /**
+     * Read and sanitize the submitted privileged user IDs.
+     *
+     * @since    1.0.0
+     * @return   array
+     */
+    private function get_submitted_privileged_user_ids() {
+
+        if ( ! isset( $_POST['ad_materials_calculator_privileged_user_ids'] ) || ! is_array( $_POST['ad_materials_calculator_privileged_user_ids'] ) ) {
+            return [];
+        }
+
+        $submitted_ids = wp_unslash( $_POST['ad_materials_calculator_privileged_user_ids'] );
+
+        return array_filter( array_map( 'absint', $submitted_ids ) );
     }
 
     /**

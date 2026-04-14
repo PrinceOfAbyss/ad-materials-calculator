@@ -122,11 +122,15 @@ function ad_materials_calc_get_entry_value( $entry_fields, $field_id ) {
     return is_string( $entry_fields[$field_id] ) ? trim( $entry_fields[$field_id] ) : (string) $entry_fields[$field_id];
 }
 
-function ad_materials_calc_current_user_can_use_discount() {
+function ad_materials_calc_current_user_has_extended_privileges() {
 
-    $allowed_user_ids = [
-        1,
-    ];
+    $allowed_user_ids = get_option( 'ad_materials_calculator_privileged_user_ids', [] );
+
+    if ( ! is_array( $allowed_user_ids ) ) {
+        return false;
+    }
+
+    $allowed_user_ids = array_filter( array_map( 'absint', $allowed_user_ids ) );
 
     $user_id = get_current_user_id();
 
@@ -143,7 +147,7 @@ function ad_materials_calc_get_normalized_discount_from_entry_fields( $entry_fie
         'discount_type'    => 'none',
         'discount_label'   => 'No discount',
         'discount_value'   => 0.0,
-        'discount_allowed' => ad_materials_calc_current_user_can_use_discount(),
+        'discount_allowed' => ad_materials_calc_current_user_has_extended_privileges(),
     ];
 
     if ( ! $result['discount_allowed'] ) {

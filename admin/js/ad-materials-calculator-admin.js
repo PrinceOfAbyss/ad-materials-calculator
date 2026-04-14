@@ -63,6 +63,7 @@
 
 	$(function () {
 		var $tables = $('.ad-mc-settings-table');
+		var $userSelect = $('.ad-mc-settings-user-select');
 
 		$tables.find('tbody tr').each(function () {
 			updateCoverageRowTotal($(this));
@@ -71,5 +72,9 @@
 		$tables.on('input change', '.ad-mc-settings-decimal', function () {
 			updateCoverageRowTotal($(this).closest('tr'));
 		});
+
+		if ($userSelect.length && typeof $.fn.selectWoo === 'function') {
+			$userSelect.selectWoo();
+		}
 	});
 })( jQuery );
