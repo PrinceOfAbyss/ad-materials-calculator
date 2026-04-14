@@ -1149,3 +1149,107 @@ function ad_materials_calc_get_best_3bucket_combo( $target_weight, array $bucket
         'bucket_counts' => $best['bucket_counts'],
     ];
 }
+
+function ad_materials_calc_get_saved_coverage_settings() {
+
+    static $cached_settings = null;
+
+    if ( null !== $cached_settings ) {
+        return $cached_settings;
+    }
+
+    $raw = get_option( 'ad_materials_calculator_coverages_json', '' );
+
+    if ( ! is_string( $raw ) || '' === $raw ) {
+        $cached_settings = [];
+
+        return $cached_settings;
+    }
+
+    $decoded = json_decode( $raw, true );
+
+    $cached_settings = is_array( $decoded ) ? $decoded : [];
+
+    return $cached_settings;
+}
+
+function ad_materials_calc_get_system_section_slug( $system_label ) {
+
+    if ( 'Terrazzo Granitech Medium' === $system_label ) {
+        return 'medium';
+    }
+
+    if ( 'Terrazzo Granitech Fine' === $system_label ) {
+        return 'fine';
+    }
+
+    if ( 'Terrazzo Granitech Microterrazzo' === $system_label ) {
+        return 'microterrazzo';
+    }
+
+    return '';
+}
+
+function ad_materials_calc_get_coverage_material_label( $case_key, $clause_key, $section, $material_key ) {
+
+    return Ad_Materials_Calculator_Coverage_Schema::get_material_label( $case_key, $clause_key, $section, $material_key );
+}
+
+function ad_materials_calc_normalize_coverage_values( array $raw_values ) {
+
+    $values = [];
+
+    foreach ( $raw_values as $value ) {
+        if ( '' === $value || null === $value ) {
+            continue;
+        }
+
+        $values[] = (float) $value;
+    }
+
+    return $values;
+}
+
+function ad_materials_calc_get_configured_coverage_values( $case_key, $clause_key, $system_label, $material_key, $case_error_prefix ) {
+
+    $section = ad_materials_calc_get_system_section_slug( $system_label );
+
+    if ( '' === $section ) {
+        return [
+            'error' => $case_error_prefix . ' Unknown System value: ' . $system_label,
+        ];
+    }
+
+    $settings = ad_materials_calc_get_saved_coverage_settings();
+
+    if ( empty( $settings[$case_key][$clause_key][$section][$material_key] ) || ! is_array( $settings[$case_key][$clause_key][$section][$material_key] ) ) {
+        return [
+            'error' => sprintf(
+                '%1$s Missing coverage settings for %2$s / %3$s / %4$s.',
+                $case_error_prefix,
+                $case_key,
+                $clause_key,
+                ad_materials_calc_get_coverage_material_label( $case_key, $clause_key, $section, $material_key )
+            ),
+        ];
+    }
+
+    $values = ad_materials_calc_normalize_coverage_values( $settings[$case_key][$clause_key][$section][$material_key] );
+
+    if ( empty( $values ) ) {
+        return [
+            'error' => sprintf(
+                '%1$s Empty coverage settings for %2$s / %3$s / %4$s.',
+                $case_error_prefix,
+                $case_key,
+                $clause_key,
+                ad_materials_calc_get_coverage_material_label( $case_key, $clause_key, $section, $material_key )
+            ),
+        ];
+    }
+
+    return [
+        'values'  => $values,
+        'section' => $section,
+    ];
+}

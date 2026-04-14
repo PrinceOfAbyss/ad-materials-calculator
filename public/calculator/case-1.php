@@ -73,10 +73,11 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
     }
 
     if ( $code === '' ) {
-        return ['error' => 'Case 1 error: Could not determine internal clause code.'];
+        return ['error' => 'Case 1 error: No matching clause found for the given selections.'];
     }
 
-    $clause = '';
+    $clause_key = ( $has_fibermesh ? 'with_fibermesh_' : 'no_fibermesh_' ) . $code;
+    $clause     = '';
 
     if ( ! $has_fibermesh ) {
         if ( $code === 'matte_standard' ) {
@@ -106,10 +107,6 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
         } elseif ( $code === 'satin_max' ) {
             $clause = 'Satin - With fibermesh - Max Duty: Rows 92-95 + G131 in the Assuptions tab replace cell 76 in the medium tab';
         }
-    }
-
-    if ( $clause === '' ) {
-        return ['error' => 'Case 1 error: No matching clause found for the given selections.'];
     }
 
     $items = [];
@@ -154,7 +151,13 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
     // -----------------------------------------------------
     // Primer (all systems, all clauses)
     // -----------------------------------------------------
-    $primer_components    = [0.341];
+    $primer_config = ad_materials_calc_get_configured_coverage_values( 'case_1', $clause_key, $system_label, 'primer', 'Case 1 error:' );
+
+    if ( ! empty( $primer_config['error'] ) ) {
+        return ['error' => $primer_config['error']];
+    }
+
+    $primer_components    = $primer_config['values'];
     $primer_kg            = round( $sqm * array_sum( $primer_components ), 2 );
     $primer_bucket_prices = [
         15 => ad_materials_calc_get_product_price_by_sku( '5200433500541' ),
@@ -200,7 +203,13 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
     ];
 
     if ( $system_label === 'Terrazzo Granitech Medium' ) {
-        $medium_components = [2.000];
+        $medium_config = ad_materials_calc_get_configured_coverage_values( 'case_1', $clause_key, $system_label, 'system_medium', 'Case 1 error:' );
+
+        if ( ! empty( $medium_config['error'] ) ) {
+            return ['error' => $medium_config['error']];
+        }
+
+        $medium_components = $medium_config['values'];
         $medium_kg         = round( $sqm * array_sum( $medium_components ), 2 );
 
         $medium_bucket_prices = [
@@ -237,7 +246,13 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
         $system_counters['medium_large'] = ad_materials_calc_get_combo_bucket_count( $medium_combo, 19 );
         $system_counters['medium_small'] = ad_materials_calc_get_combo_bucket_count( $medium_combo, 1 );
     } elseif ( $system_label === 'Terrazzo Granitech Fine' ) {
-        $medium_components = [2.000];
+        $medium_config = ad_materials_calc_get_configured_coverage_values( 'case_1', $clause_key, $system_label, 'system_medium', 'Case 1 error:' );
+
+        if ( ! empty( $medium_config['error'] ) ) {
+            return ['error' => $medium_config['error']];
+        }
+
+        $medium_components = $medium_config['values'];
         $medium_kg         = round( $sqm * array_sum( $medium_components ), 2 );
 
         $medium_bucket_prices = [
@@ -274,7 +289,13 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
         $system_counters['medium_large'] = ad_materials_calc_get_combo_bucket_count( $medium_combo, 19 );
         $system_counters['medium_small'] = ad_materials_calc_get_combo_bucket_count( $medium_combo, 1 );
 
-        $fine_components = [0.450];
+        $fine_config = ad_materials_calc_get_configured_coverage_values( 'case_1', $clause_key, $system_label, 'system_fine_top', 'Case 1 error:' );
+
+        if ( ! empty( $fine_config['error'] ) ) {
+            return ['error' => $fine_config['error']];
+        }
+
+        $fine_components = $fine_config['values'];
         $fine_kg         = round( $sqm * array_sum( $fine_components ), 2 );
 
         $fine_bucket_prices = [
@@ -311,7 +332,13 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
         $system_counters['fine_large'] = ad_materials_calc_get_combo_bucket_count( $fine_combo, 10 );
         $system_counters['fine_small'] = ad_materials_calc_get_combo_bucket_count( $fine_combo, 1 );
     } elseif ( $system_label === 'Terrazzo Granitech Microterrazzo' ) {
-        $micro_components = [2.050, 2.200];
+        $micro_config = ad_materials_calc_get_configured_coverage_values( 'case_1', $clause_key, $system_label, 'system_micro', 'Case 1 error:' );
+
+        if ( ! empty( $micro_config['error'] ) ) {
+            return ['error' => $micro_config['error']];
+        }
+
+        $micro_components = $micro_config['values'];
         $micro_kg         = round( $sqm * array_sum( $micro_components ), 2 );
 
         if ( $finish_color === '600Q' ) {
@@ -440,7 +467,13 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
     // Sealer
     // -----------------------------------------------------
     if ( $code === 'matte_standard' ) {
-        $sealer_components = [0.220];
+        $sealer_config = ad_materials_calc_get_configured_coverage_values( 'case_1', $clause_key, $system_label, 'sealer_matte', 'Case 1 error:' );
+
+        if ( ! empty( $sealer_config['error'] ) ) {
+            return ['error' => $sealer_config['error']];
+        }
+
+        $sealer_components = $sealer_config['values'];
         $sealer_kg         = round( $sqm * array_sum( $sealer_components ), 2 );
         $sealer_qty        = (int) ceil( $sealer_kg / 3 );
 
@@ -469,7 +502,13 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
     }
 
     if ( $code === 'matte_max' ) {
-        $sealer_components = [0.220, 0.070];
+        $sealer_config = ad_materials_calc_get_configured_coverage_values( 'case_1', $clause_key, $system_label, 'sealer_matte', 'Case 1 error:' );
+
+        if ( ! empty( $sealer_config['error'] ) ) {
+            return ['error' => $sealer_config['error']];
+        }
+
+        $sealer_components = $sealer_config['values'];
         $sealer_kg         = round( $sqm * array_sum( $sealer_components ), 2 );
         $sealer_qty        = (int) ceil( $sealer_kg / 3 );
 
@@ -498,7 +537,13 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
     }
 
     if ( $code === 'semigloss_standard' ) {
-        $sealer_components = [0.170];
+        $sealer_config = ad_materials_calc_get_configured_coverage_values( 'case_1', $clause_key, $system_label, 'sealer_semigloss', 'Case 1 error:' );
+
+        if ( ! empty( $sealer_config['error'] ) ) {
+            return ['error' => $sealer_config['error']];
+        }
+
+        $sealer_components = $sealer_config['values'];
         $sealer_kg         = round( $sqm * array_sum( $sealer_components ), 2 );
         $sealer_qty        = (int) ceil( $sealer_kg / 5 );
 
@@ -523,7 +568,13 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
     }
 
     if ( $code === 'semigloss_max' ) {
-        $sealer_components = [0.170, 0.120];
+        $sealer_config = ad_materials_calc_get_configured_coverage_values( 'case_1', $clause_key, $system_label, 'sealer_semigloss', 'Case 1 error:' );
+
+        if ( ! empty( $sealer_config['error'] ) ) {
+            return ['error' => $sealer_config['error']];
+        }
+
+        $sealer_components = $sealer_config['values'];
         $sealer_kg         = round( $sqm * array_sum( $sealer_components ), 2 );
         $sealer_qty        = (int) ceil( $sealer_kg / 5 );
 
@@ -548,7 +599,13 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
     }
 
     if ( $code === 'satin_standard' ) {
-        $sealer_components = [0.197];
+        $sealer_config = ad_materials_calc_get_configured_coverage_values( 'case_1', $clause_key, $system_label, 'sealer_satin', 'Case 1 error:' );
+
+        if ( ! empty( $sealer_config['error'] ) ) {
+            return ['error' => $sealer_config['error']];
+        }
+
+        $sealer_components = $sealer_config['values'];
         $sealer_kg         = round( $sqm * array_sum( $sealer_components ), 2 );
 
         $satin_bucket_prices = [
@@ -587,7 +644,13 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
     }
 
     if ( $code === 'satin_max' ) {
-        $sealer_components = [0.197, 0.080];
+        $sealer_config = ad_materials_calc_get_configured_coverage_values( 'case_1', $clause_key, $system_label, 'sealer_satin', 'Case 1 error:' );
+
+        if ( ! empty( $sealer_config['error'] ) ) {
+            return ['error' => $sealer_config['error']];
+        }
+
+        $sealer_components = $sealer_config['values'];
         $sealer_kg         = round( $sqm * array_sum( $sealer_components ), 2 );
 
         $satin_bucket_prices = [

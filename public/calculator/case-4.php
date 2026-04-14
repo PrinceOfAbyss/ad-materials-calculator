@@ -54,7 +54,8 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
         return ['error' => 'Case 4 error: No matching clause found for the given selections.'];
     }
 
-    $clause = '';
+    $clause_key = $code;
+    $clause     = '';
 
     if ( $code === 'max' ) {
         $clause = 'Matte - Dual-Layer System - Max Duty, 2× Satin + 1× Matte: Excel reference is row 162-171';
@@ -129,7 +130,13 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
     // -----------------------------------------------------
     // Epoxy Primer pair (all Case 4 clauses)
     // -----------------------------------------------------
-    $epoxy_primer_components = [0.300];
+    $epoxy_primer_config = ad_materials_calc_get_configured_coverage_values( 'case_4', $clause_key, $system_label, 'epoxy_primer_pair', 'Case 4 error:' );
+
+    if ( ! empty( $epoxy_primer_config['error'] ) ) {
+        return ['error' => $epoxy_primer_config['error']];
+    }
+
+    $epoxy_primer_components = $epoxy_primer_config['values'];
     $epoxy_primer_kg         = round( $sqm * array_sum( $epoxy_primer_components ), 2 );
 
     $epoxy_pair_bucket_prices = [
@@ -194,7 +201,13 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
     ];
 
     if ( $system_label === 'Terrazzo Granitech Medium' ) {
-        $medium_components = [1.200, 1.260];
+        $medium_config = ad_materials_calc_get_configured_coverage_values( 'case_4', $clause_key, $system_label, 'system_medium', 'Case 4 error:' );
+
+        if ( ! empty( $medium_config['error'] ) ) {
+            return ['error' => $medium_config['error']];
+        }
+
+        $medium_components = $medium_config['values'];
         $medium_kg         = round( $sqm * array_sum( $medium_components ), 2 );
 
         $medium_bucket_prices = [
@@ -264,7 +277,13 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
             );
         }
     } elseif ( $system_label === 'Terrazzo Granitech Fine' ) {
-        $medium_components = [1.200, 1.260];
+        $medium_config = ad_materials_calc_get_configured_coverage_values( 'case_4', $clause_key, $system_label, 'system_medium', 'Case 4 error:' );
+
+        if ( ! empty( $medium_config['error'] ) ) {
+            return ['error' => $medium_config['error']];
+        }
+
+        $medium_components = $medium_config['values'];
         $medium_kg         = round( $sqm * array_sum( $medium_components ), 2 );
 
         $medium_bucket_prices = [
@@ -301,7 +320,13 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
         $system_counters['medium_large'] = ad_materials_calc_get_combo_bucket_count( $medium_combo, 19 );
         $system_counters['medium_small'] = ad_materials_calc_get_combo_bucket_count( $medium_combo, 1 );
 
-        $fine_application_components = [0.450];
+        $fine_config = ad_materials_calc_get_configured_coverage_values( 'case_4', $clause_key, $system_label, 'system_fine_top', 'Case 4 error:' );
+
+        if ( ! empty( $fine_config['error'] ) ) {
+            return ['error' => $fine_config['error']];
+        }
+
+        $fine_application_components = $fine_config['values'];
         $fine_application_kg         = round( $sqm * array_sum( $fine_application_components ), 2 );
         $fine_purchase_kg            = round( $fine_application_kg + $joint_filler_kg, 2 );
 
@@ -354,7 +379,13 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
         $system_counters['fine_large'] = ad_materials_calc_get_combo_bucket_count( $fine_application_combo, 10 );
         $system_counters['fine_small'] = ad_materials_calc_get_combo_bucket_count( $fine_application_combo, 1 );
     } elseif ( $system_label === 'Terrazzo Granitech Microterrazzo' ) {
-        $micro_components = [2.050, 2.200];
+        $micro_config = ad_materials_calc_get_configured_coverage_values( 'case_4', $clause_key, $system_label, 'system_micro', 'Case 4 error:' );
+
+        if ( ! empty( $micro_config['error'] ) ) {
+            return ['error' => $micro_config['error']];
+        }
+
+        $micro_components = $micro_config['values'];
         $micro_kg         = round( $sqm * array_sum( $micro_components ), 2 );
 
         if ( $finish_color === '600Q' ) {
@@ -532,24 +563,20 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
     // -----------------------------------------------------
     // Sealer coverages
     // -----------------------------------------------------
-    $satin_components = [];
-    $matte_components = [0.080];
+    $satin_config = ad_materials_calc_get_configured_coverage_values( 'case_4', $clause_key, $system_label, 'sealer_satin', 'Case 4 error:' );
 
-    if ( $system_label === 'Terrazzo Granitech Medium' || $system_label === 'Terrazzo Granitech Microterrazzo' ) {
-        if ( $code === 'max' ) {
-            $satin_components = [0.341];
-        } elseif ( $code === 'standard' ) {
-            $satin_components = [0.197];
-        }
+    if ( ! empty( $satin_config['error'] ) ) {
+        return ['error' => $satin_config['error']];
     }
 
-    if ( $system_label === 'Terrazzo Granitech Fine' ) {
-        if ( $code === 'max' ) {
-            $satin_components = [0.120];
-        } elseif ( $code === 'standard' ) {
-            $satin_components = [0.060];
-        }
+    $matte_config = ad_materials_calc_get_configured_coverage_values( 'case_4', $clause_key, $system_label, 'sealer_matte', 'Case 4 error:' );
+
+    if ( ! empty( $matte_config['error'] ) ) {
+        return ['error' => $matte_config['error']];
     }
+
+    $satin_components = $satin_config['values'];
+    $matte_components = $matte_config['values'];
 
     // -----------------------------------------------------
     // Satin sealer
