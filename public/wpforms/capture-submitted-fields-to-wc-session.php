@@ -43,10 +43,16 @@ function ad_materials_calc_capture_answers( $fields, $entry, $form_data, $entry_
         $sheen_interior_floor = ad_materials_calc_get_entry_value( $entry_fields, 29 );
     }
 
-    // Wet Area Walls usage level: Drop-down field (#9) or "locked" single-line text field (#39)
-    $usage_level_wet_area = ad_materials_calc_get_entry_value( $entry_fields, 9 );
+    // Wet Area Walls usage level depends on the selected sheen:
+    // Satin => field #9, Matte Dual-Layer => field #41, Matte Single-Layer => locked field #39
+    $sheen_wet_area       = ad_materials_calc_get_entry_value( $entry_fields, 8 );
+    $usage_level_wet_area = '';
 
-    if ( $usage_level_wet_area === '' ) {
+    if ( $sheen_wet_area === 'Satin' ) {
+        $usage_level_wet_area = ad_materials_calc_get_entry_value( $entry_fields, 9 );
+    } elseif ( $sheen_wet_area === 'Matte Dual-Layer' ) {
+        $usage_level_wet_area = ad_materials_calc_get_entry_value( $entry_fields, 41 );
+    } elseif ( $sheen_wet_area === 'Matte Single-Layer' ) {
         $usage_level_wet_area = ad_materials_calc_get_entry_value( $entry_fields, 39 );
     }
 
@@ -71,7 +77,7 @@ function ad_materials_calc_capture_answers( $fields, $entry, $form_data, $entry_
         // Surface type option 2: Wet Area Walls
         'existing_tile_wet_area'              => ad_materials_calc_get_entry_value( $entry_fields, 6 ),
         'tile_joint_condition_wet_area'       => ad_materials_calc_get_entry_value( $entry_fields, 7 ),
-        'sheen_wet_area'                      => ad_materials_calc_get_entry_value( $entry_fields, 8 ),
+        'sheen_wet_area'                      => $sheen_wet_area,
         'usage_level_wet_area'                => $usage_level_wet_area,
 
         // Surface type option 3: Interior Floor
