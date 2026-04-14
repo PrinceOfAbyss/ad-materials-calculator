@@ -73,6 +73,10 @@ class Ad_Materials_Calculator_Admin {
 		 * class.
 		 */
 
+		if ( ! $this->is_materials_calculator_settings_page() ) {
+			return;
+		}
+
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ad-materials-calculator-admin.css', array(), $this->version, 'all' );
 
 	}
@@ -96,8 +100,23 @@ class Ad_Materials_Calculator_Admin {
 		 * class.
 		 */
 
+		if ( ! $this->is_materials_calculator_settings_page() ) {
+			return;
+		}
+
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ad-materials-calculator-admin.js', array( 'jquery', 'selectWoo' ), $this->version, false );
 
+	}
+
+	/**
+	 * Determine whether the current request is the Materials Calculator settings tab.
+	 *
+	 * @since    1.0.0
+	 * @return   bool
+	 */
+	private function is_materials_calculator_settings_page() {
+
+		return ( isset( $_GET['page'], $_GET['tab'] ) && 'wc-settings' === sanitize_key( wp_unslash( $_GET['page'] ) ) && 'materials-calculator' === sanitize_key( wp_unslash( $_GET['tab'] ) ) );
 	}
 
 }
