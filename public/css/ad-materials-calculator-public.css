@@ -169,6 +169,107 @@
     color: inherit;
 }
 
+.materials-calc-add-to-cart {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.woocommerce-cart .cart-totals-inner .checkout-button.ad-materials-calc-share-cart-button {
+    background-color: #8a8f93 !important;
+    border-color: #8a8f93 !important;
+    color: #fff !important;
+    margin-top: 10px;
+}
+
+.woocommerce-cart .cart-totals-inner .checkout-button.ad-materials-calc-share-cart-button:hover,
+.woocommerce-cart .cart-totals-inner .checkout-button.ad-materials-calc-share-cart-button:focus {
+    background-color: #5f656a !important;
+    border-color: #5f656a !important;
+    color: #fff !important;
+}
+
+.materials-calc-share-modal[hidden] {
+    display: none;
+}
+
+.materials-calc-share-modal {
+    align-items: center;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    left: 0;
+    padding: 20px;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 99999;
+}
+
+.materials-calc-share-modal__backdrop {
+    background: rgba(0, 0, 0, .55);
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.materials-calc-share-modal__dialog {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, .22);
+    max-width: 560px;
+    padding: 34px 28px 28px;
+    position: relative;
+    width: 100%;
+}
+
+button.materials-calc-share-modal__close {
+    background: transparent !important;
+    color: #777 !important;
+    cursor: pointer;
+    font-size: 28px !important;
+    height: 32px !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: absolute !important;
+    right: 18px !important;
+    top: 12px !important;
+    width: 32px !important;
+    z-index: 1;
+}
+
+.materials-calc-share-modal__dialog h3 {
+    margin: 10px 0 15px 0;
+    font-weight: 600 !important;
+}
+
+.materials-calc-share-modal__description {
+    color: #555;
+    margin-bottom: 16px;
+}
+
+.materials-calc-share-modal__link-row {
+    display: flex;
+    gap: 8px;
+}
+
+.materials-calc-share-modal__link {
+    flex: 1;
+    min-width: 0;
+}
+
+.materials-calc-share-modal__status {
+    color: var(--wd-primary-color);
+    font-size: 13px;
+    margin-top: 10px;
+    min-height: 18px;
+}
+
 /* Joint filler note inside grouped cart/order metadata */
 .woocommerce-cart .ad-materials-calc-group-header__joint-filler-note {
     color: #667267;

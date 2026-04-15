@@ -121,6 +121,22 @@ class Ad_Materials_Calculator_Public {
 		 */
 
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ad-materials-calculator-public.js', array( 'jquery' ), $this->version, false );
+		wp_localize_script(
+			$this->plugin_name,
+			'adMaterialsCalculatorPublic',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'i18n'    => array(
+					'modalCloseLabel'       => __( 'Close', 'ad-materials-calculator' ),
+					'modalTitle'            => __( 'Share this cart', 'ad-materials-calculator' ),
+					'modalDescription'      => __( 'Copy this link and send it to the customer. The link will add the calculated materials in this cart and take them to checkout.', 'ad-materials-calculator' ),
+					'copyButtonLabel'       => __( 'Copy', 'ad-materials-calculator' ),
+					'copiedMessage'         => __( 'Copied to clipboard.', 'ad-materials-calculator' ),
+					'creatingLinkLabel'     => __( 'Creating link...', 'ad-materials-calculator' ),
+					'createLinkError'       => __( 'The share link could not be created.', 'ad-materials-calculator' ),
+				),
+			)
+		);
 
 	}
 

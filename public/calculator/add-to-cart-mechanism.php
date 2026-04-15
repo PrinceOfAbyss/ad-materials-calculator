@@ -173,9 +173,9 @@ function ad_materials_calc_get_group_discount_requested_value_from_cart_item( ar
     return isset( $cart_item['ad_materials_calc_discount_requested_value'] ) ? (float) $cart_item['ad_materials_calc_discount_requested_value'] : 0.0;
 }
 
-function ad_materials_calc_get_group_discount_applied_value_from_cart_item( array $cart_item ) {
+function ad_materials_calc_get_group_share_link_id_from_cart_item( array $cart_item ) {
 
-    return isset( $cart_item['ad_materials_calc_discount_applied_value'] ) ? (float) $cart_item['ad_materials_calc_discount_applied_value'] : 0.0;
+    return isset( $cart_item['ad_materials_calc_share_link_id'] ) ? absint( $cart_item['ad_materials_calc_share_link_id'] ) : 0;
 }
 
 function ad_materials_calc_get_group_discount_html_from_cart_item( array $cart_item ) {
@@ -183,7 +183,6 @@ function ad_materials_calc_get_group_discount_html_from_cart_item( array $cart_i
     $discount_type   = ad_materials_calc_get_group_discount_type_from_cart_item( $cart_item );
     $discount_label  = ad_materials_calc_get_group_discount_label_from_cart_item( $cart_item );
     $requested_value = ad_materials_calc_get_group_discount_requested_value_from_cart_item( $cart_item );
-    $applied_value   = ad_materials_calc_get_group_discount_applied_value_from_cart_item( $cart_item );
 
     if ( $discount_type === 'percentage' && $requested_value > 0 ) {
         return esc_html(
@@ -195,12 +194,12 @@ function ad_materials_calc_get_group_discount_html_from_cart_item( array $cart_i
         );
     }
 
-    if ( $discount_type === 'fixed' && $applied_value > 0 ) {
+    if ( $discount_type === 'fixed' && $requested_value > 0 ) {
         return esc_html(
             sprintf(
                 '%s: %s',
                 $discount_label !== '' ? $discount_label : __( 'Discount', 'ad-materials-calculator' ),
-                wp_strip_all_tags( wc_price( $applied_value ) )
+                wp_strip_all_tags( wc_price( $requested_value ) )
             )
         );
     }
@@ -520,10 +519,277 @@ function ad_materials_calc_handle_add_group_to_cart() {
         exit;
     }
 
-    $group_id     = 'mc_' . wp_generate_uuid4();
-    $group_label  = ad_materials_calc_build_group_label( $payload );
-    $added_any    = false;
-    $shippo_state = ad_materials_calc_suspend_shippo_rate_triggers();
+    $added_any = ad_materials_calc_add_payload_group_to_cart( $payload );
+
+    if ( $added_any ) {
+        $calculator_url = home_url( '/materials-calculator/' );
+        $success_notice = sprintf(
+            wp_kses(
+                __( 'The calculated materials were added to your cart as a grouped calculation. <a href="%s">Add another one?</a>', 'ad-materials-calculator' ),
+                [
+                    'a' => [
+                        'href' => [],
+                    ],
+                ]
+            ),
+            esc_url( $calculator_url )
+        );
+
+        wc_add_notice( $success_notice, 'success' );
+    } else {
+        wc_add_notice( __( 'We could not add the calculated materials to the cart. Please calculate again and try once more.', 'ad-materials-calculator' ), 'error' );
+    }
+
+    wp_safe_redirect( wc_get_cart_url() );
+    exit;
+}
+
+/**
+ * Handle a public share link and restore its calculated group into the cart.
+ */
+add_action( 'wp', 'ad_materials_calc_handle_share_link_restore' );
+function ad_materials_calc_handle_share_link_restore() {
+
+    if ( empty( $_GET['mc_share'] ) ) {
+        return;
+    }
+
+    if ( ! function_exists( 'WC' ) || ! WC() || ! WC()->cart ) {
+        return;
+    }
+
+    $token  = wc_clean( wp_unslash( $_GET['mc_share'] ) );
+    $record = Ad_Materials_Calculator_Share_Links::get_by_token( $token );
+
+    if ( empty( $record ) || ! Ad_Materials_Calculator_Share_Links::is_record_valid( $record ) ) {
+        ad_materials_calc_redirect_to_calculator_with_share_notice( 'expired' );
+    }
+
+    $payload = Ad_Materials_Calculator_Share_Links::get_payload_from_record( $record );
+
+    if ( empty( $payload ) ) {
+        ad_materials_calc_redirect_to_calculator_with_share_notice( 'invalid' );
+    }
+
+    $share_link_id = isset( $record['id'] ) ? (int) $record['id'] : 0;
+    $added         = false;
+
+    if ( ! empty( $payload['groups'] ) && is_array( $payload['groups'] ) ) {
+        foreach ( $payload['groups'] as $group_payload ) {
+            if ( ad_materials_calc_add_payload_group_to_cart( $group_payload, $share_link_id ) ) {
+                $added = true;
+            }
+        }
+    } elseif ( ! empty( $payload['items'] ) && is_array( $payload['items'] ) ) {
+        $added = ad_materials_calc_add_payload_group_to_cart( $payload, $share_link_id );
+    }
+
+    if ( ! $added ) {
+        ad_materials_calc_redirect_to_calculator_with_share_notice( 'invalid' );
+    }
+
+    Ad_Materials_Calculator_Share_Links::mark_accessed( isset( $record['id'] ) ? (int) $record['id'] : 0 );
+
+    wc_add_notice( __( 'The shared materials were added to your cart.', 'ad-materials-calculator' ), 'success' );
+    wp_safe_redirect( wc_get_checkout_url() );
+    exit;
+}
+
+function ad_materials_calc_redirect_to_calculator_with_share_notice( $notice_type ) {
+
+    $notice_type = sanitize_key( $notice_type );
+
+    wp_safe_redirect(
+        add_query_arg(
+            'mc_share_notice',
+            $notice_type,
+            home_url( '/materials-calculator/' )
+        )
+    );
+    exit;
+}
+
+add_filter( 'the_content', 'ad_materials_calc_prepend_share_link_notice_to_calculator_page' );
+function ad_materials_calc_prepend_share_link_notice_to_calculator_page( $content ) {
+
+    if ( ! is_main_query() || ! in_the_loop() || ! is_page( 'materials-calculator' ) || empty( $_GET['mc_share_notice'] ) ) {
+        return $content;
+    }
+
+    $notice_type = sanitize_key( wp_unslash( $_GET['mc_share_notice'] ) );
+
+    if ( $notice_type === 'expired' ) {
+        $notice = sprintf(
+            wp_kses(
+                __( '<strong>THIS LINK HAS EXPIRED!</strong> The link you clicked was valid for 30 days. Please use the calculator below to generate a new list of supplies required for your project. Or click <a href="%s">here</a> to reach our support staff for further assistance.', 'ad-materials-calculator' ),
+                [
+                    'strong' => [],
+                    'a'      => [
+                        'href' => [],
+                    ],
+                ]
+            ),
+            esc_url( home_url( '/contact/' ) )
+        );
+    } elseif ( $notice_type === 'invalid' ) {
+        $notice = esc_html__( 'This shared materials cart could not be loaded. Please create a new calculation to continue.', 'ad-materials-calculator' );
+    } else {
+        return $content;
+    }
+
+    return '<div class="woocommerce-notices-wrapper"><div class="woocommerce-info ad-materials-calc-share-notice">' . $notice . '</div></div>' . $content;
+}
+
+add_action( 'woocommerce_proceed_to_checkout', 'ad_materials_calc_render_share_cart_button', 30 );
+function ad_materials_calc_render_share_cart_button() {
+
+    if ( ! function_exists( 'ad_materials_calc_current_user_has_extended_privileges' ) || ! ad_materials_calc_current_user_has_extended_privileges() ) {
+        return;
+    }
+
+    if ( empty( ad_materials_calc_build_share_cart_payload_from_cart() ) ) {
+        return;
+    }
+
+    echo '<button type="button" class="checkout-button button alt wc-forward ad-materials-calc-share-cart-button" data-share-nonce="' . esc_attr( wp_create_nonce( 'ad_materials_calc_create_cart_share_link' ) ) . '">';
+    echo esc_html__( 'Share the cart', 'ad-materials-calculator' );
+    echo '</button>';
+}
+
+function ad_materials_calc_build_share_cart_payload_from_cart() {
+
+    if ( ! function_exists( 'WC' ) || ! WC() || ! WC()->cart ) {
+        return [];
+    }
+
+    $groups = [];
+
+    foreach ( WC()->cart->get_cart() as $cart_item ) {
+        $group_id = ad_materials_calc_get_group_id_from_cart_item( $cart_item );
+
+        if ( $group_id === '' ) {
+            continue;
+        }
+
+        if ( empty( $groups[$group_id] ) ) {
+            $group_subtotal = ad_materials_calc_get_current_group_subtotal( WC()->cart, $group_id );
+            $group_discount = ad_materials_calc_get_current_group_discount_amount( WC()->cart, $group_id, $cart_item );
+
+            $groups[$group_id] = [
+                'project_title'            => ad_materials_calc_get_group_title_from_cart_item( $cart_item ),
+                'project_meta'             => ad_materials_calc_get_group_label_from_cart_item( $cart_item ),
+                'joint_filler_note'        => ad_materials_calc_get_group_joint_filler_note_from_cart_item( $cart_item ),
+                'joint_filler_kg'          => ad_materials_calc_get_group_joint_filler_kg_from_cart_item( $cart_item ),
+                'discount_type'            => ad_materials_calc_get_group_discount_type_from_cart_item( $cart_item ),
+                'discount_label'           => ad_materials_calc_get_group_discount_label_from_cart_item( $cart_item ),
+                'discount_requested_value' => ad_materials_calc_get_group_discount_requested_value_from_cart_item( $cart_item ),
+                'discount_applied_value'   => $group_discount,
+                'subtotal_before_discount' => $group_subtotal,
+                'final_total'              => max( 0, $group_subtotal - $group_discount ),
+                'items'                    => [],
+            ];
+        }
+
+        if ( empty( $cart_item['data'] ) || ! is_object( $cart_item['data'] ) || ! method_exists( $cart_item['data'], 'get_sku' ) ) {
+            continue;
+        }
+
+        $sku = trim( (string) $cart_item['data']->get_sku() );
+        $qty = isset( $cart_item['quantity'] ) ? (int) $cart_item['quantity'] : 0;
+
+        if ( $sku === '' || $qty <= 0 ) {
+            continue;
+        }
+
+        $groups[$group_id]['items'][] = [
+            'sku' => $sku,
+            'qty' => $qty,
+        ];
+    }
+
+    $groups = array_values(
+        array_filter(
+            $groups,
+            function ( $group ) {
+                return ! empty( $group['items'] );
+            }
+        )
+    );
+
+    if ( empty( $groups ) ) {
+        return [];
+    }
+
+    return [
+        'groups' => $groups,
+    ];
+}
+
+/**
+ * Create a share link for privileged staff users from the current cart groups.
+ */
+add_action( 'wp_ajax_ad_materials_calc_create_cart_share_link', 'ad_materials_calc_ajax_create_cart_share_link' );
+function ad_materials_calc_ajax_create_cart_share_link() {
+
+    if ( ! function_exists( 'ad_materials_calc_current_user_has_extended_privileges' ) || ! ad_materials_calc_current_user_has_extended_privileges() ) {
+        wp_send_json_error(
+            [
+                'message' => __( 'You do not have permission to create share links.', 'ad-materials-calculator' ),
+            ],
+            403
+        );
+    }
+
+    if ( empty( $_POST['nonce'] ) || ! wp_verify_nonce( wp_unslash( $_POST['nonce'] ), 'ad_materials_calc_create_cart_share_link' ) ) {
+        wp_send_json_error(
+            [
+                'message' => __( 'We could not validate this share-link request. Please refresh and try again.', 'ad-materials-calculator' ),
+            ],
+            403
+        );
+    }
+
+    $payload = ad_materials_calc_build_share_cart_payload_from_cart();
+
+    if ( empty( $payload['groups'] ) || ! is_array( $payload['groups'] ) ) {
+        wp_send_json_error(
+            [
+                'message' => __( 'Add at least one calculated materials group to the cart before creating a share link.', 'ad-materials-calculator' ),
+            ],
+            400
+        );
+    }
+
+    $share = Ad_Materials_Calculator_Share_Links::create( $payload );
+
+    if ( empty( $share['url'] ) ) {
+        wp_send_json_error(
+            [
+                'message' => __( 'We could not create a share link right now. Please try again.', 'ad-materials-calculator' ),
+            ],
+            500
+        );
+    }
+
+    wp_send_json_success(
+        [
+            'url'        => $share['url'],
+            'expires_at' => isset( $share['expires_at'] ) ? $share['expires_at'] : '',
+        ]
+    );
+}
+
+function ad_materials_calc_add_payload_group_to_cart( array $payload, $share_link_id = 0 ) {
+
+    if ( empty( $payload['items'] ) || ! is_array( $payload['items'] ) || ! function_exists( 'WC' ) || ! WC() || ! WC()->cart ) {
+        return false;
+    }
+
+    $group_id      = 'mc_' . wp_generate_uuid4();
+    $group_label   = ad_materials_calc_build_group_label( $payload );
+    $added_any     = false;
+    $share_link_id = absint( $share_link_id );
+    $shippo_state  = ad_materials_calc_suspend_shippo_rate_triggers();
     ad_materials_calc_set_bulk_cart_mutation_active( true );
 
     try {
@@ -551,21 +817,17 @@ function ad_materials_calc_handle_add_group_to_cart() {
                 'ad_materials_calc_discount_type'            => isset( $payload['discount_type'] ) ? (string) $payload['discount_type'] : 'none',
                 'ad_materials_calc_discount_label'           => isset( $payload['discount_label'] ) ? (string) $payload['discount_label'] : '',
                 'ad_materials_calc_discount_requested_value' => isset( $payload['discount_requested_value'] ) ? (float) $payload['discount_requested_value'] : 0.0,
-                'ad_materials_calc_discount_applied_value'   => isset( $payload['discount_applied_value'] ) ? (float) $payload['discount_applied_value'] : 0.0,
                 'ad_materials_calc_subtotal_before_discount' => isset( $payload['subtotal_before_discount'] ) ? (float) $payload['subtotal_before_discount'] : 0.0,
                 'ad_materials_calc_final_total'              => isset( $payload['final_total'] ) ? (float) $payload['final_total'] : 0.0,
+                'ad_materials_calc_share_link_id'            => $share_link_id,
             ];
 
             if ( $product->is_type( 'variation' ) ) {
-                $parent_id    = $product->get_parent_id();
-                $variation_id = $product->get_id();
-                $attributes   = $product->get_variation_attributes();
-
                 $added = WC()->cart->add_to_cart(
-                    $parent_id,
+                    $product->get_parent_id(),
                     $qty,
-                    $variation_id,
-                    $attributes,
+                    $product->get_id(),
+                    $product->get_variation_attributes(),
                     $cart_item_data
                 );
             } else {
@@ -587,27 +849,7 @@ function ad_materials_calc_handle_add_group_to_cart() {
         ad_materials_calc_restore_shippo_rate_triggers( $shippo_state );
     }
 
-    if ( $added_any ) {
-        $calculator_url = home_url( '/materials-calculator/' );
-        $success_notice = sprintf(
-            wp_kses(
-                __( 'The calculated materials were added to your cart as a grouped calculation. <a href="%s">Add another one?</a>', 'ad-materials-calculator' ),
-                [
-                    'a' => [
-                        'href' => [],
-                    ],
-                ]
-            ),
-            esc_url( $calculator_url )
-        );
-
-        wc_add_notice( $success_notice, 'success' );
-    } else {
-        wc_add_notice( __( 'We could not add the calculated materials to the cart. Please calculate again and try once more.', 'ad-materials-calculator' ), 'error' );
-    }
-
-    wp_safe_redirect( wc_get_cart_url() );
-    exit;
+    return $added_any;
 }
 
 /**
@@ -766,7 +1008,7 @@ function ad_materials_calc_apply_group_discount_fees( $cart ) {
         }
 
         $seen_groups[$group_id] = true;
-        $discount_total += max( 0, ad_materials_calc_get_group_discount_applied_value_from_cart_item( $cart_item ) );
+        $discount_total += ad_materials_calc_get_current_group_discount_amount( $cart, $group_id, $cart_item );
     }
 
     if ( $discount_total <= 0 ) {
@@ -774,6 +1016,46 @@ function ad_materials_calc_apply_group_discount_fees( $cart ) {
     }
 
     $cart->add_fee( __( 'Calculator discount', 'ad-materials-calculator' ), -$discount_total, false );
+}
+
+function ad_materials_calc_get_current_group_subtotal( $cart, $group_id ) {
+
+    $subtotal = 0.0;
+
+    if ( ! $cart || ! is_object( $cart ) || $group_id === '' ) {
+        return $subtotal;
+    }
+
+    foreach ( $cart->get_cart() as $cart_item ) {
+        if ( ad_materials_calc_get_group_id_from_cart_item( $cart_item ) !== $group_id ) {
+            continue;
+        }
+
+        $subtotal += isset( $cart_item['line_subtotal'] ) ? (float) $cart_item['line_subtotal'] : 0.0;
+    }
+
+    return max( 0, $subtotal );
+}
+
+function ad_materials_calc_get_current_group_discount_amount( $cart, $group_id, array $cart_item ) {
+
+    $discount_type   = ad_materials_calc_get_group_discount_type_from_cart_item( $cart_item );
+    $requested_value = ad_materials_calc_get_group_discount_requested_value_from_cart_item( $cart_item );
+    $group_subtotal  = ad_materials_calc_get_current_group_subtotal( $cart, $group_id );
+
+    if ( $group_subtotal <= 0 || $requested_value <= 0 ) {
+        return 0.0;
+    }
+
+    if ( $discount_type === 'percentage' ) {
+        return round( $group_subtotal * ( min( 100, max( 0, $requested_value ) ) / 100 ), wc_get_price_decimals() );
+    }
+
+    if ( $discount_type === 'fixed' ) {
+        return min( max( 0, $requested_value ), $group_subtotal );
+    }
+
+    return 0.0;
 }
 
 add_action( 'woocommerce_checkout_create_order', 'ad_materials_calc_add_group_discount_order_meta', 20, 2 );
@@ -794,6 +1076,8 @@ function ad_materials_calc_add_group_discount_order_meta( $order, $data ) {
         }
 
         $seen_groups[$group_id] = true;
+        $group_subtotal         = ad_materials_calc_get_current_group_subtotal( WC()->cart, $group_id );
+        $group_discount         = ad_materials_calc_get_current_group_discount_amount( WC()->cart, $group_id, $cart_item );
 
         $groups[] = [
             'group_id'                 => $group_id,
@@ -804,9 +1088,10 @@ function ad_materials_calc_add_group_discount_order_meta( $order, $data ) {
             'discount_type'            => ad_materials_calc_get_group_discount_type_from_cart_item( $cart_item ),
             'discount_label'           => ad_materials_calc_get_group_discount_label_from_cart_item( $cart_item ),
             'discount_requested_value' => ad_materials_calc_get_group_discount_requested_value_from_cart_item( $cart_item ),
-            'discount_applied_value'   => ad_materials_calc_get_group_discount_applied_value_from_cart_item( $cart_item ),
-            'subtotal_before_discount' => isset( $cart_item['ad_materials_calc_subtotal_before_discount'] ) ? (float) $cart_item['ad_materials_calc_subtotal_before_discount'] : 0.0,
-            'final_total'              => isset( $cart_item['ad_materials_calc_final_total'] ) ? (float) $cart_item['ad_materials_calc_final_total'] : 0.0,
+            'discount_applied_value'   => $group_discount,
+            'subtotal_before_discount' => $group_subtotal,
+            'final_total'              => max( 0, $group_subtotal - $group_discount ),
+            'share_link_id'            => ad_materials_calc_get_group_share_link_id_from_cart_item( $cart_item ),
         ];
     }
 
@@ -815,4 +1100,41 @@ function ad_materials_calc_add_group_discount_order_meta( $order, $data ) {
     }
 
     $order->update_meta_data( '_ad_materials_calc_groups', $groups );
+
+    $share_link_ids = array_values(
+        array_unique(
+            array_filter(
+                array_map(
+                    'absint',
+                    wp_list_pluck( $groups, 'share_link_id' )
+                )
+            )
+        )
+    );
+
+    if ( ! empty( $share_link_ids ) ) {
+        $order->update_meta_data( '_ad_materials_calc_share_link_ids', $share_link_ids );
+    }
+}
+
+add_action( 'woocommerce_payment_complete', 'ad_materials_calc_mark_share_links_used_by_order' );
+add_action( 'woocommerce_order_status_processing', 'ad_materials_calc_mark_share_links_used_by_order' );
+add_action( 'woocommerce_order_status_completed', 'ad_materials_calc_mark_share_links_used_by_order' );
+function ad_materials_calc_mark_share_links_used_by_order( $order_id ) {
+
+    $order = wc_get_order( $order_id );
+
+    if ( ! $order ) {
+        return;
+    }
+
+    $share_link_ids = $order->get_meta( '_ad_materials_calc_share_link_ids', true );
+
+    if ( empty( $share_link_ids ) || ! is_array( $share_link_ids ) ) {
+        return;
+    }
+
+    foreach ( array_filter( array_map( 'absint', $share_link_ids ) ) as $share_link_id ) {
+        Ad_Materials_Calculator_Share_Links::mark_used_by_order( $share_link_id, $order->get_id() );
+    }
 }

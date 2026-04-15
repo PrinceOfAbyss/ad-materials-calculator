@@ -117,6 +117,11 @@ class Ad_Materials_Calculator {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-ad-materials-calculator-coverage-schema.php';
 
 		/**
+		 * Shared storage helpers for calculator share links.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-ad-materials-calculator-share-links.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-ad-materials-calculator-admin.php';

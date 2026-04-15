@@ -31,6 +31,9 @@ class Ad_Materials_Calculator_Activator {
 	 */
 	public static function activate() {
 
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-ad-materials-calculator-share-links.php';
+
+		Ad_Materials_Calculator_Share_Links::install_table();
 	}
 
 }
