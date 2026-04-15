@@ -31,16 +31,33 @@ function ad_materials_calc_results_shortcode() {
     $calc   = ad_materials_calc_get_calculation_from_answers( $answers );
     $output = ad_materials_calc_render_calculation_result( $calc, $answers );
 
-    $output = '<pre>' . print_r( $answers, true ) . '</pre>' . $output;
-
     if ( function_exists( 'ad_materials_calc_render_add_to_cart_block' ) ) {
         $output .= ad_materials_calc_render_add_to_cart_block( $answers, $calc );
+    }
+
+    if ( ! empty( $calc['joint_filler_note'] ) ) {
+        $output .= ad_materials_calc_render_results_joint_filler_note( (string) $calc['joint_filler_note'] );
+    }
+
+    if ( ! empty( $calc['notice'] ) ) {
+        $output .= '<div class="ad-materials-calc-results-notice">';
+        $output .= wp_kses_post( $calc['notice'] );
+        $output .= '</div>';
+    }
+
+    if ( ad_materials_calc_current_user_can_view_debug_output() ) {
+        $output .= ad_materials_calc_render_calculation_debug_output( $calc, $answers );
     }
 
     // Clear the stored calculator answers after rendering the results
     WC()->session->set( 'materials_calc_answers', null );
 
     return $output;
+}
+
+function ad_materials_calc_current_user_can_view_debug_output() {
+
+    return get_current_user_id() === 1;
 }
 
 function ad_materials_calc_get_calculation_from_answers( array $answers ) {
@@ -114,21 +131,25 @@ function ad_materials_calc_render_calculation_result( array $calc, array $answer
     }
 
     $html = '<div class="materials-calc-results">';
-    $html .= '<div style="margin-bottom:14px;">';
-    $html .= '<strong>Matched clause:</strong><br>' . esc_html( isset( $calc['clause'] ) ? $calc['clause'] : '' );
-    $html .= '</div>';
+
     $html .= ad_materials_calc_render_results_table(
         isset( $calc['items'] ) && is_array( $calc['items'] ) ? $calc['items'] : [],
         $answers
     );
 
-    if ( ! empty( $calc['joint_filler_note'] ) ) {
-        $html .= ad_materials_calc_render_results_joint_filler_note( (string) $calc['joint_filler_note'] );
-    }
+    $html .= '</div>';
 
-    if ( ! empty( $calc['notice'] ) ) {
-        $html .= '<div style="margin-top:16px;padding:12px;border:1px solid #ddd;border-radius:4px;background:#fafafa;">';
-        $html .= wp_kses_post( $calc['notice'] );
+    return $html;
+}
+
+function ad_materials_calc_render_calculation_debug_output( array $calc, array $answers ) {
+
+    $html = '<div class="materials-calc-debug-output" style="margin-top:24px;">';
+    $html .= '<pre style="white-space:pre-wrap;margin:0 0 16px;">' . esc_html( print_r( $answers, true ) ) . '</pre>';
+
+    if ( ! empty( $calc['clause'] ) ) {
+        $html .= '<div style="margin-bottom:14px;">';
+        $html .= '<strong>Matched clause:</strong><br>' . esc_html( $calc['clause'] );
         $html .= '</div>';
     }
 
