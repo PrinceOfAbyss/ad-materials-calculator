@@ -152,6 +152,42 @@
     color: #b42318;
 }
 
+.materials-calc-results__error-output {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.materials-calc-debug-output {
+    margin-top: 24px;
+}
+
+.materials-calc-debug-output__answers {
+    margin: 0 0 16px;
+    white-space: pre-wrap;
+}
+
+.materials-calc-debug-output__clause {
+    margin-bottom: 14px;
+}
+
+.materials-calc-debug-output__title {
+    margin-top: 20px;
+}
+
+.materials-calc-debug-output__details {
+    margin: 10px 0 0;
+    white-space: pre-wrap;
+}
+
+.ad-materials-calc-results-sku {
+    font-size: 12px;
+    opacity: .75;
+}
+
+.ad-materials-calc-results-summary-label {
+    text-align: right;
+}
+
 /* Calculator result notes below the add-to-cart button */
 .ad-materials-calc-results-note {
     color: #444;
@@ -182,6 +218,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+    margin-top: 20px;
 }
 
 .woocommerce-cart .cart-totals-inner .checkout-button.ad-materials-calc-share-cart-button {

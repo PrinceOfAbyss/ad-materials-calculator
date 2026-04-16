@@ -127,7 +127,7 @@ function ad_materials_calc_render_calculation_result( array $calc, array $answer
     if ( isset( $calc['error'] ) ) {
         $error_output = isset( $calc['clause'] ) && $calc['clause'] !== '' ? esc_html( $calc['clause'] ) . '<br>' . esc_html( $calc['error'] ) : esc_html( $calc['error'] );
 
-        return '<div class="materials-calc-results"><pre style="white-space:pre-wrap;margin:0;">' . $error_output . '</pre></div>';
+        return '<div class="materials-calc-results"><pre class="materials-calc-results__error-output">' . $error_output . '</pre></div>';
     }
 
     $html = '<div class="materials-calc-results">';
@@ -144,19 +144,19 @@ function ad_materials_calc_render_calculation_result( array $calc, array $answer
 
 function ad_materials_calc_render_calculation_debug_output( array $calc, array $answers ) {
 
-    $html = '<div class="materials-calc-debug-output" style="margin-top:24px;">';
-    $html .= '<pre style="white-space:pre-wrap;margin:0 0 16px;">' . esc_html( print_r( $answers, true ) ) . '</pre>';
+    $html = '<div class="materials-calc-debug-output">';
+    $html .= '<pre class="materials-calc-debug-output__answers">' . esc_html( print_r( $answers, true ) ) . '</pre>';
 
     if ( ! empty( $calc['clause'] ) ) {
-        $html .= '<div style="margin-bottom:14px;">';
+        $html .= '<div class="materials-calc-debug-output__clause">';
         $html .= '<strong>Matched clause:</strong><br>' . esc_html( $calc['clause'] );
         $html .= '</div>';
     }
 
     if ( ! empty( $calc['debug'] ) ) {
         $debug_title = ! empty( $calc['debug_title'] ) ? (string) $calc['debug_title'] : 'Calculation debug:';
-        $html .= '<div style="margin-top:20px;"><strong>' . esc_html( $debug_title ) . '</strong></div>';
-        $html .= '<pre style="white-space:pre-wrap;margin:10px 0 0;">' . esc_html( print_r( $calc['debug'], true ) ) . '</pre>';
+        $html .= '<div class="materials-calc-debug-output__title"><strong>' . esc_html( $debug_title ) . '</strong></div>';
+        $html .= '<pre class="materials-calc-debug-output__details">' . esc_html( print_r( $calc['debug'], true ) ) . '</pre>';
     }
 
     $html .= '</div>';
@@ -566,7 +566,7 @@ function ad_materials_calc_render_results_table( array $items, array $answers = 
 
         $html .= '<td class="product-name" role="rowheader" data-title="Product">';
         $html .= $product_name_html;
-        $html .= '<div style="font-size:12px;opacity:.75;">' . esc_html( $item['sku'] ) . '</div>';
+        $html .= '<div class="ad-materials-calc-results-sku">' . esc_html( $item['sku'] ) . '</div>';
         $html .= '</td>';
 
         $html .= '<td class="product-price" data-title="Price">';
@@ -585,7 +585,7 @@ function ad_materials_calc_render_results_table( array $items, array $answers = 
     }
 
     $html .= '<tr class="wd-cart-action-row">';
-    $html .= '<td colspan="4" style="text-align:right;"><strong>Subtotal</strong></td>';
+    $html .= '<td colspan="4" class="ad-materials-calc-results-summary-label"><strong>Subtotal</strong></td>';
     $html .= '<td class="product-subtotal"><strong>' . wp_kses_post( wc_price( $subtotal ) ) . '</strong></td>';
     $html .= '</tr>';
 
@@ -601,13 +601,13 @@ function ad_materials_calc_render_results_table( array $items, array $answers = 
         }
 
         $html .= '<tr class="wd-cart-action-row">';
-        $html .= '<td colspan="4" class="ad-materials-calc-results-discount-label" style="text-align:right;"><strong>' . esc_html( $discount_row_label ) . '</strong></td>';
+        $html .= '<td colspan="4" class="ad-materials-calc-results-summary-label ad-materials-calc-results-discount-label"><strong>' . esc_html( $discount_row_label ) . '</strong></td>';
         $html .= '<td class="product-subtotal ad-materials-calc-results-discount-value"><strong>-' . wp_kses_post( wc_price( $discount_data['applied_value'] ) ) . '</strong></td>';
         $html .= '</tr>';
     }
 
     $html .= '<tr class="wd-cart-action-row">';
-    $html .= '<td colspan="4" style="text-align:right;"><strong>Total</strong></td>';
+    $html .= '<td colspan="4" class="ad-materials-calc-results-summary-label"><strong>Total</strong></td>';
     $html .= '<td class="product-subtotal"><strong>' . wp_kses_post( wc_price( $discount_data['final_total'] ) ) . '</strong></td>';
     $html .= '</tr>';
 

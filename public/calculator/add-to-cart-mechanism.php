@@ -38,7 +38,7 @@ function ad_materials_calc_render_add_to_cart_block( array $answers, array $calc
         return '';
     }
 
-    $html = '<div class="materials-calc-add-to-cart" style="margin-top:20px;">';
+    $html = '<div class="materials-calc-add-to-cart">';
     $html .= '<form method="post">';
     $html .= wp_nonce_field( 'ad_materials_calc_add_group_to_cart', 'ad_materials_calc_add_group_nonce', true, false );
     $html .= '<input type="hidden" name="ad_materials_calc_action" value="add_group_to_cart">';
