@@ -56,11 +56,16 @@ class Ad_Materials_Calculator_Share_Links {
                 expires_at datetime NOT NULL,
                 used_order_id bigint(20) unsigned NOT NULL DEFAULT 0,
                 used_at datetime NULL DEFAULT NULL,
+                access_count bigint(20) unsigned NOT NULL DEFAULT 0,
+                first_accessed_at datetime NULL DEFAULT NULL,
                 last_accessed_at datetime NULL DEFAULT NULL,
                 PRIMARY KEY  (id),
                 UNIQUE KEY token_hash (token_hash),
+                KEY created_by_user_id (created_by_user_id),
                 KEY expires_at (expires_at),
-                KEY used_order_id (used_order_id)
+                KEY used_order_id (used_order_id),
+                KEY first_accessed_at (first_accessed_at),
+                KEY last_accessed_at (last_accessed_at)
             ) {$charset_collate};"
         );
     }
@@ -75,8 +80,6 @@ class Ad_Materials_Calculator_Share_Links {
     public static function create( array $payload ) {
 
         global $wpdb;
-
-        self::install_table();
 
         $token      = wp_generate_password( 48, false, false );
         $token_hash = self::hash_token( $token );
@@ -201,20 +204,15 @@ class Ad_Materials_Calculator_Share_Links {
             return;
         }
 
-        $wpdb->update(
-            self::get_table_name(),
-            [
-                'last_accessed_at' => current_time( 'mysql', true ),
-            ],
-            [
-                'id' => $share_id,
-            ],
-            [
-                '%s',
-            ],
-            [
-                '%d',
-            ]
+        $now = current_time( 'mysql', true );
+
+        $wpdb->query(
+            $wpdb->prepare(
+                'UPDATE ' . self::get_table_name() . ' SET access_count = access_count + 1, first_accessed_at = IF(first_accessed_at IS NULL, %s, first_accessed_at), last_accessed_at = %s WHERE id = %d',
+                $now,
+                $now,
+                $share_id
+            )
         );
     }
 

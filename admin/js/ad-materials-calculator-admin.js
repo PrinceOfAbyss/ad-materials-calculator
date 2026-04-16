@@ -64,6 +64,8 @@
 	$(function () {
 		var $tables = $('.ad-mc-settings-table');
 		var $userSelect = $('.ad-mc-settings-user-select');
+		var $shareLinksModal = $('.ad-mc-share-links-modal');
+		var $shareLinksModalContent = $shareLinksModal.find('.ad-mc-share-links-modal__content');
 
 		$tables.find('tbody tr').each(function () {
 			updateCoverageRowTotal($(this));
@@ -76,5 +78,29 @@
 		if ($userSelect.length && typeof $.fn.selectWoo === 'function') {
 			$userSelect.selectWoo();
 		}
+
+		$(document).on('click', '.ad-mc-share-links-preview-button', function () {
+			var previewId = $(this).data('ad-mc-share-links-preview');
+			var $template = $('#ad-mc-share-links-preview-' + previewId);
+
+			if (!$shareLinksModal.length || !$template.length) {
+				return;
+			}
+
+			$shareLinksModalContent.html($template.html());
+			$shareLinksModal.removeAttr('hidden');
+		});
+
+		$(document).on('click', '[data-ad-mc-share-links-close]', function () {
+			$shareLinksModal.attr('hidden', 'hidden');
+			$shareLinksModalContent.empty();
+		});
+
+		$(document).on('keydown', function (event) {
+			if (event.key === 'Escape' && !$shareLinksModal.is('[hidden]')) {
+				$shareLinksModal.attr('hidden', 'hidden');
+				$shareLinksModalContent.empty();
+			}
+		});
 	});
 })( jQuery );

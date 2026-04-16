@@ -122,6 +122,11 @@ class Ad_Materials_Calculator {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-ad-materials-calculator-share-links.php';
 
 		/**
+		 * The class responsible for displaying calculator share links in admin.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-ad-materials-calculator-share-links-list-table.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-ad-materials-calculator-admin.php';
@@ -172,6 +177,8 @@ class Ad_Materials_Calculator {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_share_links_admin_page' );
+		$this->loader->add_action( 'set-screen-option', $plugin_admin, 'save_share_links_screen_options', 10, 3 );
 		$this->loader->add_filter( 'woocommerce_settings_tabs_array', $plugin_settings, 'add_woocommerce_settings_tab', 50 );
 		$this->loader->add_action( 'woocommerce_settings_tabs_materials-calculator', $plugin_settings, 'render_woocommerce_settings_tab' );
 		$this->loader->add_action( 'woocommerce_update_options_materials-calculator', $plugin_settings, 'save_woocommerce_settings_tab' );
