@@ -111,17 +111,18 @@ class Ad_Materials_Calculator_Share_Links_List_Table extends WP_List_Table {
             $where_parts = [
                 'CAST(share_links.id AS CHAR) LIKE %s',
                 'CAST(share_links.used_order_id AS CHAR) LIKE %s',
+                'share_links.token LIKE %s',
                 'share_links.payload LIKE %s',
                 'users.user_login LIKE %s',
                 'users.display_name LIKE %s',
                 'users.user_email LIKE %s',
             ];
-            $args       = [$search_like, $search_like, $search_like, $search_like, $search_like, $search_like];
-            $token_hash = $this->get_token_hash_from_search_term( $search );
+            $args  = [$search_like, $search_like, $search_like, $search_like, $search_like, $search_like, $search_like];
+            $token = $this->get_token_from_search_term( $search );
 
-            if ( $token_hash !== '' ) {
-                $where_parts[] = 'share_links.token_hash = %s';
-                $args[]        = $token_hash;
+            if ( $token !== '' ) {
+                $where_parts[] = 'share_links.token = %s';
+                $args[]        = $token;
             }
 
             $where = 'WHERE ' . implode( ' OR ', $where_parts );
@@ -244,7 +245,7 @@ class Ad_Materials_Calculator_Share_Links_List_Table extends WP_List_Table {
             count( $groups )
         );
 
-        $html = '<strong>' . esc_html( $summary ) . '</strong>';
+        $html = '<strong class="ad-mc-share-links-summary-count">' . esc_html( $summary ) . '</strong>';
         $html .= '<ul class="ad-mc-share-links-summary-list">';
 
         foreach ( $titles as $title ) {
@@ -395,11 +396,38 @@ class Ad_Materials_Calculator_Share_Links_List_Table extends WP_List_Table {
         $html .= '<span><strong>' . esc_html__( 'Expires:', 'ad-materials-calculator' ) . '</strong> ' . $this->format_date( isset( $item['expires_at'] ) ? $item['expires_at'] : '' ) . '</span>';
         $html .= '<span><strong>' . esc_html__( 'Opens:', 'ad-materials-calculator' ) . '</strong> ' . esc_html( (string) absint( isset( $item['access_count'] ) ? $item['access_count'] : 0 ) ) . '</span>';
         $html .= '</div>';
+        $html .= $this->render_preview_share_url( $item );
 
         foreach ( $groups as $index => $group ) {
             $html .= $this->render_preview_group( $group, $index + 1 );
         }
 
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
+     * Render the recoverable public share URL for a row.
+     *
+     * @since    1.0.0
+     * @param    array $item Share-link row.
+     * @return   string
+     */
+    private function render_preview_share_url( array $item ) {
+
+        $share_url = Ad_Materials_Calculator_Share_Links::get_url_from_record( $item );
+
+        if ( $share_url === '' ) {
+            return '<p class="ad-mc-share-links-preview__missing-url"><em>' . esc_html__( 'The original share link is not recoverable for this record.', 'ad-materials-calculator' ) . '</em></p>';
+        }
+
+        $field_id = 'ad-mc-share-link-url-' . absint( isset( $item['id'] ) ? $item['id'] : 0 );
+
+        $html = '<div class="ad-mc-share-links-preview__url-row">';
+        $html .= '<label for="' . esc_attr( $field_id ) . '">' . esc_html__( 'Share link', 'ad-materials-calculator' ) . '</label>';
+        $html .= '<input type="text" id="' . esc_attr( $field_id ) . '" value="' . esc_attr( $share_url ) . '" readonly>';
+        $html .= '<button type="button" class="button ad-mc-share-links-preview__copy-url" data-ad-mc-copy-share-link data-copy-label="' . esc_attr__( 'Copy', 'ad-materials-calculator' ) . '" data-copied-label="' . esc_attr__( 'Copied', 'ad-materials-calculator' ) . '">' . esc_html__( 'Copy', 'ad-materials-calculator' ) . '</button>';
         $html .= '</div>';
 
         return $html;
@@ -426,13 +454,13 @@ class Ad_Materials_Calculator_Share_Links_List_Table extends WP_List_Table {
     }
 
     /**
-     * Return a token hash when the search term is a share URL or raw token.
+     * Return a token when the search term is a share URL or raw token.
      *
      * @since    1.0.0
      * @param    string $search Search term.
      * @return   string
      */
-    private function get_token_hash_from_search_term( $search ) {
+    private function get_token_from_search_term( $search ) {
 
         $search = trim( (string) $search );
 
@@ -449,12 +477,12 @@ class Ad_Materials_Calculator_Share_Links_List_Table extends WP_List_Table {
                 parse_str( $parts['query'], $query_args );
 
                 if ( ! empty( $query_args['mc_share'] ) ) {
-                    return Ad_Materials_Calculator_Share_Links::hash_token( (string) $query_args['mc_share'] );
+                    return trim( (string) $query_args['mc_share'] );
                 }
             }
 
             if ( preg_match( '/^[A-Za-z0-9]{20,}$/', $candidate ) ) {
-                return Ad_Materials_Calculator_Share_Links::hash_token( $candidate );
+                return $candidate;
             }
         }
 
@@ -484,24 +512,6 @@ class Ad_Materials_Calculator_Share_Links_List_Table extends WP_List_Table {
         $html = '<section class="ad-mc-share-links-preview-group">';
         $html .= $this->render_preview_group_products( $group, $title );
         $html .= '</section>';
-
-        return $html;
-    }
-
-    /**
-     * Render product column headings above a preview group.
-     *
-     * @since    1.0.0
-     * @return   string
-     */
-    private function render_preview_group_products_heading() {
-
-        $html = '<div class="ad-mc-share-links-preview-products-heading" aria-hidden="true">';
-        $html .= '<span>' . esc_html__( 'Product', 'ad-materials-calculator' ) . '</span>';
-        $html .= '<span>' . esc_html__( 'Price', 'ad-materials-calculator' ) . '</span>';
-        $html .= '<span>' . esc_html__( 'Quantity', 'ad-materials-calculator' ) . '</span>';
-        $html .= '<span>' . esc_html__( 'Subtotal', 'ad-materials-calculator' ) . '</span>';
-        $html .= '</div>';
 
         return $html;
     }

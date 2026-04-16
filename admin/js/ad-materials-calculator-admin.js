@@ -96,6 +96,38 @@
 			$shareLinksModalContent.empty();
 		});
 
+		$(document).on('click', '[data-ad-mc-copy-share-link]', function () {
+			var $button = $(this);
+			var $input = $button.closest('.ad-mc-share-links-preview__url-row').find('input');
+			var copyLabel = $button.data('copy-label');
+			var copiedLabel = $button.data('copied-label');
+			var copiedValue = $input.val();
+
+			if (!copiedValue) {
+				return;
+			}
+
+			function markCopied() {
+				$button.text(copiedLabel);
+
+				window.setTimeout(function () {
+					$button.text(copyLabel);
+				}, 1600);
+			}
+
+			function fallbackCopy() {
+				$input.trigger('select');
+				document.execCommand('copy');
+				markCopied();
+			}
+
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(copiedValue).then(markCopied).catch(fallbackCopy);
+			} else {
+				fallbackCopy();
+			}
+		});
+
 		$(document).on('keydown', function (event) {
 			if (event.key === 'Escape' && !$shareLinksModal.is('[hidden]')) {
 				$shareLinksModal.attr('hidden', 'hidden');

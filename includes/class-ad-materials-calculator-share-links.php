@@ -49,7 +49,7 @@ class Ad_Materials_Calculator_Share_Links {
         dbDelta(
             "CREATE TABLE {$table_name} (
                 id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-                token_hash varchar(64) NOT NULL,
+                token varchar(64) NOT NULL,
                 payload longtext NOT NULL,
                 created_by_user_id bigint(20) unsigned NOT NULL DEFAULT 0,
                 created_at datetime NOT NULL,
@@ -60,7 +60,7 @@ class Ad_Materials_Calculator_Share_Links {
                 first_accessed_at datetime NULL DEFAULT NULL,
                 last_accessed_at datetime NULL DEFAULT NULL,
                 PRIMARY KEY  (id),
-                UNIQUE KEY token_hash (token_hash),
+                UNIQUE KEY token (token),
                 KEY created_by_user_id (created_by_user_id),
                 KEY expires_at (expires_at),
                 KEY used_order_id (used_order_id),
@@ -82,7 +82,6 @@ class Ad_Materials_Calculator_Share_Links {
         global $wpdb;
 
         $token      = wp_generate_password( 48, false, false );
-        $token_hash = self::hash_token( $token );
         $created_at = current_time( 'mysql', true );
         $expires_at = gmdate( 'Y-m-d H:i:s', current_time( 'timestamp', true ) + ( 30 * DAY_IN_SECONDS ) );
         $payload    = wp_json_encode( $payload );
@@ -94,7 +93,7 @@ class Ad_Materials_Calculator_Share_Links {
         $inserted = $wpdb->insert(
             self::get_table_name(),
             [
-                'token_hash'         => $token_hash,
+                'token'              => $token,
                 'payload'            => $payload,
                 'created_by_user_id' => get_current_user_id(),
                 'created_at'         => $created_at,
@@ -116,8 +115,7 @@ class Ad_Materials_Calculator_Share_Links {
         return [
             'id'         => (int) $wpdb->insert_id,
             'token'      => $token,
-            'token_hash' => $token_hash,
-            'url'        => add_query_arg( 'mc_share', rawurlencode( $token ), home_url( '/materials-calculator/' ) ),
+            'url'        => self::get_url_from_token( $token ),
             'expires_at' => $expires_at,
         ];
     }
@@ -141,13 +139,43 @@ class Ad_Materials_Calculator_Share_Links {
 
         $record = $wpdb->get_row(
             $wpdb->prepare(
-                'SELECT * FROM ' . self::get_table_name() . ' WHERE token_hash = %s LIMIT 1',
-                self::hash_token( $token )
+                'SELECT * FROM ' . self::get_table_name() . ' WHERE token = %s LIMIT 1',
+                $token
             ),
             ARRAY_A
         );
 
         return is_array( $record ) ? $record : [];
+    }
+
+    /**
+     * Build a public share URL from a stored token.
+     *
+     * @since    1.0.0
+     * @param    string $token Public token.
+     * @return   string
+     */
+    public static function get_url_from_token( $token ) {
+
+        $token = is_string( $token ) ? trim( $token ) : '';
+
+        if ( '' === $token ) {
+            return '';
+        }
+
+        return add_query_arg( 'mc_share', rawurlencode( $token ), home_url( '/materials-calculator/' ) );
+    }
+
+    /**
+     * Build a public share URL from a share-link database record.
+     *
+     * @since    1.0.0
+     * @param    array $record Share-link record.
+     * @return   string
+     */
+    public static function get_url_from_record( array $record ) {
+
+        return self::get_url_from_token( isset( $record['token'] ) ? (string) $record['token'] : '' );
     }
 
     /**
@@ -253,15 +281,4 @@ class Ad_Materials_Calculator_Share_Links {
         );
     }
 
-    /**
-     * Hash a public share token for storage and lookup.
-     *
-     * @since    1.0.0
-     * @param    string $token Public token.
-     * @return   string
-     */
-    public static function hash_token( $token ) {
-
-        return hash( 'sha256', (string) $token );
-    }
 }

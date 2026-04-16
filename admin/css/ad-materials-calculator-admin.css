@@ -126,6 +126,14 @@
     width: 28%;
 }
 
+.woocommerce_page_materials-calculator-share-links .search-box input[name="s"] {
+    width: min(810px, calc(100vw - 300px));
+}
+
+.ad-mc-share-links-summary-count {
+    font-size: 14px;
+}
+
 .ad-mc-share-links-summary-list {
     line-height: 1.45;
     list-style: none;
@@ -229,6 +237,26 @@
     flex-wrap: wrap;
     gap: 10px 20px;
     margin-bottom: 18px;
+}
+
+.ad-mc-share-links-preview__url-row {
+    align-items: center;
+    display: grid;
+    gap: 8px 10px;
+    grid-template-columns: 86px minmax(240px, 1fr) auto;
+    margin-bottom: 22px;
+}
+
+.ad-mc-share-links-preview__url-row label {
+    font-weight: 600;
+}
+
+.ad-mc-share-links-preview__url-row input {
+    width: 100%;
+}
+
+.ad-mc-share-links-preview__missing-url {
+    margin: 0 0 22px;
 }
 
 .ad-mc-share-links-preview-group {
@@ -367,5 +395,9 @@
 
     .ad-mc-settings-page .ad-mc-settings-table td {
         width: auto;
+    }
+
+    .ad-mc-share-links-preview__url-row {
+        grid-template-columns: 1fr;
     }
 }
