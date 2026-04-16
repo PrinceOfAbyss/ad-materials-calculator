@@ -558,7 +558,7 @@ function ad_materials_calc_render_results_table( array $items, array $answers = 
             $product_name_html = '<a href="' . esc_url( $item['url'] ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $item['name'] ) . '</a>';
         }
 
-        $html .= '<tr class="woocommerce-cart-form__cart-item cart_item tc-container-table-product">';
+        $html .= '<tr class="woocommerce-cart-form__cart-item cart_item tc-container-table-product ad-materials-calc-results-product-row">';
 
         $html .= '<td class="product-thumbnail">';
         $html .= $item['thumb'];

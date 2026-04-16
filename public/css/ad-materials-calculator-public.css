@@ -345,7 +345,7 @@ button.materials-calc-share-modal__close {
     background: transparent !important;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 768px) {
 
     /* Slightly reduce the title size on mobile */
     .woocommerce-cart .ad-materials-calc-group-header__title {
@@ -355,5 +355,113 @@ button.materials-calc-share-modal__close {
     /* Keep grouped rows only slightly indented on mobile */
     .woocommerce-cart .ad-materials-calc-product-cell-inner--grouped {
         padding-left: 10px;
+    }
+
+    .materials-calc-results table.shop_table_responsive,
+    .materials-calc-results table.shop_table_responsive tbody {
+        border: 0;
+        display: block;
+        width: 100%;
+    }
+
+    .materials-calc-results table.shop_table_responsive thead {
+        display: none;
+    }
+
+    .materials-calc-results tr.ad-materials-calc-results-product-row {
+        background: #f6f6f6;
+        display: grid;
+        grid-template-areas:
+            "thumbnail name"
+            "price price"
+            "quantity quantity"
+            "subtotal subtotal";
+        column-gap: 12px;
+        grid-template-columns: 96px minmax(0, 1fr);
+        margin-bottom: 14px;
+        width: 100%;
+    }
+
+    .materials-calc-results tr.ad-materials-calc-results-product-row td {
+        background: #f6f6f6;
+        border: 0;
+        box-sizing: border-box;
+        display: block;
+        width: auto;
+    }
+
+    .materials-calc-results tr.ad-materials-calc-results-product-row td.product-thumbnail {
+        grid-area: thumbnail;
+        padding: 18px 0 14px 14px;
+        text-align: left;
+    }
+
+    .materials-calc-results tr.ad-materials-calc-results-product-row td.product-thumbnail img {
+        height: auto !important;
+        max-width: 80px !important;
+        min-width: 80px !important;
+        width: 80px !important;
+    }
+
+    .materials-calc-results tr.ad-materials-calc-results-product-row td.product-name {
+        grid-area: name;
+        padding: 18px 14px 14px 0;
+        text-align: left;
+    }
+
+    .materials-calc-results tr.ad-materials-calc-results-product-row td.product-price,
+    .materials-calc-results tr.ad-materials-calc-results-product-row td.product-quantity,
+    .materials-calc-results tr.ad-materials-calc-results-product-row td.product-subtotal {
+        align-items: center;
+        border-top: 4px solid #fff;
+        display: flex;
+        justify-content: space-between;
+        padding: 14px;
+        text-align: right;
+    }
+
+    .materials-calc-results tr.ad-materials-calc-results-product-row td.product-price {
+        grid-area: price;
+    }
+
+    .materials-calc-results tr.ad-materials-calc-results-product-row td.product-quantity {
+        grid-area: quantity;
+    }
+
+    .materials-calc-results tr.ad-materials-calc-results-product-row td.product-subtotal {
+        grid-area: subtotal;
+    }
+
+    .materials-calc-results tr.ad-materials-calc-results-product-row td.product-price::before,
+    .materials-calc-results tr.ad-materials-calc-results-product-row td.product-quantity::before,
+    .materials-calc-results tr.ad-materials-calc-results-product-row td.product-subtotal::before {
+        color: #667267;
+        content: attr(data-title);
+        font-weight: 400;
+        padding-right: 16px;
+        text-align: left;
+    }
+
+    .materials-calc-results tr.wd-cart-action-row {
+        align-items: center;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 14px;
+    }
+
+    .materials-calc-results tr.wd-cart-action-row td {
+        border: 0;
+        display: block;
+        padding: 0;
+        width: auto;
+    }
+
+    .materials-calc-results tr.wd-cart-action-row .ad-materials-calc-results-summary-label {
+        text-align: left;
+    }
+
+    .materials-calc-results tr.wd-cart-action-row .product-subtotal {
+        text-align: right;
     }
 }
