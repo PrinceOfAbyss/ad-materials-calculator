@@ -55,3 +55,14 @@ span.wpforms-image-choices-image img {
 .ad-mc-disclaimer-text {
     color: #444;
 }
+
+.ad-calculator-disclaimer-text input[type="checkbox"] {
+    transform: scale(0.75);
+    transform-origin: left center;
+}
+
+.ad-calculator-disclaimer-text .wpforms-field-label-inline {
+    font-size: 12px !important;
+    max-width: 350px;
+    hyphens: none;
+}
