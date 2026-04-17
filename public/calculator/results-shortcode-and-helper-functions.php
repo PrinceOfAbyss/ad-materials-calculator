@@ -49,9 +49,6 @@ function ad_materials_calc_results_shortcode() {
         $output .= ad_materials_calc_render_calculation_debug_output( $calc, $answers );
     }
 
-    // Clear the stored calculator answers after rendering the results
-    WC()->session->set( 'materials_calc_answers', null );
-
     return $output;
 }
 
