@@ -33,6 +33,11 @@ span.wpforms-image-choices-image img {
     border: 0.5px solid #ccc;
 }
 
+.ad-materials-calculator-wpforms-form {
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+}
+
 .ad-materials-calculator-wpforms-form form {
     --wpforms-button-background-color: #3e9e86;
     --ad-wpforms-pigment-color-tiles: 80px;
