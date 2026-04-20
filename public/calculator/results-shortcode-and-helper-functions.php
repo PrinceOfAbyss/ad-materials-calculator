@@ -54,7 +54,7 @@ function ad_materials_calc_results_shortcode() {
 
 function ad_materials_calc_current_user_can_view_debug_output() {
 
-    return get_current_user_id() === 1;
+    return false;
 }
 
 function ad_materials_calc_get_calculation_from_answers( array $answers ) {
