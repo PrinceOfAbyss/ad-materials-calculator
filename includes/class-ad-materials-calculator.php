@@ -137,6 +137,11 @@ class Ad_Materials_Calculator {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-ad-materials-calculator-settings.php';
 
 		/**
+		 * The class responsible for defining the products price matrix admin UI.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-ad-materials-calculator-products-price-matrix.php';
+
+		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
@@ -174,14 +179,18 @@ class Ad_Materials_Calculator {
 
 		$plugin_admin = new Ad_Materials_Calculator_Admin( $this->get_plugin_name(), $this->get_version() );
 		$plugin_settings = new Ad_Materials_Calculator_Settings( $this->get_plugin_name(), $this->get_version() );
+		$plugin_price_matrix = new Ad_Materials_Calculator_Products_Price_Matrix();
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_share_links_admin_page' );
 		$this->loader->add_action( 'set-screen-option', $plugin_admin, 'save_share_links_screen_options', 10, 3 );
 		$this->loader->add_filter( 'woocommerce_settings_tabs_array', $plugin_settings, 'add_woocommerce_settings_tab', 50 );
+		$this->loader->add_filter( 'woocommerce_settings_tabs_array', $plugin_price_matrix, 'add_woocommerce_settings_tab', 55 );
 		$this->loader->add_action( 'woocommerce_settings_tabs_materials-calculator', $plugin_settings, 'render_woocommerce_settings_tab' );
+		$this->loader->add_action( 'woocommerce_settings_tabs_products-price-matrix', $plugin_price_matrix, 'render_woocommerce_settings_tab' );
 		$this->loader->add_action( 'woocommerce_update_options_materials-calculator', $plugin_settings, 'save_woocommerce_settings_tab' );
+		$this->loader->add_action( 'woocommerce_update_options_products-price-matrix', $plugin_price_matrix, 'save_woocommerce_settings_tab' );
 
 	}
 

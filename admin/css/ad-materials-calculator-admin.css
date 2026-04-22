@@ -107,6 +107,45 @@
     white-space: nowrap;
 }
 
+.ad-mc-products-price-matrix-product__meta {
+    color: #50575e;
+    margin: 0;
+}
+
+.ad-mc-products-price-matrix-table-wrap {
+    overflow-x: auto;
+}
+
+.ad-mc-settings-page .ad-mc-products-price-matrix-table {
+    min-width: 820px;
+    table-layout: fixed;
+}
+
+.ad-mc-settings-page .ad-mc-products-price-matrix-table th:first-child {
+    width: 40%;
+}
+
+.ad-mc-settings-page .ad-mc-products-price-matrix-table th:not(:first-child) {
+    width: 20%;
+}
+
+.ad-mc-settings-page .ad-mc-products-price-matrix-table__label {
+    min-width: 320px;
+}
+
+.ad-mc-products-price-matrix-table__id {
+    color: #646970;
+    display: block;
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.ad-mc-products-price-matrix__price-input {
+    font-variant-numeric: tabular-nums;
+    max-width: 180px;
+    width: 100%;
+}
+
 .wp-list-table th.column-id,
 .wp-list-table td.column-id {
     padding-left: 22px;
@@ -394,6 +433,30 @@
     }
 
     .ad-mc-settings-page .ad-mc-settings-table td {
+        width: auto;
+    }
+
+    .ad-mc-settings-page .ad-mc-products-price-matrix-table {
+        display: table;
+    }
+
+    .ad-mc-settings-page .ad-mc-products-price-matrix-table thead {
+        display: table-header-group;
+    }
+
+    .ad-mc-settings-page .ad-mc-products-price-matrix-table tbody {
+        display: table-row-group;
+    }
+
+    .ad-mc-settings-page .ad-mc-products-price-matrix-table tr {
+        border: 0;
+        display: table-row;
+        margin-bottom: 0;
+    }
+
+    .ad-mc-settings-page .ad-mc-products-price-matrix-table td,
+    .ad-mc-settings-page .ad-mc-products-price-matrix-table th {
+        display: table-cell;
         width: auto;
     }
 

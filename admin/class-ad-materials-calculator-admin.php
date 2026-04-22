@@ -126,7 +126,13 @@ class Ad_Materials_Calculator_Admin {
 			return true;
 		}
 
-		return ( isset( $_GET['tab'] ) && 'wc-settings' === $page && 'materials-calculator' === sanitize_key( wp_unslash( $_GET['tab'] ) ) );
+		if ( ! isset( $_GET['tab'] ) || 'wc-settings' !== $page ) {
+			return false;
+		}
+
+		$tab = sanitize_key( wp_unslash( $_GET['tab'] ) );
+
+		return in_array( $tab, ['materials-calculator', 'products-price-matrix'], true );
 	}
 
 	/**
