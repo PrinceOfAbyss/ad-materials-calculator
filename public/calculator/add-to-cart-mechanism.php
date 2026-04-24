@@ -173,6 +173,11 @@ function ad_materials_calc_get_group_discount_requested_value_from_cart_item( ar
     return isset( $cart_item['ad_materials_calc_discount_requested_value'] ) ? (float) $cart_item['ad_materials_calc_discount_requested_value'] : 0.0;
 }
 
+function ad_materials_calc_get_unit_price_from_cart_item( array $cart_item ) {
+
+    return isset( $cart_item['ad_materials_calc_unit_price'] ) ? ad_materials_calc_sanitize_unit_price( $cart_item['ad_materials_calc_unit_price'] ) : 0.0;
+}
+
 function ad_materials_calc_get_group_share_link_id_from_cart_item( array $cart_item ) {
 
     return isset( $cart_item['ad_materials_calc_share_link_id'] ) ? absint( $cart_item['ad_materials_calc_share_link_id'] ) : 0;
@@ -807,11 +812,19 @@ function ad_materials_calc_add_payload_group_to_cart( array $payload, $share_lin
                 continue;
             }
 
+            $unit_price = $share_link_id <= 0 && isset( $payload_item['unit_price'] ) ? ad_materials_calc_sanitize_unit_price( $payload_item['unit_price'] ) : 0.0;
+
+            if ( $unit_price <= 0 && function_exists( 'ad_materials_calc_get_product_normal_unit_price' ) ) {
+                $unit_price = ad_materials_calc_get_product_normal_unit_price( $product );
+            }
+
             $cart_item_data = [
                 'ad_materials_calc_group_id'                 => $group_id,
                 'ad_materials_calc_group_label'              => $group_label,
                 'ad_materials_calc_group_title'              => ! empty( $payload['project_title'] ) ? (string) $payload['project_title'] : $group_label,
                 'ad_materials_calc_grouped'                  => 1,
+                'ad_materials_calc_unit_price'               => $unit_price,
+                'ad_materials_calc_pricing_tier'             => ! empty( $payload['pricing_tier'] ) ? sanitize_key( (string) $payload['pricing_tier'] ) : 'normal',
                 'ad_materials_calc_joint_filler_note'        => isset( $payload['joint_filler_note'] ) ? (string) $payload['joint_filler_note'] : '',
                 'ad_materials_calc_joint_filler_kg'          => isset( $payload['joint_filler_kg'] ) ? (float) $payload['joint_filler_kg'] : 0.0,
                 'ad_materials_calc_discount_type'            => isset( $payload['discount_type'] ) ? (string) $payload['discount_type'] : 'none',
@@ -956,6 +969,32 @@ function ad_materials_calc_block_group_quantity_updates( $passed, $cart_item_key
     return $passed;
 }
 
+add_action( 'woocommerce_before_calculate_totals', 'ad_materials_calc_apply_group_item_unit_prices', 9999 );
+function ad_materials_calc_apply_group_item_unit_prices( $cart ) {
+
+    if ( is_admin() && ! wp_doing_ajax() ) {
+        return;
+    }
+
+    if ( ! $cart || ! is_object( $cart ) ) {
+        return;
+    }
+
+    foreach ( $cart->get_cart() as $cart_item ) {
+        if ( ! ad_materials_calc_is_grouped_cart_item( $cart_item ) || empty( $cart_item['data'] ) || ! is_object( $cart_item['data'] ) || ! method_exists( $cart_item['data'], 'set_price' ) ) {
+            continue;
+        }
+
+        $unit_price = ad_materials_calc_get_unit_price_from_cart_item( $cart_item );
+
+        if ( $unit_price <= 0 ) {
+            continue;
+        }
+
+        $cart_item['data']->set_price( $unit_price );
+    }
+}
+
 /**
  * Add remove-link titles and hide grouped item remove links
  */
@@ -1091,6 +1130,7 @@ function ad_materials_calc_add_group_discount_order_meta( $order, $data ) {
             'discount_applied_value'   => $group_discount,
             'subtotal_before_discount' => $group_subtotal,
             'final_total'              => max( 0, $group_subtotal - $group_discount ),
+            'pricing_tier'             => ! empty( $cart_item['ad_materials_calc_pricing_tier'] ) ? sanitize_key( (string) $cart_item['ad_materials_calc_pricing_tier'] ) : 'normal',
             'share_link_id'            => ad_materials_calc_get_group_share_link_id_from_cart_item( $cart_item ),
         ];
     }

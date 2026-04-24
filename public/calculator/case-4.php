@@ -525,7 +525,7 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
             'system_counters'       => $system_counters,
             'final_qty'             => $colorant_qty,
             'variation_sku'         => $pigment_product->get_sku(),
-            'unit_price'            => (float) wc_get_price_to_display( $pigment_product ),
+            'unit_price'            => ad_materials_calc_get_calculator_product_unit_price( $pigment_product ),
             'medium_small_fraction' => $colorant_data['medium_small_fraction'],
             'fine_small_fraction'   => $colorant_data['fine_small_fraction'],
             'micro_small_fraction'  => $colorant_data['micro_small_fraction'],

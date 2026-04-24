@@ -65,6 +65,42 @@ class Ad_Materials_Calculator_Settings {
     private $privileged_user_ids_option_name = 'ad_materials_calculator_privileged_user_ids';
 
     /**
+     * Option name used to persist the B2BKing applicator group ID.
+     *
+     * @since    1.0.4
+     * @access   private
+     * @var      string
+     */
+    private $b2bking_applicator_group_id_option_name = 'ad_materials_calculator_b2bking_applicator_group_id';
+
+    /**
+     * Option name used to persist the B2BKing distributor group ID.
+     *
+     * @since    1.0.4
+     * @access   private
+     * @var      string
+     */
+    private $b2bking_distributor_group_id_option_name = 'ad_materials_calculator_b2bking_distributor_group_id';
+
+    /**
+     * Option name used to persist the applicator minimum project size.
+     *
+     * @since    1.0.4
+     * @access   private
+     * @var      string
+     */
+    private $applicator_min_sqft_option_name = 'ad_materials_calculator_applicator_min_sqft';
+
+    /**
+     * Option name used to persist the distributor minimum project size.
+     *
+     * @since    1.0.4
+     * @access   private
+     * @var      string
+     */
+    private $distributor_min_sqft_option_name = 'ad_materials_calculator_distributor_min_sqft';
+
+    /**
      * Initialize the class and set its properties.
      *
      * @since    1.0.0
@@ -226,6 +262,50 @@ class Ad_Materials_Calculator_Settings {
         echo '</tr>';
         echo '</tbody></table>';
 
+        echo '<h2>' . esc_html__( 'Calculator Pricing Rules', 'ad-materials-calculator' ) . '</h2>';
+        echo '<table class="form-table" role="presentation"><tbody>';
+        echo '<tr>';
+        echo '<th scope="row"><label for="ad-materials-calculator-b2bking-applicator-group-id">' . esc_html__( 'Applicator Group ID', 'ad-materials-calculator' ) . '</label></th>';
+        echo '<td>';
+        printf(
+            '<input type="number" min="1" step="1" class="small-text" id="ad-materials-calculator-b2bking-applicator-group-id" name="ad_materials_calculator_b2bking_applicator_group_id" value="%1$s" />',
+            esc_attr( $this->get_saved_b2bking_applicator_group_id() > 0 ? (string) $this->get_saved_b2bking_applicator_group_id() : '' )
+        );
+        echo '<p class="description">' . esc_html__( 'B2BKing group ID used to identify users eligible for calculator applicator pricing.', 'ad-materials-calculator' ) . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        echo '<tr>';
+        echo '<th scope="row"><label for="ad-materials-calculator-b2bking-distributor-group-id">' . esc_html__( 'Distributor Group ID', 'ad-materials-calculator' ) . '</label></th>';
+        echo '<td>';
+        printf(
+            '<input type="number" min="1" step="1" class="small-text" id="ad-materials-calculator-b2bking-distributor-group-id" name="ad_materials_calculator_b2bking_distributor_group_id" value="%1$s" />',
+            esc_attr( $this->get_saved_b2bking_distributor_group_id() > 0 ? (string) $this->get_saved_b2bking_distributor_group_id() : '' )
+        );
+        echo '<p class="description">' . esc_html__( 'B2BKing group ID used to identify users eligible for calculator distributor pricing.', 'ad-materials-calculator' ) . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        echo '<tr>';
+        echo '<th scope="row"><label for="ad-materials-calculator-applicator-min-sqft">' . esc_html__( 'Applicator Minimum sq. ft.', 'ad-materials-calculator' ) . '</label></th>';
+        echo '<td>';
+        printf(
+            '<input type="number" min="0.001" step="0.001" class="small-text" id="ad-materials-calculator-applicator-min-sqft" name="ad_materials_calculator_applicator_min_sqft" value="%1$s" />',
+            esc_attr( $this->get_saved_applicator_min_sqft() )
+        );
+        echo '<p class="description">' . esc_html__( 'Minimum project size required before applicators receive special applicator prices. If empty or invalid, applicator pricing stays inactive.', 'ad-materials-calculator' ) . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        echo '<tr>';
+        echo '<th scope="row"><label for="ad-materials-calculator-distributor-min-sqft">' . esc_html__( 'Distributor Minimum sq. ft.', 'ad-materials-calculator' ) . '</label></th>';
+        echo '<td>';
+        printf(
+            '<input type="number" min="0.001" step="0.001" class="small-text" id="ad-materials-calculator-distributor-min-sqft" name="ad_materials_calculator_distributor_min_sqft" value="%1$s" />',
+            esc_attr( $this->get_saved_distributor_min_sqft() )
+        );
+        echo '<p class="description">' . esc_html__( 'Minimum project size required before distributors receive special distributor prices. If empty or invalid, distributor pricing stays inactive.', 'ad-materials-calculator' ) . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        echo '</tbody></table>';
+
         echo '<input type="hidden" name="ad_materials_calculator_active_section" value="' . esc_attr( $active_section ) . '" />';
         echo '</div>';
     }
@@ -250,6 +330,10 @@ class Ad_Materials_Calculator_Settings {
         $merged          = $this->merge_coverages_settings( $existing, $sanitized );
         $wpforms_form_id = $this->get_submitted_wpforms_form_id();
         $privileged_ids  = $this->get_submitted_privileged_user_ids();
+        $applicator_id   = $this->get_submitted_b2bking_applicator_group_id();
+        $distributor_id  = $this->get_submitted_b2bking_distributor_group_id();
+        $applicator_min  = $this->get_submitted_applicator_min_sqft();
+        $distributor_min = $this->get_submitted_distributor_min_sqft();
 
         update_option( $this->coverages_option_name, wp_json_encode( $merged ) );
 
@@ -263,6 +347,30 @@ class Ad_Materials_Calculator_Settings {
             update_option( $this->privileged_user_ids_option_name, $privileged_ids );
         } else {
             delete_option( $this->privileged_user_ids_option_name );
+        }
+
+        if ( $applicator_id > 0 ) {
+            update_option( $this->b2bking_applicator_group_id_option_name, $applicator_id );
+        } else {
+            delete_option( $this->b2bking_applicator_group_id_option_name );
+        }
+
+        if ( $distributor_id > 0 ) {
+            update_option( $this->b2bking_distributor_group_id_option_name, $distributor_id );
+        } else {
+            delete_option( $this->b2bking_distributor_group_id_option_name );
+        }
+
+        if ( '' !== $applicator_min ) {
+            update_option( $this->applicator_min_sqft_option_name, $applicator_min );
+        } else {
+            delete_option( $this->applicator_min_sqft_option_name );
+        }
+
+        if ( '' !== $distributor_min ) {
+            update_option( $this->distributor_min_sqft_option_name, $distributor_min );
+        } else {
+            delete_option( $this->distributor_min_sqft_option_name );
         }
     }
 
@@ -314,6 +422,50 @@ class Ad_Materials_Calculator_Settings {
     }
 
     /**
+     * Return the saved B2BKing applicator group ID.
+     *
+     * @since    1.0.4
+     * @return   int
+     */
+    private function get_saved_b2bking_applicator_group_id() {
+
+        return absint( get_option( $this->b2bking_applicator_group_id_option_name, 0 ) );
+    }
+
+    /**
+     * Return the saved B2BKing distributor group ID.
+     *
+     * @since    1.0.4
+     * @return   int
+     */
+    private function get_saved_b2bking_distributor_group_id() {
+
+        return absint( get_option( $this->b2bking_distributor_group_id_option_name, 0 ) );
+    }
+
+    /**
+     * Return the saved applicator minimum project size.
+     *
+     * @since    1.0.4
+     * @return   string
+     */
+    private function get_saved_applicator_min_sqft() {
+
+        return $this->get_saved_positive_decimal_option( $this->applicator_min_sqft_option_name );
+    }
+
+    /**
+     * Return the saved distributor minimum project size.
+     *
+     * @since    1.0.4
+     * @return   string
+     */
+    private function get_saved_distributor_min_sqft() {
+
+        return $this->get_saved_positive_decimal_option( $this->distributor_min_sqft_option_name );
+    }
+
+    /**
      * Read and sanitize the submitted calculator WPForms form ID.
      *
      * @since    1.0.0
@@ -345,6 +497,66 @@ class Ad_Materials_Calculator_Settings {
         $submitted_ids = wp_unslash( $_POST['ad_materials_calculator_privileged_user_ids'] );
 
         return array_filter( array_map( 'absint', $submitted_ids ) );
+    }
+
+    /**
+     * Read and sanitize the submitted B2BKing applicator group ID.
+     *
+     * @since    1.0.4
+     * @return   int
+     */
+    private function get_submitted_b2bking_applicator_group_id() {
+
+        if ( ! isset( $_POST['ad_materials_calculator_b2bking_applicator_group_id'] ) ) {
+            return $this->get_saved_b2bking_applicator_group_id();
+        }
+
+        return absint( wp_unslash( $_POST['ad_materials_calculator_b2bking_applicator_group_id'] ) );
+    }
+
+    /**
+     * Read and sanitize the submitted B2BKing distributor group ID.
+     *
+     * @since    1.0.4
+     * @return   int
+     */
+    private function get_submitted_b2bking_distributor_group_id() {
+
+        if ( ! isset( $_POST['ad_materials_calculator_b2bking_distributor_group_id'] ) ) {
+            return $this->get_saved_b2bking_distributor_group_id();
+        }
+
+        return absint( wp_unslash( $_POST['ad_materials_calculator_b2bking_distributor_group_id'] ) );
+    }
+
+    /**
+     * Read and sanitize the submitted applicator minimum project size.
+     *
+     * @since    1.0.4
+     * @return   string
+     */
+    private function get_submitted_applicator_min_sqft() {
+
+        if ( ! isset( $_POST['ad_materials_calculator_applicator_min_sqft'] ) ) {
+            return $this->get_saved_applicator_min_sqft();
+        }
+
+        return $this->sanitize_positive_decimal_string( wp_unslash( $_POST['ad_materials_calculator_applicator_min_sqft'] ) );
+    }
+
+    /**
+     * Read and sanitize the submitted distributor minimum project size.
+     *
+     * @since    1.0.4
+     * @return   string
+     */
+    private function get_submitted_distributor_min_sqft() {
+
+        if ( ! isset( $_POST['ad_materials_calculator_distributor_min_sqft'] ) ) {
+            return $this->get_saved_distributor_min_sqft();
+        }
+
+        return $this->sanitize_positive_decimal_string( wp_unslash( $_POST['ad_materials_calculator_distributor_min_sqft'] ) );
     }
 
     /**
@@ -466,6 +678,48 @@ class Ad_Materials_Calculator_Settings {
         $number     = (float) $normalized;
 
         return number_format( $number, 3, '.', '' );
+    }
+
+    /**
+     * Return a saved positive decimal option.
+     *
+     * @since    1.0.4
+     * @param    string $option_name Option name.
+     * @return   string
+     */
+    private function get_saved_positive_decimal_option( $option_name ) {
+
+        $value = get_option( $option_name, '' );
+
+        return $this->sanitize_positive_decimal_string( $value );
+    }
+
+    /**
+     * Sanitize a positive decimal setting.
+     *
+     * @since    1.0.4
+     * @param    mixed $value Raw value.
+     * @return   string
+     */
+    private function sanitize_positive_decimal_string( $value ) {
+
+        if ( ! is_scalar( $value ) ) {
+            return '';
+        }
+
+        $value = trim( str_replace( ',', '.', (string) $value ) );
+
+        if ( '' === $value || ! is_numeric( $value ) ) {
+            return '';
+        }
+
+        $number = (float) $value;
+
+        if ( $number <= 0 ) {
+            return '';
+        }
+
+        return rtrim( rtrim( number_format( $number, 3, '.', '' ), '0' ), '.' );
     }
 
     /**

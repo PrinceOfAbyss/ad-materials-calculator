@@ -105,7 +105,14 @@ function ad_materials_calc_get_calculation_from_answers( array $answers ) {
         ];
     }
 
-    $calc = $callback( $answers );
+    $pricing_tier          = ad_materials_calc_get_pricing_tier_from_answers( $answers );
+    $previous_pricing_tier = ad_materials_calc_set_active_pricing_tier( $pricing_tier );
+
+    try {
+        $calc = $callback( $answers );
+    } finally {
+        ad_materials_calc_set_active_pricing_tier( $previous_pricing_tier );
+    }
 
     if ( ! is_array( $calc ) ) {
         return [
@@ -115,6 +122,7 @@ function ad_materials_calc_get_calculation_from_answers( array $answers ) {
 
     $calc['surface_type'] = $surface_type;
     $calc['debug_title']  = $case_config['debug_title'];
+    $calc['pricing_tier'] = $pricing_tier;
 
     return $calc;
 }
@@ -178,8 +186,9 @@ function ad_materials_calc_build_cart_payload_from_calc( array $calc, array $ans
         }
 
         $payload_items[] = [
-            'sku' => $sku,
-            'qty' => $qty,
+            'sku'        => $sku,
+            'qty'        => $qty,
+            'unit_price' => isset( $item['unit_price'] ) ? (float) $item['unit_price'] : 0.0,
         ];
     }
 
@@ -213,6 +222,7 @@ function ad_materials_calc_build_cart_payload_from_calc( array $calc, array $ans
         'discount_applied_value'   => $discount_data['applied_value'],
         'subtotal_before_discount' => $discount_data['subtotal_before_discount'],
         'final_total'              => $discount_data['final_total'],
+        'pricing_tier'             => ! empty( $calc['pricing_tier'] ) ? (string) $calc['pricing_tier'] : 'normal',
         'items'                    => $payload_items,
     ];
 }
@@ -527,6 +537,186 @@ function ad_materials_calc_format_fraction_debug( $numerator, $denominator ) {
 /**
  * Product and table helpers
  */
+function ad_materials_calc_get_pricing_tier_from_answers( array $answers ) {
+
+    $sqft = isset( $answers['total_area_sqft'] ) ? (float) $answers['total_area_sqft'] : 0.0;
+
+    if ( $sqft <= 0 ) {
+        return 'normal';
+    }
+
+    $user_group_id        = ad_materials_calc_get_current_user_b2bking_group_id();
+    $applicator_group_id  = absint( get_option( 'ad_materials_calculator_b2bking_applicator_group_id', 0 ) );
+    $distributor_group_id = absint( get_option( 'ad_materials_calculator_b2bking_distributor_group_id', 0 ) );
+    $applicator_min_sqft  = ad_materials_calc_get_positive_decimal_option( 'ad_materials_calculator_applicator_min_sqft' );
+    $distributor_min_sqft = ad_materials_calc_get_positive_decimal_option( 'ad_materials_calculator_distributor_min_sqft' );
+
+    if ( $distributor_group_id > 0 && $user_group_id === $distributor_group_id ) {
+        if ( $distributor_min_sqft > 0 && $sqft >= $distributor_min_sqft ) {
+            return 'distributor';
+        }
+
+        if ( $applicator_min_sqft > 0 && $sqft >= $applicator_min_sqft ) {
+            return 'applicator';
+        }
+
+        return 'normal';
+    }
+
+    if ( $applicator_group_id > 0 && $user_group_id === $applicator_group_id && $applicator_min_sqft > 0 && $sqft >= $applicator_min_sqft ) {
+        return 'applicator';
+    }
+
+    return 'normal';
+}
+
+function ad_materials_calc_get_current_user_b2bking_group_id() {
+
+    $user_id = get_current_user_id();
+
+    if ( ! $user_id ) {
+        return 0;
+    }
+
+    if ( function_exists( 'b2bking' ) && is_object( b2bking() ) ) {
+        $b2bking = b2bking();
+
+        if ( is_callable( [$b2bking, 'is_b2b_user'] ) && ! $b2bking->is_b2b_user( $user_id ) ) {
+            return 0;
+        }
+
+        if ( is_callable( [$b2bking, 'get_user_group'] ) ) {
+            return absint( $b2bking->get_user_group( $user_id ) );
+        }
+    }
+
+    if ( get_user_meta( $user_id, 'b2bking_b2buser', true ) !== 'yes' ) {
+        return 0;
+    }
+
+    return absint( get_user_meta( $user_id, 'b2bking_customergroup', true ) );
+}
+
+function ad_materials_calc_get_positive_decimal_option( $option_name ) {
+
+    $value = get_option( $option_name, '' );
+
+    if ( ! is_scalar( $value ) ) {
+        return 0.0;
+    }
+
+    $value = trim( str_replace( ',', '.', (string) $value ) );
+
+    if ( $value === '' || ! is_numeric( $value ) ) {
+        return 0.0;
+    }
+
+    return max( 0.0, (float) $value );
+}
+
+function ad_materials_calc_get_active_pricing_tier() {
+
+    return ad_materials_calc_active_pricing_tier();
+}
+
+function ad_materials_calc_set_active_pricing_tier( $pricing_tier ) {
+
+    return ad_materials_calc_active_pricing_tier( $pricing_tier, true );
+}
+
+function ad_materials_calc_active_pricing_tier( $pricing_tier = '', $set = false ) {
+
+    static $active_pricing_tier = 'normal';
+
+    if ( ! $set ) {
+        return $active_pricing_tier;
+    }
+
+    $previous_pricing_tier = $active_pricing_tier;
+    $active_pricing_tier   = ad_materials_calc_normalize_pricing_tier( $pricing_tier );
+
+    return $previous_pricing_tier;
+}
+
+function ad_materials_calc_normalize_pricing_tier( $pricing_tier ) {
+
+    $pricing_tier = sanitize_key( (string) $pricing_tier );
+
+    if ( in_array( $pricing_tier, ['applicator', 'distributor'], true ) ) {
+        return $pricing_tier;
+    }
+
+    return 'normal';
+}
+
+function ad_materials_calc_get_calculator_product_unit_price( $product, $pricing_tier = '' ) {
+
+    if ( ! $product || ! is_object( $product ) ) {
+        return 0.0;
+    }
+
+    $pricing_tier = $pricing_tier !== '' ? ad_materials_calc_normalize_pricing_tier( $pricing_tier ) : ad_materials_calc_get_active_pricing_tier();
+
+    if ( in_array( $pricing_tier, ['applicator', 'distributor'], true ) ) {
+        $special_price = ad_materials_calc_get_product_special_price( $product, $pricing_tier );
+
+        if ( $special_price > 0 ) {
+            return $special_price;
+        }
+    }
+
+    return ad_materials_calc_get_product_normal_unit_price( $product );
+}
+
+function ad_materials_calc_get_product_special_price( $product, $pricing_tier ) {
+
+    $meta_key = '';
+
+    if ( $pricing_tier === 'applicator' ) {
+        $meta_key = '_ad_materials_calc_applicator_price';
+    } elseif ( $pricing_tier === 'distributor' ) {
+        $meta_key = '_ad_materials_calc_distributor_price';
+    }
+
+    if ( $meta_key === '' || ! method_exists( $product, 'get_id' ) ) {
+        return 0.0;
+    }
+
+    $price = get_post_meta( $product->get_id(), $meta_key, true );
+
+    return ad_materials_calc_sanitize_unit_price( $price );
+}
+
+function ad_materials_calc_get_product_normal_unit_price( $product ) {
+
+    if ( ! $product || ! is_object( $product ) || ! method_exists( $product, 'get_price' ) ) {
+        return 0.0;
+    }
+
+    $price = $product->get_price( 'edit' );
+
+    if ( '' === $price && method_exists( $product, 'get_regular_price' ) ) {
+        $price = $product->get_regular_price( 'edit' );
+    }
+
+    return ad_materials_calc_sanitize_unit_price( $price );
+}
+
+function ad_materials_calc_sanitize_unit_price( $price ) {
+
+    if ( ! is_scalar( $price ) ) {
+        return 0.0;
+    }
+
+    $price = trim( str_replace( ',', '.', (string) $price ) );
+
+    if ( $price === '' || ! is_numeric( $price ) ) {
+        return 0.0;
+    }
+
+    return max( 0.0, (float) wc_format_decimal( $price, wc_get_price_decimals() ) );
+}
+
 function ad_materials_calc_render_results_table( array $items, array $answers = [] ) {
 
     if ( empty( $items ) ) {
@@ -618,7 +808,7 @@ function ad_materials_calc_build_line_item_from_product( $product, $qty ) {
 
     $qty = (int) $qty;
 
-    $unit_price = (float) wc_get_price_to_display( $product );
+    $unit_price = ad_materials_calc_get_calculator_product_unit_price( $product );
     $partial    = $unit_price * $qty;
 
     return [
@@ -777,21 +967,24 @@ function ad_materials_calc_get_product_price_by_sku( $sku ) {
         return 0.0;
     }
 
-    if ( array_key_exists( $sku, $price_cache ) ) {
-        return $price_cache[$sku];
+    $pricing_tier = ad_materials_calc_get_active_pricing_tier();
+    $cache_key    = $pricing_tier . '|' . $sku;
+
+    if ( array_key_exists( $cache_key, $price_cache ) ) {
+        return $price_cache[$cache_key];
     }
 
     $product = ad_materials_calc_get_product_by_sku( $sku );
 
     if ( ! $product ) {
-        $price_cache[$sku] = 0.0;
+        $price_cache[$cache_key] = 0.0;
 
         return 0.0;
     }
 
-    $price_cache[$sku] = (float) wc_get_price_to_display( $product );
+    $price_cache[$cache_key] = ad_materials_calc_get_calculator_product_unit_price( $product, $pricing_tier );
 
-    return $price_cache[$sku];
+    return $price_cache[$cache_key];
 }
 
 function ad_materials_calc_expand_combo_to_line_items( array $combo, array $sku_map ) {
