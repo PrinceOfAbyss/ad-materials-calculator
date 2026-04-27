@@ -120,6 +120,10 @@ if ( woodmart_get_opt( 'update_cart_quantity_change' ) ) {
 
 					$row_classes = apply_filters( 'woocommerce_cart_item_class', 'cart_item', $cart_item, $cart_item_key );
 
+					if ( ad_materials_calc_current_user_has_extended_privileges() ) {
+						$row_classes .= ' ad-materials-calc-cart-user-can-edit-groups';
+					}
+
 					if ( $is_grouped ) {
 						$row_classes .= $is_group_first ? ' ad-materials-calc-group-product-row ad-materials-calc-group-product-row-first' : ' ad-materials-calc-group-product-row ad-materials-calc-group-product-row-child';
 
@@ -139,7 +143,7 @@ if ( woodmart_get_opt( 'update_cart_quantity_change' ) ) {
 
 							<td class="product-remove">
 								<?php
-								if ( $is_grouped ) {
+								if ( $is_grouped && ! ad_materials_calc_current_user_has_extended_privileges() ) {
 									echo '';
 								} else {
 									echo apply_filters( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

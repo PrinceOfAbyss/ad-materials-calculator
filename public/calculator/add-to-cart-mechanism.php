@@ -875,6 +875,10 @@ function ad_materials_calc_block_single_group_item_removal() {
         return;
     }
 
+    if ( ad_materials_calc_current_user_has_extended_privileges() ) {
+        return;
+    }
+
     if ( ! function_exists( 'WC' ) || ! WC() || ! WC()->cart ) {
         return;
     }
@@ -944,7 +948,7 @@ function ad_materials_calc_handle_group_remove_request() {
 add_filter( 'woocommerce_cart_item_quantity', 'ad_materials_calc_render_locked_group_quantity', 10, 3 );
 function ad_materials_calc_render_locked_group_quantity( $product_quantity, $cart_item_key, $cart_item ) {
 
-    if ( ! ad_materials_calc_is_grouped_cart_item( $cart_item ) ) {
+    if ( ! ad_materials_calc_is_grouped_cart_item( $cart_item ) || ad_materials_calc_current_user_has_extended_privileges() ) {
         return $product_quantity;
     }
 
@@ -957,7 +961,7 @@ function ad_materials_calc_render_locked_group_quantity( $product_quantity, $car
 add_filter( 'woocommerce_update_cart_validation', 'ad_materials_calc_block_group_quantity_updates', 10, 4 );
 function ad_materials_calc_block_group_quantity_updates( $passed, $cart_item_key, $cart_item, $quantity ) {
 
-    if ( ! ad_materials_calc_is_grouped_cart_item( $cart_item ) ) {
+    if ( ! ad_materials_calc_is_grouped_cart_item( $cart_item ) || ad_materials_calc_current_user_has_extended_privileges() ) {
         return $passed;
     }
 
@@ -1013,7 +1017,7 @@ function ad_materials_calc_hide_grouped_item_remove_link( $remove_link, $cart_it
 
     $cart_item = $cart[$cart_item_key];
 
-    if ( ! ad_materials_calc_is_grouped_cart_item( $cart_item ) ) {
+    if ( ! ad_materials_calc_is_grouped_cart_item( $cart_item ) || ad_materials_calc_current_user_has_extended_privileges() ) {
         return preg_replace(
             '/<a\b(?![^>]*\btitle=)/',
             '<a title="' . esc_attr__( 'Remove product from the cart', 'ad-materials-calculator' ) . '"',

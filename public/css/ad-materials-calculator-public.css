@@ -384,7 +384,7 @@ button.materials-calc-share-modal__close {
         padding: 16px 46px 16px 18px !important;
     }
 
-    .woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-product-row td.product-remove {
+    .woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-product-row:not(.ad-materials-calc-cart-user-can-edit-groups) td.product-remove {
         display: none !important;
     }
 
