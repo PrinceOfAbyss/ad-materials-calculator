@@ -1044,8 +1044,8 @@ function ad_materials_calc_is_unpigmented( $pigment_label ) {
 
 /**
  * Resolve the selected pigment label to the actual variation product object
- * Medium uses product 9838
- * Fine and Microterrazzo use product 9932
+ * Medium and Microterrazzo use product 9838
+ * Fine uses product 9932
  */
 function ad_materials_calc_find_pigment_product_by_label( $system_label, $pigment_label ) {
 
@@ -1065,9 +1065,9 @@ function ad_materials_calc_find_pigment_product_by_label( $system_label, $pigmen
 
     $parent_product_id = 0;
 
-    if ( $system_label === 'Terrazzo Granitech Medium' ) {
+    if ( $system_label === 'Terrazzo Granitech Medium' || $system_label === 'Terrazzo Granitech Microterrazzo' ) {
         $parent_product_id = 9838;
-    } elseif ( $system_label === 'Terrazzo Granitech Fine' || $system_label === 'Terrazzo Granitech Microterrazzo' ) {
+    } elseif ( $system_label === 'Terrazzo Granitech Fine' ) {
         $parent_product_id = 9932;
     } else {
         $pigment_cache[$cache_key] = false;
