@@ -218,17 +218,15 @@ class Ad_Materials_Calculator_Share_Links_List_Table extends WP_List_Table {
     protected function column_summary( $item ) {
 
         $payload = Ad_Materials_Calculator_Share_Links::get_payload_from_record( $item );
-        $groups  = ! empty( $payload['groups'] ) && is_array( $payload['groups'] ) ? $payload['groups'] : [];
-
-        if ( empty( $groups ) && ! empty( $payload['items'] ) ) {
-            $groups = [$payload];
-        }
+        $groups  = $this->get_payload_groups( $payload );
 
         if ( empty( $groups ) ) {
             return '<em>' . esc_html__( 'Unavailable payload', 'ad-materials-calculator' ) . '</em>';
         }
 
-        $titles = [];
+        $titles            = [];
+        $calculation_count = 0;
+        $standalone_count  = 0;
 
         foreach ( $groups as $group ) {
             $title = ! empty( $group['project_title'] ) ? trim( (string) $group['project_title'] ) : '';
@@ -237,11 +235,33 @@ class Ad_Materials_Calculator_Share_Links_List_Table extends WP_List_Table {
                 $title = __( 'Untitled calculation', 'ad-materials-calculator' );
             }
 
+            if ( ! empty( $group['ad_materials_calc_is_standalone'] ) ) {
+                $standalone_count++;
+            } else {
+                $calculation_count++;
+            }
+
             $titles[] = $title;
         }
 
-        $summary = sprintf(
-            _n( '%d calculation', '%d calculations', count( $groups ), 'ad-materials-calculator' ),
+        $summary_parts = [];
+
+        if ( $calculation_count > 0 ) {
+            $summary_parts[] = sprintf(
+                _n( '%d calculation group', '%d calculation groups', $calculation_count, 'ad-materials-calculator' ),
+                $calculation_count
+            );
+        }
+
+        if ( $standalone_count > 0 ) {
+            $summary_parts[] = sprintf(
+                _n( '%d product', '%d products', $standalone_count, 'ad-materials-calculator' ),
+                $standalone_count
+            );
+        }
+
+        $summary = ! empty( $summary_parts ) ? implode( ' + ', $summary_parts ) : sprintf(
+            _n( '%d entry', '%d entries', count( $groups ), 'ad-materials-calculator' ),
             count( $groups )
         );
 
@@ -442,12 +462,25 @@ class Ad_Materials_Calculator_Share_Links_List_Table extends WP_List_Table {
      */
     private function get_payload_groups( array $payload ) {
 
-        if ( ! empty( $payload['groups'] ) && is_array( $payload['groups'] ) ) {
-            return $payload['groups'];
-        }
+        $groups = ! empty( $payload['groups'] ) && is_array( $payload['groups'] ) ? $payload['groups'] : [];
 
         if ( ! empty( $payload['items'] ) && is_array( $payload['items'] ) ) {
-            return [$payload];
+            foreach ( $payload['items'] as $item ) {
+                $sku     = ! empty( $item['sku'] ) ? trim( (string) $item['sku'] ) : '';
+                $product = $sku !== '' ? $this->get_product_by_sku( $sku ) : false;
+                $title   = $product ? $this->get_product_display_name( $product ) : __( 'Unknown product', 'ad-materials-calculator' );
+
+                $groups[] = [
+                    'project_title'                   => $title,
+                    'project_meta'                    => '',
+                    'items'                           => [$item],
+                    'ad_materials_calc_is_standalone' => true,
+                ];
+            }
+        }
+
+        if ( ! empty( $groups ) ) {
+            return $groups;
         }
 
         return [];

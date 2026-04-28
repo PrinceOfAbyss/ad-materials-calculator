@@ -585,8 +585,12 @@ function ad_materials_calc_handle_share_link_restore() {
                 $added = true;
             }
         }
-    } elseif ( ! empty( $payload['items'] ) && is_array( $payload['items'] ) ) {
-        $added = ad_materials_calc_add_payload_group_to_cart( $payload, $share_link_id );
+    }
+
+    if ( ! empty( $payload['items'] ) && is_array( $payload['items'] ) ) {
+        if ( ad_materials_calc_add_payload_items_to_cart( $payload['items'], $share_link_id ) ) {
+            $added = true;
+        }
     }
 
     if ( ! $added ) {
@@ -667,12 +671,29 @@ function ad_materials_calc_build_share_cart_payload_from_cart() {
         return [];
     }
 
-    $groups = [];
+    $groups      = [];
+    $standalones = [];
 
     foreach ( WC()->cart->get_cart() as $cart_item ) {
+        if ( empty( $cart_item['data'] ) || ! is_object( $cart_item['data'] ) || ! method_exists( $cart_item['data'], 'get_sku' ) ) {
+            continue;
+        }
+
+        $sku = trim( (string) $cart_item['data']->get_sku() );
+        $qty = isset( $cart_item['quantity'] ) ? (int) $cart_item['quantity'] : 0;
+
+        if ( $sku === '' || $qty <= 0 ) {
+            continue;
+        }
+
         $group_id = ad_materials_calc_get_group_id_from_cart_item( $cart_item );
 
         if ( $group_id === '' ) {
+            $standalones[] = [
+                'sku' => $sku,
+                'qty' => $qty,
+            ];
+
             continue;
         }
 
@@ -695,17 +716,6 @@ function ad_materials_calc_build_share_cart_payload_from_cart() {
             ];
         }
 
-        if ( empty( $cart_item['data'] ) || ! is_object( $cart_item['data'] ) || ! method_exists( $cart_item['data'], 'get_sku' ) ) {
-            continue;
-        }
-
-        $sku = trim( (string) $cart_item['data']->get_sku() );
-        $qty = isset( $cart_item['quantity'] ) ? (int) $cart_item['quantity'] : 0;
-
-        if ( $sku === '' || $qty <= 0 ) {
-            continue;
-        }
-
         $groups[$group_id]['items'][] = [
             'sku' => $sku,
             'qty' => $qty,
@@ -721,13 +731,20 @@ function ad_materials_calc_build_share_cart_payload_from_cart() {
         )
     );
 
-    if ( empty( $groups ) ) {
+    if ( empty( $groups ) && empty( $standalones ) ) {
         return [];
     }
 
-    return [
+    $payload = [
         'groups' => $groups,
     ];
+
+    if ( ! empty( $standalones ) ) {
+        $payload['items']         = $standalones;
+        $payload['project_title'] = __( 'Standalone cart products', 'ad-materials-calculator' );
+    }
+
+    return $payload;
 }
 
 /**
@@ -756,10 +773,13 @@ function ad_materials_calc_ajax_create_cart_share_link() {
 
     $payload = ad_materials_calc_build_share_cart_payload_from_cart();
 
-    if ( empty( $payload['groups'] ) || ! is_array( $payload['groups'] ) ) {
+    $has_groups = ! empty( $payload['groups'] ) && is_array( $payload['groups'] );
+    $has_items  = ! empty( $payload['items'] ) && is_array( $payload['items'] );
+
+    if ( ! $has_groups && ! $has_items ) {
         wp_send_json_error(
             [
-                'message' => __( 'Add at least one calculated materials group to the cart before creating a share link.', 'ad-materials-calculator' ),
+                'message' => __( 'Add at least one product to the cart before creating a share link.', 'ad-materials-calculator' ),
             ],
             400
         );
@@ -834,6 +854,68 @@ function ad_materials_calc_add_payload_group_to_cart( array $payload, $share_lin
                 'ad_materials_calc_final_total'              => isset( $payload['final_total'] ) ? (float) $payload['final_total'] : 0.0,
                 'ad_materials_calc_share_link_id'            => $share_link_id,
             ];
+
+            if ( $product->is_type( 'variation' ) ) {
+                $added = WC()->cart->add_to_cart(
+                    $product->get_parent_id(),
+                    $qty,
+                    $product->get_id(),
+                    $product->get_variation_attributes(),
+                    $cart_item_data
+                );
+            } else {
+                $added = WC()->cart->add_to_cart(
+                    $product->get_id(),
+                    $qty,
+                    0,
+                    [],
+                    $cart_item_data
+                );
+            }
+
+            if ( $added ) {
+                $added_any = true;
+            }
+        }
+    } finally {
+        ad_materials_calc_set_bulk_cart_mutation_active( false );
+        ad_materials_calc_restore_shippo_rate_triggers( $shippo_state );
+    }
+
+    return $added_any;
+}
+
+function ad_materials_calc_add_payload_items_to_cart( array $items, $share_link_id = 0 ) {
+
+    if ( empty( $items ) || ! is_array( $items ) || ! function_exists( 'WC' ) || ! WC() || ! WC()->cart ) {
+        return false;
+    }
+
+    $added_any     = false;
+    $share_link_id = absint( $share_link_id );
+    $shippo_state  = ad_materials_calc_suspend_shippo_rate_triggers();
+    ad_materials_calc_set_bulk_cart_mutation_active( true );
+
+    try {
+        foreach ( $items as $payload_item ) {
+            $sku = isset( $payload_item['sku'] ) ? trim( (string) $payload_item['sku'] ) : '';
+            $qty = isset( $payload_item['qty'] ) ? (int) $payload_item['qty'] : 0;
+
+            if ( $sku === '' || $qty <= 0 ) {
+                continue;
+            }
+
+            $product = ad_materials_calc_get_product_by_sku( $sku );
+
+            if ( ! $product ) {
+                continue;
+            }
+
+            $cart_item_data = [];
+
+            if ( $share_link_id > 0 ) {
+                $cart_item_data['ad_materials_calc_share_link_id'] = $share_link_id;
+            }
 
             if ( $product->is_type( 'variation' ) ) {
                 $added = WC()->cart->add_to_cart(
@@ -1108,10 +1190,17 @@ function ad_materials_calc_add_group_discount_order_meta( $order, $data ) {
         return;
     }
 
-    $groups      = [];
-    $seen_groups = [];
+    $groups         = [];
+    $seen_groups    = [];
+    $share_link_ids = [];
 
     foreach ( WC()->cart->get_cart() as $cart_item ) {
+        $share_link_id = ad_materials_calc_get_group_share_link_id_from_cart_item( $cart_item );
+
+        if ( $share_link_id > 0 ) {
+            $share_link_ids[] = $share_link_id;
+        }
+
         $group_id = ad_materials_calc_get_group_id_from_cart_item( $cart_item );
 
         if ( $group_id === '' || isset( $seen_groups[$group_id] ) ) {
@@ -1139,19 +1228,14 @@ function ad_materials_calc_add_group_discount_order_meta( $order, $data ) {
         ];
     }
 
-    if ( empty( $groups ) ) {
-        return;
+    if ( ! empty( $groups ) ) {
+        $order->update_meta_data( '_ad_materials_calc_groups', $groups );
     }
-
-    $order->update_meta_data( '_ad_materials_calc_groups', $groups );
 
     $share_link_ids = array_values(
         array_unique(
             array_filter(
-                array_map(
-                    'absint',
-                    wp_list_pluck( $groups, 'share_link_id' )
-                )
+                array_map( 'absint', $share_link_ids )
             )
         )
     );
