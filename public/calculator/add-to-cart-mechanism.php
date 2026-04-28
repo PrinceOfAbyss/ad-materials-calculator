@@ -576,6 +576,8 @@ function ad_materials_calc_handle_share_link_restore() {
         ad_materials_calc_redirect_to_calculator_with_share_notice( 'invalid' );
     }
 
+    ad_materials_calc_empty_cart_for_share_link_restore();
+
     $share_link_id = isset( $record['id'] ) ? (int) $record['id'] : 0;
     $added         = false;
 
@@ -602,6 +604,23 @@ function ad_materials_calc_handle_share_link_restore() {
     wc_add_notice( __( 'The shared materials were added to your cart.', 'ad-materials-calculator' ), 'success' );
     wp_safe_redirect( wc_get_checkout_url() );
     exit;
+}
+
+function ad_materials_calc_empty_cart_for_share_link_restore() {
+
+    if ( ! function_exists( 'WC' ) || ! WC() || ! WC()->cart ) {
+        return;
+    }
+
+    $shippo_state = ad_materials_calc_suspend_shippo_rate_triggers();
+    ad_materials_calc_set_bulk_cart_mutation_active( true );
+
+    try {
+        WC()->cart->empty_cart();
+    } finally {
+        ad_materials_calc_set_bulk_cart_mutation_active( false );
+        ad_materials_calc_restore_shippo_rate_triggers( $shippo_state );
+    }
 }
 
 function ad_materials_calc_redirect_to_calculator_with_share_notice( $notice_type ) {
