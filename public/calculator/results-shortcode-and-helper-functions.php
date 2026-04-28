@@ -54,7 +54,7 @@ function ad_materials_calc_results_shortcode() {
 
 function ad_materials_calc_current_user_can_view_debug_output() {
 
-    return false;
+    return in_array( get_current_user_id(), [1, 7], true );
 }
 
 function ad_materials_calc_get_calculation_from_answers( array $answers ) {
@@ -477,39 +477,80 @@ function ad_materials_calc_build_joint_filler_note( $joint_filler_kg ) {
     );
 }
 
-function ad_materials_calc_get_colorant_quantity_data( $system_label, array $system_counters ) {
+function ad_materials_calc_get_colorant_line_data( $system_label, array $system_counters ) {
 
     $result = [
-        'qty'                   => 0,
+        'lines'                 => [],
         'medium_small_fraction' => '',
         'fine_small_fraction'   => '',
         'micro_small_fraction'  => '',
     ];
 
+    $medium_large = isset( $system_counters['medium_large'] ) ? (int) $system_counters['medium_large'] : 0;
+    $medium_small = isset( $system_counters['medium_small'] ) ? (int) $system_counters['medium_small'] : 0;
+    $fine_large   = isset( $system_counters['fine_large'] ) ? (int) $system_counters['fine_large'] : 0;
+    $fine_small   = isset( $system_counters['fine_small'] ) ? (int) $system_counters['fine_small'] : 0;
+    $micro_large  = isset( $system_counters['micro_large'] ) ? (int) $system_counters['micro_large'] : 0;
+    $micro_small  = isset( $system_counters['micro_small'] ) ? (int) $system_counters['micro_small'] : 0;
+
     if ( $system_label === 'Terrazzo Granitech Medium' ) {
-        $small_fraction                  = isset( $system_counters['medium_small'] ) ? ( (int) $system_counters['medium_small'] / 19 ) : 0;
-        $result['qty']                   = ( isset( $system_counters['medium_large'] ) ? (int) $system_counters['medium_large'] : 0 ) + (int) ceil( $small_fraction );
-        $result['medium_small_fraction'] = ad_materials_calc_format_fraction_debug( isset( $system_counters['medium_small'] ) ? $system_counters['medium_small'] : 0, 19 );
+        $result['medium_small_fraction'] = ad_materials_calc_format_fraction_debug( $medium_small, 19 );
+
+        $qty = $medium_large + ( $medium_small > 0 ? 1 : 0 );
+
+        if ( $qty > 0 ) {
+            $result['lines'][] = [
+                'pigment_family' => 'medium',
+                'qty'            => $qty,
+                'large_count'    => $medium_large,
+                'small_count'    => $medium_small,
+            ];
+        }
 
         return $result;
     }
 
     if ( $system_label === 'Terrazzo Granitech Fine' ) {
-        $medium_small                    = isset( $system_counters['medium_small'] ) ? (int) $system_counters['medium_small'] : 0;
-        $fine_small                      = isset( $system_counters['fine_small'] ) ? (int) $system_counters['fine_small'] : 0;
-        $small_fraction                  = ( $medium_small / 19 ) + ( $fine_small / 10 );
-        $result['qty']                   = ( isset( $system_counters['medium_large'] ) ? (int) $system_counters['medium_large'] : 0 ) + ( isset( $system_counters['fine_large'] ) ? (int) $system_counters['fine_large'] : 0 ) + (int) ceil( $small_fraction );
         $result['medium_small_fraction'] = ad_materials_calc_format_fraction_debug( $medium_small, 19 );
         $result['fine_small_fraction']   = ad_materials_calc_format_fraction_debug( $fine_small, 10 );
+
+        $medium_qty = $medium_large + ( $medium_small > 0 ? 1 : 0 );
+        $fine_qty   = $fine_large + ( $fine_small > 0 ? 1 : 0 );
+
+        if ( $medium_qty > 0 ) {
+            $result['lines'][] = [
+                'pigment_family' => 'medium',
+                'qty'            => $medium_qty,
+                'large_count'    => $medium_large,
+                'small_count'    => $medium_small,
+            ];
+        }
+
+        if ( $fine_qty > 0 ) {
+            $result['lines'][] = [
+                'pigment_family' => 'fine',
+                'qty'            => $fine_qty,
+                'large_count'    => $fine_large,
+                'small_count'    => $fine_small,
+            ];
+        }
 
         return $result;
     }
 
     if ( $system_label === 'Terrazzo Granitech Microterrazzo' ) {
-        $micro_small                    = isset( $system_counters['micro_small'] ) ? (int) $system_counters['micro_small'] : 0;
-        $small_fraction                 = $micro_small / 22;
-        $result['qty']                  = ( isset( $system_counters['micro_large'] ) ? (int) $system_counters['micro_large'] : 0 ) + (int) ceil( $small_fraction );
         $result['micro_small_fraction'] = ad_materials_calc_format_fraction_debug( $micro_small, 22 );
+
+        $qty = $micro_large + ( $micro_small > 0 ? 1 : 0 );
+
+        if ( $qty > 0 ) {
+            $result['lines'][] = [
+                'pigment_family' => 'medium',
+                'qty'            => $qty,
+                'large_count'    => $micro_large,
+                'small_count'    => $micro_small,
+            ];
+        }
 
         return $result;
     }
@@ -1044,10 +1085,9 @@ function ad_materials_calc_is_unpigmented( $pigment_label ) {
 
 /**
  * Resolve the selected pigment label to the actual variation product object
- * Medium and Microterrazzo use product 9838
- * Fine uses product 9932
+ * for a specific pigment family.
  */
-function ad_materials_calc_find_pigment_product_by_label( $system_label, $pigment_label ) {
+function ad_materials_calc_find_pigment_product_by_family_label( $pigment_family, $pigment_label ) {
 
     static $pigment_cache = [];
 
@@ -1057,7 +1097,7 @@ function ad_materials_calc_find_pigment_product_by_label( $system_label, $pigmen
         return false;
     }
 
-    $cache_key = $system_label . '|' . $pigment_label;
+    $cache_key = $pigment_family . '|' . $pigment_label;
 
     if ( array_key_exists( $cache_key, $pigment_cache ) ) {
         return $pigment_cache[$cache_key];
@@ -1065,9 +1105,9 @@ function ad_materials_calc_find_pigment_product_by_label( $system_label, $pigmen
 
     $parent_product_id = 0;
 
-    if ( $system_label === 'Terrazzo Granitech Medium' || $system_label === 'Terrazzo Granitech Microterrazzo' ) {
+    if ( $pigment_family === 'medium' ) {
         $parent_product_id = 9838;
-    } elseif ( $system_label === 'Terrazzo Granitech Fine' ) {
+    } elseif ( $pigment_family === 'fine' ) {
         $parent_product_id = 9932;
     } else {
         $pigment_cache[$cache_key] = false;
@@ -1120,6 +1160,21 @@ function ad_materials_calc_find_pigment_product_by_label( $system_label, $pigmen
     $pigment_cache[$cache_key] = false;
 
     return false;
+}
+
+function ad_materials_calc_find_pigment_product_by_label( $system_label, $pigment_label ) {
+
+    $pigment_family = '';
+
+    if ( $system_label === 'Terrazzo Granitech Medium' || $system_label === 'Terrazzo Granitech Microterrazzo' ) {
+        $pigment_family = 'medium';
+    } elseif ( $system_label === 'Terrazzo Granitech Fine' ) {
+        $pigment_family = 'fine';
+    } else {
+        return false;
+    }
+
+    return ad_materials_calc_find_pigment_product_by_family_label( $pigment_family, $pigment_label );
 }
 
 function ad_materials_calc_get_silica_notice_html( $silica_packages ) {

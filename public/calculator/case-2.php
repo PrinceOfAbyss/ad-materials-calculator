@@ -213,39 +213,67 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
 
         $medium_kg = round( $sqm * array_sum( $medium_components ), 2 );
 
-        $medium_bucket_prices = [
+        $medium_large_project_split = ( $sqft >= 250 );
+        $medium_bucket_prices       = [
             19 => ad_materials_calc_get_product_price_by_sku( '5200433500015' ),
             1  => ad_materials_calc_get_product_price_by_sku( '5200433501814' ),
         ];
+        $medium_combo     = [];
+        $medium_large_qty = 0;
+        $medium_small_qty = 0;
 
-        $medium_combo = ad_materials_calc_get_best_2bucket_combo( $medium_kg, $medium_bucket_prices );
+        if ( $medium_large_project_split ) {
+            $medium_large_qty = (int) ceil( $medium_kg / 19 );
+        } else {
+            $medium_combo     = ad_materials_calc_get_best_2bucket_combo( $medium_kg, $medium_bucket_prices );
+            $medium_large_qty = ad_materials_calc_get_combo_bucket_count( $medium_combo, 19 );
+            $medium_small_qty = ad_materials_calc_get_combo_bucket_count( $medium_combo, 1 );
+        }
 
         $debug['lines'][] = [
             'line'               => 'System - Medium',
             'coverage_kg_per_m2' => $medium_components,
             'sqm'                => $sqm,
             'required_kg'        => $medium_kg,
-            'bucket_prices'      => $medium_bucket_prices,
+            'bucket_prices'      => $medium_large_project_split ? [
+                19 => $medium_bucket_prices[19],
+            ] : $medium_bucket_prices,
             'combo_result'       => $medium_combo,
+            'resolved_qty'       => [
+                19 => $medium_large_qty,
+                1  => $medium_small_qty,
+            ],
             'sku_map'            => [
                 19 => '5200433500015',
                 1  => '5200433501814',
             ],
         ];
 
-        $items = array_merge(
-            $items,
-            ad_materials_calc_expand_combo_to_line_items(
-                $medium_combo,
-                [
-                    19 => '5200433500015',
-                    1  => '5200433501814',
-                ]
-            )
-        );
+        if ( $medium_large_project_split ) {
+            if ( $medium_large_qty > 0 ) {
+                $medium_product = ad_materials_calc_get_product_by_sku( '5200433500015' );
 
-        $system_counters['medium_large'] = ad_materials_calc_get_combo_bucket_count( $medium_combo, 19 );
-        $system_counters['medium_small'] = ad_materials_calc_get_combo_bucket_count( $medium_combo, 1 );
+                if ( ! $medium_product ) {
+                    return ['error' => 'Case 2 error: Could not resolve Medium 19kg SKU 5200433500015.'];
+                }
+
+                $items[] = ad_materials_calc_build_line_item_from_product( $medium_product, $medium_large_qty );
+            }
+        } else {
+            $items = array_merge(
+                $items,
+                ad_materials_calc_expand_combo_to_line_items(
+                    $medium_combo,
+                    [
+                        19 => '5200433500015',
+                        1  => '5200433501814',
+                    ]
+                )
+            );
+        }
+
+        $system_counters['medium_large'] = $medium_large_qty;
+        $system_counters['medium_small'] = $medium_small_qty;
 
         if ( $joint_filler_kg > 0 ) {
             $fine_bucket_prices = [
@@ -290,39 +318,67 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
 
         $medium_kg = round( $sqm * array_sum( $medium_components ), 2 );
 
-        $medium_bucket_prices = [
+        $medium_large_project_split = ( $sqft >= 250 );
+        $medium_bucket_prices       = [
             19 => ad_materials_calc_get_product_price_by_sku( '5200433500015' ),
             1  => ad_materials_calc_get_product_price_by_sku( '5200433501814' ),
         ];
+        $medium_combo     = [];
+        $medium_large_qty = 0;
+        $medium_small_qty = 0;
 
-        $medium_combo = ad_materials_calc_get_best_2bucket_combo( $medium_kg, $medium_bucket_prices );
+        if ( $medium_large_project_split ) {
+            $medium_large_qty = (int) ceil( $medium_kg / 19 );
+        } else {
+            $medium_combo     = ad_materials_calc_get_best_2bucket_combo( $medium_kg, $medium_bucket_prices );
+            $medium_large_qty = ad_materials_calc_get_combo_bucket_count( $medium_combo, 19 );
+            $medium_small_qty = ad_materials_calc_get_combo_bucket_count( $medium_combo, 1 );
+        }
 
         $debug['lines'][] = [
             'line'               => 'System - Fine case / Medium part',
             'coverage_kg_per_m2' => $medium_components,
             'sqm'                => $sqm,
             'required_kg'        => $medium_kg,
-            'bucket_prices'      => $medium_bucket_prices,
+            'bucket_prices'      => $medium_large_project_split ? [
+                19 => $medium_bucket_prices[19],
+            ] : $medium_bucket_prices,
             'combo_result'       => $medium_combo,
+            'resolved_qty'       => [
+                19 => $medium_large_qty,
+                1  => $medium_small_qty,
+            ],
             'sku_map'            => [
                 19 => '5200433500015',
                 1  => '5200433501814',
             ],
         ];
 
-        $items = array_merge(
-            $items,
-            ad_materials_calc_expand_combo_to_line_items(
-                $medium_combo,
-                [
-                    19 => '5200433500015',
-                    1  => '5200433501814',
-                ]
-            )
-        );
+        if ( $medium_large_project_split ) {
+            if ( $medium_large_qty > 0 ) {
+                $medium_product = ad_materials_calc_get_product_by_sku( '5200433500015' );
 
-        $system_counters['medium_large'] = ad_materials_calc_get_combo_bucket_count( $medium_combo, 19 );
-        $system_counters['medium_small'] = ad_materials_calc_get_combo_bucket_count( $medium_combo, 1 );
+                if ( ! $medium_product ) {
+                    return ['error' => 'Case 2 error: Could not resolve Medium 19kg SKU 5200433500015.'];
+                }
+
+                $items[] = ad_materials_calc_build_line_item_from_product( $medium_product, $medium_large_qty );
+            }
+        } else {
+            $items = array_merge(
+                $items,
+                ad_materials_calc_expand_combo_to_line_items(
+                    $medium_combo,
+                    [
+                        19 => '5200433500015',
+                        1  => '5200433501814',
+                    ]
+                )
+            );
+        }
+
+        $system_counters['medium_large'] = $medium_large_qty;
+        $system_counters['medium_small'] = $medium_small_qty;
 
         $fine_config = ad_materials_calc_get_configured_coverage_values( 'case_2', $clause_key, $system_label, 'system_fine_top', 'Case 2 error:' );
 
@@ -333,23 +389,54 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
         $fine_application_components = $fine_config['values'];
         $fine_application_kg         = round( $sqm * array_sum( $fine_application_components ), 2 );
         $fine_purchase_kg            = round( $fine_application_kg + $joint_filler_kg, 2 );
+        $fine_large_project_split    = ( $sqft >= 250 );
 
         $fine_bucket_prices = [
             10 => ad_materials_calc_get_product_price_by_sku( '5200433500008' ),
             1  => ad_materials_calc_get_product_price_by_sku( '5200433501815' ),
         ];
 
-        $fine_application_combo = ad_materials_calc_get_best_2bucket_combo( $fine_application_kg, $fine_bucket_prices );
+        $fine_application_combo  = [];
+        $fine_purchase_combo     = [];
+        $joint_filler_combo      = [];
+        $fine_large_qty          = 0;
+        $fine_small_qty          = 0;
+        $fine_purchase_large_qty = 0;
+        $fine_purchase_small_qty = 0;
 
-        $fine_purchase_combo = ad_materials_calc_get_best_2bucket_combo( $fine_purchase_kg, $fine_bucket_prices );
+        if ( $fine_large_project_split ) {
+            $fine_large_qty          = (int) ceil( $fine_application_kg / 10 );
+            $fine_purchase_large_qty = $fine_large_qty;
+
+            if ( $joint_filler_kg > 0 ) {
+                $joint_filler_combo = ad_materials_calc_get_best_2bucket_combo( $joint_filler_kg, $fine_bucket_prices );
+
+                $fine_purchase_large_qty += ad_materials_calc_get_combo_bucket_count( $joint_filler_combo, 10 );
+                $fine_purchase_small_qty = ad_materials_calc_get_combo_bucket_count( $joint_filler_combo, 1 );
+            }
+        } else {
+            $fine_application_combo = ad_materials_calc_get_best_2bucket_combo( $fine_application_kg, $fine_bucket_prices );
+            $fine_purchase_combo    = ad_materials_calc_get_best_2bucket_combo( $fine_purchase_kg, $fine_bucket_prices );
+
+            $fine_large_qty          = ad_materials_calc_get_combo_bucket_count( $fine_application_combo, 10 );
+            $fine_small_qty          = ad_materials_calc_get_combo_bucket_count( $fine_application_combo, 1 );
+            $fine_purchase_large_qty = ad_materials_calc_get_combo_bucket_count( $fine_purchase_combo, 10 );
+            $fine_purchase_small_qty = ad_materials_calc_get_combo_bucket_count( $fine_purchase_combo, 1 );
+        }
 
         $debug['lines'][] = [
             'line'               => 'System - Fine application top layer',
             'coverage_kg_per_m2' => $fine_application_components,
             'sqm'                => $sqm,
             'required_kg'        => $fine_application_kg,
-            'bucket_prices'      => $fine_bucket_prices,
+            'bucket_prices'      => $fine_large_project_split ? [
+                10 => $fine_bucket_prices[10],
+            ] : $fine_bucket_prices,
             'combo_result'       => $fine_application_combo,
+            'resolved_qty'       => [
+                10 => $fine_large_qty,
+                1  => $fine_small_qty,
+            ],
             'sku_map'            => [
                 10 => '5200433500008',
                 1  => '5200433501815',
@@ -362,26 +449,68 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
             'joint_filler_kg' => $joint_filler_kg,
             'required_kg'     => $fine_purchase_kg,
             'bucket_prices'   => $fine_bucket_prices,
-            'combo_result'    => $fine_purchase_combo,
+            'combo_result'    => $fine_large_project_split ? $joint_filler_combo : $fine_purchase_combo,
+            'resolved_qty'    => [
+                10 => $fine_purchase_large_qty,
+                1  => $fine_purchase_small_qty,
+            ],
             'sku_map'         => [
                 10 => '5200433500008',
                 1  => '5200433501815',
             ],
         ];
 
-        $items = array_merge(
-            $items,
-            ad_materials_calc_expand_combo_to_line_items(
-                $fine_purchase_combo,
-                [
-                    10 => '5200433500008',
-                    1  => '5200433501815',
-                ]
-            )
-        );
+        if ( $fine_large_project_split ) {
+            $fine_product = ad_materials_calc_get_product_by_sku( '5200433500008' );
 
-        $system_counters['fine_large'] = ad_materials_calc_get_combo_bucket_count( $fine_application_combo, 10 );
-        $system_counters['fine_small'] = ad_materials_calc_get_combo_bucket_count( $fine_application_combo, 1 );
+            if ( ! $fine_product ) {
+                return ['error' => 'Case 2 error: Could not resolve Fine 10kg SKU 5200433500008.'];
+            }
+
+            if ( $fine_large_qty > 0 ) {
+                $items[] = ad_materials_calc_build_line_item_from_product( $fine_product, $fine_large_qty );
+            }
+
+            if ( $joint_filler_kg > 0 ) {
+                $debug['lines'][] = [
+                    'line'               => 'Joint Filler - Fine',
+                    'coverage_kg_per_m2' => [$tile_joint_factor],
+                    'sqm'                => $sqm,
+                    'required_kg'        => $joint_filler_kg,
+                    'bucket_prices'      => $fine_bucket_prices,
+                    'combo_result'       => $joint_filler_combo,
+                    'sku_map'            => [
+                        10 => '5200433500008',
+                        1  => '5200433501815',
+                    ],
+                ];
+
+                $items = array_merge(
+                    $items,
+                    ad_materials_calc_expand_combo_to_line_items(
+                        $joint_filler_combo,
+                        [
+                            10 => '5200433500008',
+                            1  => '5200433501815',
+                        ]
+                    )
+                );
+            }
+        } else {
+            $items = array_merge(
+                $items,
+                ad_materials_calc_expand_combo_to_line_items(
+                    $fine_purchase_combo,
+                    [
+                        10 => '5200433500008',
+                        1  => '5200433501815',
+                    ]
+                )
+            );
+        }
+
+        $system_counters['fine_large'] = $fine_large_qty;
+        $system_counters['fine_small'] = $fine_small_qty;
     } elseif ( $system_label === 'Terrazzo Granitech Microterrazzo' ) {
         $micro_config = ad_materials_calc_get_configured_coverage_values( 'case_2', $clause_key, $system_label, 'system_micro', 'Case 2 error:' );
 
@@ -393,39 +522,67 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
         $micro_kg         = round( $sqm * array_sum( $micro_components ), 2 );
 
         if ( $finish_color === '600Q' ) {
-            $micro_bucket_prices = [
+            $micro_large_project_split = ( $sqft >= 250 );
+            $micro_bucket_prices       = [
                 22 => ad_materials_calc_get_product_price_by_sku( '5200433500022' ),
                 1  => ad_materials_calc_get_product_price_by_sku( '5200433501816' ),
             ];
+            $micro_combo     = [];
+            $micro_large_qty = 0;
+            $micro_small_qty = 0;
 
-            $micro_combo = ad_materials_calc_get_best_2bucket_combo( $micro_kg, $micro_bucket_prices );
+            if ( $micro_large_project_split ) {
+                $micro_large_qty = (int) ceil( $micro_kg / 22 );
+            } else {
+                $micro_combo     = ad_materials_calc_get_best_2bucket_combo( $micro_kg, $micro_bucket_prices );
+                $micro_large_qty = ad_materials_calc_get_combo_bucket_count( $micro_combo, 22 );
+                $micro_small_qty = ad_materials_calc_get_combo_bucket_count( $micro_combo, 1 );
+            }
 
             $debug['lines'][] = [
                 'line'               => 'System - Microterrazzo 600Q',
                 'coverage_kg_per_m2' => $micro_components,
                 'sqm'                => $sqm,
                 'required_kg'        => $micro_kg,
-                'bucket_prices'      => $micro_bucket_prices,
+                'bucket_prices'      => $micro_large_project_split ? [
+                    22 => $micro_bucket_prices[22],
+                ] : $micro_bucket_prices,
                 'combo_result'       => $micro_combo,
+                'resolved_qty'       => [
+                    22 => $micro_large_qty,
+                    1  => $micro_small_qty,
+                ],
                 'sku_map'            => [
                     22 => '5200433500022',
                     1  => '5200433501816',
                 ],
             ];
 
-            $items = array_merge(
-                $items,
-                ad_materials_calc_expand_combo_to_line_items(
-                    $micro_combo,
-                    [
-                        22 => '5200433500022',
-                        1  => '5200433501816',
-                    ]
-                )
-            );
+            if ( $micro_large_project_split ) {
+                if ( $micro_large_qty > 0 ) {
+                    $micro_product = ad_materials_calc_get_product_by_sku( '5200433500022' );
 
-            $system_counters['micro_large'] = ad_materials_calc_get_combo_bucket_count( $micro_combo, 22 );
-            $system_counters['micro_small'] = ad_materials_calc_get_combo_bucket_count( $micro_combo, 1 );
+                    if ( ! $micro_product ) {
+                        return ['error' => 'Case 2 error: Could not resolve Microterrazzo 22kg SKU 5200433500022.'];
+                    }
+
+                    $items[] = ad_materials_calc_build_line_item_from_product( $micro_product, $micro_large_qty );
+                }
+            } else {
+                $items = array_merge(
+                    $items,
+                    ad_materials_calc_expand_combo_to_line_items(
+                        $micro_combo,
+                        [
+                            22 => '5200433500022',
+                            1  => '5200433501816',
+                        ]
+                    )
+                );
+            }
+
+            $system_counters['micro_large'] = $micro_large_qty;
+            $system_counters['micro_small'] = $micro_small_qty;
         } elseif ( $finish_color === 'Zambia' ) {
             $zambia_product = ad_materials_calc_get_product_by_sku( '5200433501770' );
 
@@ -514,29 +671,40 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
     // Colorant
     // -----------------------------------------------------
     if ( ! ad_materials_calc_is_unpigmented( $pigment_label ) ) {
-        $pigment_product = ad_materials_calc_find_pigment_product_by_label( $system_label, $pigment_label );
-
-        if ( ! $pigment_product ) {
-            return ['error' => 'Case 2 error: Could not resolve the selected pigment variation "' . $pigment_label . '".'];
-        }
-
-        $colorant_data = ad_materials_calc_get_colorant_quantity_data( $system_label, $system_counters );
-        $colorant_qty  = $colorant_data['qty'];
+        $colorant_data = ad_materials_calc_get_colorant_line_data( $system_label, $system_counters );
 
         $debug['lines'][] = [
             'line'                  => 'Colorant',
             'pigment_label'         => $pigment_label,
             'system_counters'       => $system_counters,
-            'final_qty'             => $colorant_qty,
-            'variation_sku'         => $pigment_product->get_sku(),
-            'unit_price'            => ad_materials_calc_get_calculator_product_unit_price( $pigment_product ),
+            'colorant_lines'        => $colorant_data['lines'],
             'medium_small_fraction' => $colorant_data['medium_small_fraction'],
             'fine_small_fraction'   => $colorant_data['fine_small_fraction'],
             'micro_small_fraction'  => $colorant_data['micro_small_fraction'],
         ];
 
-        if ( $colorant_qty > 0 ) {
-            $items[] = ad_materials_calc_build_line_item_from_product( $pigment_product, $colorant_qty );
+        foreach ( $colorant_data['lines'] as $colorant_line ) {
+            $pigment_family  = isset( $colorant_line['pigment_family'] ) ? (string) $colorant_line['pigment_family'] : '';
+            $colorant_qty    = isset( $colorant_line['qty'] ) ? (int) $colorant_line['qty'] : 0;
+            $pigment_product = ad_materials_calc_find_pigment_product_by_family_label( $pigment_family, $pigment_label );
+
+            if ( ! $pigment_product ) {
+                return ['error' => 'Case 2 error: Could not resolve the selected ' . ucfirst( $pigment_family ) . ' pigment variation "' . $pigment_label . '".'];
+            }
+
+            $debug['lines'][] = [
+                'line'          => 'Colorant - ' . ucfirst( $pigment_family ),
+                'pigment_label' => $pigment_label,
+                'qty'           => $colorant_qty,
+                'large_count'   => isset( $colorant_line['large_count'] ) ? (int) $colorant_line['large_count'] : 0,
+                'small_count'   => isset( $colorant_line['small_count'] ) ? (int) $colorant_line['small_count'] : 0,
+                'variation_sku' => $pigment_product->get_sku(),
+                'unit_price'    => ad_materials_calc_get_calculator_product_unit_price( $pigment_product ),
+            ];
+
+            if ( $colorant_qty > 0 ) {
+                $items[] = ad_materials_calc_build_line_item_from_product( $pigment_product, $colorant_qty );
+            }
         }
     } else {
         $debug['lines'][] = [
