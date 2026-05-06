@@ -35,6 +35,8 @@ function ad_materials_calc_results_shortcode() {
         $output .= ad_materials_calc_render_add_to_cart_block( $answers, $calc );
     }
 
+    $output .= ad_materials_calc_render_partner_savings_note( $calc );
+
     if ( ! empty( $calc['joint_filler_note'] ) ) {
         $output .= ad_materials_calc_render_results_joint_filler_note( (string) $calc['joint_filler_note'] );
     }
@@ -434,6 +436,56 @@ function ad_materials_calc_render_results_joint_filler_note( $note_text ) {
         esc_html__( 'Note: ', 'ad-materials-calculator' ),
         esc_html( $note_text )
     );
+}
+
+function ad_materials_calc_render_partner_savings_note( array $calc ) {
+
+    if ( empty( $calc['pricing_tier'] ) || ! in_array( $calc['pricing_tier'], ['applicator', 'distributor'], true ) || empty( $calc['items'] ) || ! is_array( $calc['items'] ) ) {
+        return '';
+    }
+
+    $savings = ad_materials_calc_get_partner_savings_amount( $calc['items'] );
+
+    if ( $savings <= 0 ) {
+        return '';
+    }
+
+    return sprintf(
+        '<div class="ad-materials-calc-results-savings-note"><span class="ad-materials-calc-results-savings-note__text">%s</span></div>',
+        wp_kses_post(
+            sprintf(
+                /* translators: %s: formatted saved amount */
+                __( 'As a partner you have saved %s on this order!', 'ad-materials-calculator' ),
+                wc_price( $savings )
+            )
+        )
+    );
+}
+
+function ad_materials_calc_get_partner_savings_amount( array $items ) {
+
+    $normal_subtotal  = 0.0;
+    $partner_subtotal = 0.0;
+
+    foreach ( $items as $item ) {
+        $sku = ! empty( $item['sku'] ) ? (string) $item['sku'] : '';
+        $qty = ! empty( $item['qty'] ) ? (int) $item['qty'] : 0;
+
+        if ( $sku === '' || $qty <= 0 ) {
+            continue;
+        }
+
+        $product = ad_materials_calc_get_product_by_sku( $sku );
+
+        if ( ! $product ) {
+            continue;
+        }
+
+        $normal_subtotal += ad_materials_calc_get_product_normal_unit_price( $product ) * $qty;
+        $partner_subtotal += isset( $item['partial'] ) ? (float) $item['partial'] : 0.0;
+    }
+
+    return max( 0.0, round( $normal_subtotal - $partner_subtotal, wc_get_price_decimals() ) );
 }
 
 function ad_materials_calc_render_group_joint_filler_note( $note_text ) {

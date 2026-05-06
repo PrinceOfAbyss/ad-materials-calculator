@@ -205,6 +205,17 @@
     color: inherit;
 }
 
+.ad-materials-calc-results-savings-note {
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 25px;
+}
+
+.ad-materials-calc-results-savings-note__text {
+    color: #000;
+    font-weight: 600;
+}
+
 .ad-materials-calc-results-notice {
     background: #fafafa;
     border: 1px solid #ddd;
