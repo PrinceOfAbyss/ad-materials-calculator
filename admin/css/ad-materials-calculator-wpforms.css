@@ -1,0 +1,7 @@
+/**
+ * WPForms admin screen tweaks
+ */
+
+#the-list tr.ad-mc-wpforms-pending-user {
+	background-color: #ffffe0;
+}

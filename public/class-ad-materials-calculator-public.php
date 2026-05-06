@@ -75,6 +75,7 @@ class Ad_Materials_Calculator_Public {
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/show-calculator-discount-smart-tag.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/dynamic-image-choices-pigment-color.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/make-locked-terrazzo-system-field-read-only.php';
+		require_once plugin_dir_path( __FILE__ ) . 'wpforms/sync-b2bking-registration-meta.php';
 
 	}
 

@@ -73,11 +73,13 @@ class Ad_Materials_Calculator_Admin {
 		 * class.
 		 */
 
-		if ( ! $this->is_materials_calculator_admin_asset_page() ) {
-			return;
+		if ( $this->is_materials_calculator_admin_asset_page() ) {
+			wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ad-materials-calculator-admin.css', array(), $this->version, 'all' );
 		}
 
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ad-materials-calculator-admin.css', array(), $this->version, 'all' );
+		if ( $this->is_users_admin_page() ) {
+			wp_enqueue_style( $this->plugin_name . '-wpforms', plugin_dir_url( __FILE__ ) . 'css/ad-materials-calculator-wpforms.css', array(), $this->version, 'all' );
+		}
 
 	}
 
@@ -100,11 +102,20 @@ class Ad_Materials_Calculator_Admin {
 		 * class.
 		 */
 
-		if ( ! $this->is_materials_calculator_admin_asset_page() ) {
-			return;
+		if ( $this->is_materials_calculator_admin_asset_page() ) {
+			wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ad-materials-calculator-admin.js', array( 'jquery', 'selectWoo' ), $this->version, false );
 		}
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/ad-materials-calculator-admin.js', array( 'jquery', 'selectWoo' ), $this->version, false );
+		if ( $this->is_users_admin_page() ) {
+			wp_enqueue_script( $this->plugin_name . '-wpforms', plugin_dir_url( __FILE__ ) . 'js/ad-materials-calculator-wpforms.js', array( 'jquery', 'wpforms-admin-users' ), $this->version, false );
+			wp_localize_script(
+				$this->plugin_name . '-wpforms',
+				'adMaterialsCalculatorWpforms',
+				[
+					'pendingUserIds' => $this->get_pending_b2bking_registration_user_ids(),
+				]
+			);
+		}
 
 	}
 
@@ -133,6 +144,47 @@ class Ad_Materials_Calculator_Admin {
 		$tab = sanitize_key( wp_unslash( $_GET['tab'] ) );
 
 		return in_array( $tab, ['materials-calculator', 'products-price-matrix'], true );
+	}
+
+	/**
+	 * Determine whether the current request is the Users admin screen.
+	 *
+	 * @since    1.0.5
+	 * @return   bool
+	 */
+	private function is_users_admin_page() {
+
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+		return $screen && in_array( $screen->id, ['users', 'site-users'], true );
+	}
+
+	/**
+	 * Find synced B2BKing applicants that still need approval.
+	 *
+	 * @since    1.0.5
+	 * @return   int[]
+	 */
+	private function get_pending_b2bking_registration_user_ids() {
+
+		return array_map(
+			'absint',
+			get_users(
+				[
+					'fields'     => 'ids',
+					'meta_query' => [
+						[
+							'key'   => 'b2bking_registration_data_saved',
+							'value' => 'yes',
+						],
+						[
+							'key'   => 'b2bking_account_approved',
+							'value' => 'no',
+						],
+					],
+				]
+			)
+		);
 	}
 
 	/**

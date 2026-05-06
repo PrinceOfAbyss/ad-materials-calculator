@@ -38,10 +38,25 @@ span.wpforms-image-choices-image img {
     margin-top: 0 !important;
 }
 
-.ad-materials-calculator-wpforms-form form {
+.ad-materials-calculator-wpforms-form form,
+.ad-partner-login-wpforms-form form,
+.ad-partner-password-reset-wpforms-form form,
+.ad-applicator-reg-wpforms-form form,
+.ad-distributor-reg-wpforms-form form {
     --wpforms-button-background-color: #3e9e86;
     --ad-wpforms-pigment-color-tiles: 80px;
     --ad-label-lh: 1.15;
+}
+
+#ad-partner-password-reset-link {
+    margin-top: -35px;
+    text-align: right;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+#ad-partner-password-reset-link a {
+    color: var(--e-global-color-primary);
 }
 
 .ad-materials-calculator-wpforms-form form input[type="number"] {
@@ -70,4 +85,13 @@ span.wpforms-image-choices-image img {
     font-size: 12px !important;
     max-width: 350px;
     hyphens: none;
+}
+
+.ad-wpforms-choices-inline ul {
+    display: flex !important;
+    flex-wrap: wrap;
+}
+
+.ad-wpforms-choices-inline ul li {
+    width: auto !important;
 }

@@ -56,6 +56,24 @@ class Ad_Materials_Calculator_Settings {
     private $wpforms_form_id_option_name = 'ad_materials_calculator_wpforms_form_id';
 
     /**
+     * Option name used to persist the applicator registration WPForms form ID.
+     *
+     * @since    1.0.5
+     * @access   private
+     * @var      string
+     */
+    private $applicator_registration_form_id_option_name = 'ad_materials_calculator_applicator_registration_form_id';
+
+    /**
+     * Option name used to persist the distributor registration WPForms form ID.
+     *
+     * @since    1.0.5
+     * @access   private
+     * @var      string
+     */
+    private $distributor_registration_form_id_option_name = 'ad_materials_calculator_distributor_registration_form_id';
+
+    /**
      * Option name used to persist the user IDs with extended calculator privileges.
      *
      * @since    1.0.0
@@ -230,6 +248,26 @@ class Ad_Materials_Calculator_Settings {
         echo '<p class="description">' . esc_html__( 'Set the WPForms form ID used by the materials calculator integration. If empty, the integration stays inactive.', 'ad-materials-calculator' ) . '</p>';
         echo '</td>';
         echo '</tr>';
+        echo '<tr>';
+        echo '<th scope="row"><label for="ad-materials-calculator-applicator-registration-form-id">' . esc_html__( 'Applicator Registration Form ID', 'ad-materials-calculator' ) . '</label></th>';
+        echo '<td>';
+        printf(
+            '<input type="number" min="1" step="1" class="small-text" id="ad-materials-calculator-applicator-registration-form-id" name="ad_materials_calculator_applicator_registration_form_id" value="%1$s" />',
+            esc_attr( $this->get_saved_applicator_registration_form_id() > 0 ? (string) $this->get_saved_applicator_registration_form_id() : '' )
+        );
+        echo '<p class="description">' . esc_html__( 'Set the WPForms form ID used by the applicator registration to B2BKing sync. If empty, this sync stays inactive.', 'ad-materials-calculator' ) . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        echo '<tr>';
+        echo '<th scope="row"><label for="ad-materials-calculator-distributor-registration-form-id">' . esc_html__( 'Distributor Registration Form ID', 'ad-materials-calculator' ) . '</label></th>';
+        echo '<td>';
+        printf(
+            '<input type="number" min="1" step="1" class="small-text" id="ad-materials-calculator-distributor-registration-form-id" name="ad_materials_calculator_distributor_registration_form_id" value="%1$s" />',
+            esc_attr( $this->get_saved_distributor_registration_form_id() > 0 ? (string) $this->get_saved_distributor_registration_form_id() : '' )
+        );
+        echo '<p class="description">' . esc_html__( 'Set the WPForms form ID used by the distributor registration to B2BKing sync. If empty, this sync stays inactive.', 'ad-materials-calculator' ) . '</p>';
+        echo '</td>';
+        echo '</tr>';
         echo '</tbody></table>';
 
         $privileged_user_ids = $this->get_saved_privileged_user_ids();
@@ -329,6 +367,8 @@ class Ad_Materials_Calculator_Settings {
         $existing        = $this->get_saved_coverages_settings();
         $merged          = $this->merge_coverages_settings( $existing, $sanitized );
         $wpforms_form_id = $this->get_submitted_wpforms_form_id();
+        $app_form_id     = $this->get_submitted_applicator_registration_form_id();
+        $dist_form_id    = $this->get_submitted_distributor_registration_form_id();
         $privileged_ids  = $this->get_submitted_privileged_user_ids();
         $applicator_id   = $this->get_submitted_b2bking_applicator_group_id();
         $distributor_id  = $this->get_submitted_b2bking_distributor_group_id();
@@ -341,6 +381,18 @@ class Ad_Materials_Calculator_Settings {
             update_option( $this->wpforms_form_id_option_name, $wpforms_form_id );
         } else {
             delete_option( $this->wpforms_form_id_option_name );
+        }
+
+        if ( $app_form_id > 0 ) {
+            update_option( $this->applicator_registration_form_id_option_name, $app_form_id );
+        } else {
+            delete_option( $this->applicator_registration_form_id_option_name );
+        }
+
+        if ( $dist_form_id > 0 ) {
+            update_option( $this->distributor_registration_form_id_option_name, $dist_form_id );
+        } else {
+            delete_option( $this->distributor_registration_form_id_option_name );
         }
 
         if ( ! empty( $privileged_ids ) ) {
@@ -402,6 +454,28 @@ class Ad_Materials_Calculator_Settings {
     private function get_saved_wpforms_form_id() {
 
         return absint( get_option( $this->wpforms_form_id_option_name, 0 ) );
+    }
+
+    /**
+     * Return the saved applicator registration WPForms form ID.
+     *
+     * @since    1.0.5
+     * @return   int
+     */
+    private function get_saved_applicator_registration_form_id() {
+
+        return absint( get_option( $this->applicator_registration_form_id_option_name, 0 ) );
+    }
+
+    /**
+     * Return the saved distributor registration WPForms form ID.
+     *
+     * @since    1.0.5
+     * @return   int
+     */
+    private function get_saved_distributor_registration_form_id() {
+
+        return absint( get_option( $this->distributor_registration_form_id_option_name, 0 ) );
     }
 
     /**
@@ -478,6 +552,40 @@ class Ad_Materials_Calculator_Settings {
         }
 
         $submitted = absint( wp_unslash( $_POST['ad_materials_calculator_wpforms_form_id'] ) );
+
+        return $submitted > 0 ? $submitted : 0;
+    }
+
+    /**
+     * Read and sanitize the submitted applicator registration WPForms form ID.
+     *
+     * @since    1.0.5
+     * @return   int
+     */
+    private function get_submitted_applicator_registration_form_id() {
+
+        if ( ! isset( $_POST['ad_materials_calculator_applicator_registration_form_id'] ) ) {
+            return $this->get_saved_applicator_registration_form_id();
+        }
+
+        $submitted = absint( wp_unslash( $_POST['ad_materials_calculator_applicator_registration_form_id'] ) );
+
+        return $submitted > 0 ? $submitted : 0;
+    }
+
+    /**
+     * Read and sanitize the submitted distributor registration WPForms form ID.
+     *
+     * @since    1.0.5
+     * @return   int
+     */
+    private function get_submitted_distributor_registration_form_id() {
+
+        if ( ! isset( $_POST['ad_materials_calculator_distributor_registration_form_id'] ) ) {
+            return $this->get_saved_distributor_registration_form_id();
+        }
+
+        $submitted = absint( wp_unslash( $_POST['ad_materials_calculator_distributor_registration_form_id'] ) );
 
         return $submitted > 0 ? $submitted : 0;
     }
