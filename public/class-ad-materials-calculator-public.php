@@ -74,7 +74,6 @@ class Ad_Materials_Calculator_Public {
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/capture-submitted-fields-to-wc-session.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/show-calculator-discount-smart-tag.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/dynamic-image-choices-pigment-color.php';
-		require_once plugin_dir_path( __FILE__ ) . 'wpforms/make-locked-terrazzo-system-field-read-only.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/sync-b2bking-registration-meta.php';
 
 	}
@@ -140,6 +139,27 @@ class Ad_Materials_Calculator_Public {
 			)
 		);
 
+		if ( $this->is_materials_calculator_wpforms_page() ) {
+			wp_enqueue_script( $this->plugin_name . '-wpforms', plugin_dir_url( __FILE__ ) . 'js/ad-materials-calculator-wpforms.js', array( 'jquery' ), $this->version, false );
+		}
+
+	}
+
+	/**
+	 * Check whether the current page should load calculator WPForms behavior.
+	 *
+	 * @since    1.0.7
+	 * @return   bool
+	 */
+	private function is_materials_calculator_wpforms_page() {
+
+		$page_id = absint( get_option( 'ad_materials_calculator_wpforms_page_id', 0 ) );
+
+		if ( $page_id > 0 ) {
+			return is_page( $page_id );
+		}
+
+		return false;
 	}
 
 	/**

@@ -47,6 +47,15 @@ class Ad_Materials_Calculator_Settings {
     private $coverages_option_name = 'ad_materials_calculator_coverages_json';
 
     /**
+     * Option name used to persist the page ID that renders the calculator WPForms form.
+     *
+     * @since    1.0.7
+     * @access   private
+     * @var      string
+     */
+    private $wpforms_page_id_option_name = 'ad_materials_calculator_wpforms_page_id';
+
+    /**
      * Option name used to persist the calculator WPForms form ID.
      *
      * @since    1.0.0
@@ -239,6 +248,16 @@ class Ad_Materials_Calculator_Settings {
         echo '<h2>' . esc_html__( 'WPForms Settings', 'ad-materials-calculator' ) . '</h2>';
         echo '<table class="form-table" role="presentation"><tbody>';
         echo '<tr>';
+        echo '<th scope="row"><label for="ad-materials-calculator-wpforms-page-id">' . esc_html__( 'Calculator Page ID', 'ad-materials-calculator' ) . '</label></th>';
+        echo '<td>';
+        printf(
+            '<input type="number" min="1" step="1" class="small-text" id="ad-materials-calculator-wpforms-page-id" name="ad_materials_calculator_wpforms_page_id" value="%1$s" />',
+            esc_attr( $this->get_saved_wpforms_page_id() > 0 ? (string) $this->get_saved_wpforms_page_id() : '' )
+        );
+        echo '<p class="description">' . esc_html__( 'Set the page ID that renders the calculator form.', 'ad-materials-calculator' ) . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        echo '<tr class="ad-mc-settings-separated-row">';
         echo '<th scope="row"><label for="ad-materials-calculator-wpforms-form-id">' . esc_html__( 'Materials Calculator Form ID', 'ad-materials-calculator' ) . '</label></th>';
         echo '<td>';
         printf(
@@ -366,6 +385,7 @@ class Ad_Materials_Calculator_Settings {
         $sanitized       = $this->sanitize_coverages_settings( $submitted, $section_schema, $active_section );
         $existing        = $this->get_saved_coverages_settings();
         $merged          = $this->merge_coverages_settings( $existing, $sanitized );
+        $wpforms_page_id = $this->get_submitted_wpforms_page_id();
         $wpforms_form_id = $this->get_submitted_wpforms_form_id();
         $app_form_id     = $this->get_submitted_applicator_registration_form_id();
         $dist_form_id    = $this->get_submitted_distributor_registration_form_id();
@@ -376,6 +396,12 @@ class Ad_Materials_Calculator_Settings {
         $distributor_min = $this->get_submitted_distributor_min_sqft();
 
         update_option( $this->coverages_option_name, wp_json_encode( $merged ) );
+
+        if ( $wpforms_page_id > 0 ) {
+            update_option( $this->wpforms_page_id_option_name, $wpforms_page_id );
+        } else {
+            delete_option( $this->wpforms_page_id_option_name );
+        }
 
         if ( $wpforms_form_id > 0 ) {
             update_option( $this->wpforms_form_id_option_name, $wpforms_form_id );
@@ -443,6 +469,17 @@ class Ad_Materials_Calculator_Settings {
         $decoded = json_decode( $raw, true );
 
         return is_array( $decoded ) ? $decoded : [];
+    }
+
+    /**
+     * Return the saved calculator WPForms page ID.
+     *
+     * @since    1.0.7
+     * @return   int
+     */
+    private function get_saved_wpforms_page_id() {
+
+        return absint( get_option( $this->wpforms_page_id_option_name, 0 ) );
     }
 
     /**
@@ -537,6 +574,23 @@ class Ad_Materials_Calculator_Settings {
     private function get_saved_distributor_min_sqft() {
 
         return $this->get_saved_positive_decimal_option( $this->distributor_min_sqft_option_name );
+    }
+
+    /**
+     * Read and sanitize the submitted calculator WPForms page ID.
+     *
+     * @since    1.0.7
+     * @return   int
+     */
+    private function get_submitted_wpforms_page_id() {
+
+        if ( ! isset( $_POST['ad_materials_calculator_wpforms_page_id'] ) ) {
+            return $this->get_saved_wpforms_page_id();
+        }
+
+        $submitted = absint( wp_unslash( $_POST['ad_materials_calculator_wpforms_page_id'] ) );
+
+        return $submitted > 0 ? $submitted : 0;
     }
 
     /**
