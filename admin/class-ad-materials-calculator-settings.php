@@ -348,7 +348,7 @@ class Ad_Materials_Calculator_Settings {
             '<input type="number" min="0.001" step="0.001" class="small-text" id="ad-materials-calculator-applicator-min-sqft" name="ad_materials_calculator_applicator_min_sqft" value="%1$s" />',
             esc_attr( $this->get_saved_applicator_min_sqft() )
         );
-        echo '<p class="description">' . esc_html__( 'Minimum project size required before applicators receive special applicator prices. If empty or invalid, applicator pricing stays inactive.', 'ad-materials-calculator' ) . '</p>';
+        echo '<p class="description">' . esc_html__( 'Minimum project size required before applicator or distributor users receive special applicator prices. If empty or invalid, applicator pricing stays inactive.', 'ad-materials-calculator' ) . '</p>';
         echo '</td>';
         echo '</tr>';
         echo '<tr>';
@@ -358,7 +358,7 @@ class Ad_Materials_Calculator_Settings {
             '<input type="number" min="0.001" step="0.001" class="small-text" id="ad-materials-calculator-distributor-min-sqft" name="ad_materials_calculator_distributor_min_sqft" value="%1$s" />',
             esc_attr( $this->get_saved_distributor_min_sqft() )
         );
-        echo '<p class="description">' . esc_html__( 'Minimum project size required before distributors receive special distributor prices. If empty or invalid, distributor pricing stays inactive.', 'ad-materials-calculator' ) . '</p>';
+        echo '<p class="description">' . esc_html__( 'Minimum project size required before applicator or distributor users receive special distributor prices. If empty or invalid, distributor pricing stays inactive.', 'ad-materials-calculator' ) . '</p>';
         echo '</td>';
         echo '</tr>';
         echo '</tbody></table>';

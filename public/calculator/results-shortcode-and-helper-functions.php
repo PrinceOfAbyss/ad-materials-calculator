@@ -643,20 +643,17 @@ function ad_materials_calc_get_pricing_tier_from_answers( array $answers ) {
     $distributor_group_id = absint( get_option( 'ad_materials_calculator_b2bking_distributor_group_id', 0 ) );
     $applicator_min_sqft  = ad_materials_calc_get_positive_decimal_option( 'ad_materials_calculator_applicator_min_sqft' );
     $distributor_min_sqft = ad_materials_calc_get_positive_decimal_option( 'ad_materials_calculator_distributor_min_sqft' );
+    $uses_partner_pricing = ( $applicator_group_id > 0 && $user_group_id === $applicator_group_id ) || ( $distributor_group_id > 0 && $user_group_id === $distributor_group_id );
 
-    if ( $distributor_group_id > 0 && $user_group_id === $distributor_group_id ) {
-        if ( $distributor_min_sqft > 0 && $sqft >= $distributor_min_sqft ) {
-            return 'distributor';
-        }
-
-        if ( $applicator_min_sqft > 0 && $sqft >= $applicator_min_sqft ) {
-            return 'applicator';
-        }
-
+    if ( ! $uses_partner_pricing ) {
         return 'normal';
     }
 
-    if ( $applicator_group_id > 0 && $user_group_id === $applicator_group_id && $applicator_min_sqft > 0 && $sqft >= $applicator_min_sqft ) {
+    if ( $distributor_min_sqft > 0 && $sqft >= $distributor_min_sqft ) {
+        return 'distributor';
+    }
+
+    if ( $applicator_min_sqft > 0 && $sqft >= $applicator_min_sqft ) {
         return 'applicator';
     }
 
