@@ -164,6 +164,25 @@ class Ad_Materials_Calculator_Public {
 	}
 
 	/**
+	 * Redirect logged-out My Account visitors to the custom login page.
+	 *
+	 * @since    1.0.9
+	 */
+	public function redirect_logged_out_my_account_to_login() {
+
+		if ( is_user_logged_in() ) {
+			return;
+		}
+
+		if ( ! function_exists( 'is_account_page' ) || ! is_account_page() ) {
+			return;
+		}
+
+		wp_safe_redirect( home_url( '/login/' ) );
+		exit;
+	}
+
+	/**
 	 * Load the plugin cart template override when WooCommerce asks for it
 	 *
 	 * @since    1.0.0
