@@ -97,7 +97,7 @@ function ad_materials_calc_replace_wpforms_activation_email_urls( $email ) {
         ],
         [
             ad_materials_calc_get_partner_password_reset_url( $email['user'] ),
-            home_url( '/partner-login/' ),
+            home_url( '/login/' ),
         ],
         $email['message']
     );
@@ -271,14 +271,14 @@ function ad_materials_calc_redirect_partner_logout_to_partner_login( $redirect_t
         return $redirect_to;
     }
 
-    return home_url( '/partner-login/' );
+    return home_url( '/login/' );
 }
 
 // Bypass WP Rocket cache for the stateful partner password reset URL
 add_filter( 'rocket_cache_reject_uri', 'ad_materials_calc_exclude_partner_password_reset_from_wp_rocket_cache' );
 function ad_materials_calc_exclude_partner_password_reset_from_wp_rocket_cache( $uris ) {
 
-    $uris[] = '/partner-password-reset(.*)';
+    $uris[] = '/password-reset(.*)';
 
     return array_values( array_unique( $uris ) );
 }
@@ -295,7 +295,7 @@ function ad_materials_calc_exclude_wpforms_reset_cookie_from_wp_rocket_cache( $c
 // Build the direct WPForms password reset URL for a synced partner user
 function ad_materials_calc_get_partner_password_reset_url( WP_User $user ) {
 
-    $reset_page_url = home_url( '/partner-password-reset/' );
+    $reset_page_url = home_url( '/password-reset/' );
     $reset_key      = get_password_reset_key( $user );
 
     if ( is_wp_error( $reset_key ) ) {
