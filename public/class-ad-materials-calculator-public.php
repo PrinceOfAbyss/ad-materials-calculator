@@ -183,6 +183,28 @@ class Ad_Materials_Calculator_Public {
 	}
 
 	/**
+	 * Remove B2BKing endpoints from the WooCommerce account menu.
+	 *
+	 * @since    1.0.9
+	 * @param    array $items Account menu items keyed by endpoint.
+	 * @return   array
+	 */
+	public function remove_b2bking_account_menu_items( $items ) {
+
+		unset(
+			$items['conversations'],
+			$items['offers'],
+			$items['bulkorder'],
+			$items['subaccounts'],
+			$items['purchase-lists'],
+
+			$items['downloads']
+		);
+
+		return $items;
+	}
+
+	/**
 	 * Load the plugin cart template override when WooCommerce asks for it
 	 *
 	 * @since    1.0.0
