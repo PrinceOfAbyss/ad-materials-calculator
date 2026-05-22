@@ -2,89 +2,171 @@
  * WPForms-specific public styles for the materials calculator
  */
 
-div.wpforms-container-full .wpforms-field.wpforms-field-radio ul.wpforms-image-choices-modern {
-    gap: 0;
-}
-
-.wpforms-container .wpforms-list-inline .wpforms-image-choices-modern li {
-    margin: 0 !important;
-}
-
-div.wpforms-container-full .wpforms-form ul.wpforms-image-choices-modern .wpforms-image-choices-item label .wpforms-image-choices-label {
-    font-size: 12px !important;
-    margin-top: 5px;
-    max-width: var(--ad-wpforms-pigment-color-tiles);
-    white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
-    line-height: var(--ad-label-lh);
-    min-height: calc(2 * var(--ad-label-lh) * 1em);
-}
-
-.wpforms-container .wpforms-image-choices-modern label:not(.wpforms-error) {
-    padding: 5px;
-}
-
-span.wpforms-image-choices-image {
-    width: var(--ad-wpforms-pigment-color-tiles);
-}
-
-span.wpforms-image-choices-image img {
-    border: 0.5px solid #ccc;
-}
-
 .ad-materials-calculator-wpforms-form {
     margin-bottom: 0 !important;
     margin-top: 0 !important;
+    --ad-wpforms-image-choice-tile-size: 80px;
+    --ad-wpforms-image-choice-label-line-height: 1.15;
 }
 
-.ad-materials-calculator-wpforms-form form,
-.ad-partner-login-wpforms-form form,
-.ad-partner-password-reset-wpforms-form form,
-.ad-applicator-reg-wpforms-form form,
-.ad-distributor-reg-wpforms-form form {
+.ad-modern-design {
+    --ad-wpforms-control-border-color: rgba(26, 25, 24, 0.18);
+}
+
+.wpforms-form {
     --wpforms-button-background-color: #3e9e86;
-    --ad-wpforms-pigment-color-tiles: 80px;
-    --ad-label-lh: 1.15;
 }
 
-#ad-partner-password-reset-link {
+.wpforms-field input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+.wpforms-field textarea,
+.wpforms-field select {
+    text-align: left !important;
+}
+
+.ad-modern-design .wpforms-field .wpforms-field-label {
+    color: rgba(26, 25, 24, 0.55);
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.ad-modern-design .wpforms-field input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+.ad-modern-design .wpforms-field textarea,
+.ad-modern-design .wpforms-field select {
+    color: #1a1918 !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    line-height: 1.45 !important;
+    background-color: transparent !important;
+    border: 0 !important;
+    border-bottom: 1px solid var(--ad-wpforms-control-border-color) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+.ad-modern-design .wpforms-field-select select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' fill='none' stroke='%238A8580' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+    background-position: right 4px center !important;
+    background-repeat: no-repeat !important;
+    background-size: 12px 8px !important;
+}
+
+.ad-modern-design .wpforms-field input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):focus,
+.ad-modern-design .wpforms-field textarea:focus,
+.ad-modern-design .wpforms-field select:focus {
+    border-bottom-color: var(--wpforms-button-background-color) !important;
+}
+
+.ad-materials-calculator-wpforms-form .wpforms-field .wpforms-image-choices {
+    gap: 0 !important;
+    max-height: 370px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.ad-materials-calculator-wpforms-form .wpforms-field .wpforms-image-choices .wpforms-image-choices-item {
+    margin: 0 !important;
+}
+
+.ad-materials-calculator-wpforms-form .wpforms-field .wpforms-image-choices .wpforms-field-label-inline {
+    padding: 5px;
+}
+
+.ad-materials-calculator-wpforms-form .wpforms-field .wpforms-image-choices-image {
+    width: var(--ad-wpforms-image-choice-tile-size);
+}
+
+.ad-materials-calculator-wpforms-form .wpforms-field .wpforms-image-choices-image img {
+    border: 0.5px solid #ccc;
+}
+
+.ad-materials-calculator-wpforms-form .wpforms-field .wpforms-image-choices-label {
+    font-size: 12px !important;
+    line-height: var(--ad-wpforms-image-choice-label-line-height);
+    margin-top: 5px !important;
+    max-width: var(--ad-wpforms-image-choice-tile-size);
+    min-height: calc(2 * var(--ad-wpforms-image-choice-label-line-height) * 0.8em);
+}
+
+.ad-materials-calculator-wpforms-form .ad-minimal-duty-disclaimer {
+    margin-top: -20px !important;
+    font-size: 12px !important;
+}
+
+.ad-materials-calculator-wpforms-form .ad-minimal-duty-disclaimer-prefix {
+    color: #c62828;
+    font-weight: 600;
+}
+
+.ad-materials-calculator-wpforms-form .wpforms-submit {
+    border-radius: 0 !important;
+}
+
+.ad-partner-login-wpforms-form #ad-partner-password-reset-link {
     margin-top: -35px;
     text-align: right;
     font-size: 13px;
     line-height: 1.4;
 }
 
-#ad-partner-password-reset-link a {
+.ad-partner-login-wpforms-form #ad-partner-password-reset-link a {
     color: var(--e-global-color-primary);
 }
 
-.ad-materials-calculator-wpforms-form form input[type="number"] {
-    text-align: left !important;
-}
-
-.ad-mc-disclaimer {
-    margin-top: -20px !important;
-}
-
-.ad-mc-disclaimer-prefix {
-    color: #c62828;
-    font-weight: 600;
-}
-
-.ad-mc-disclaimer-text {
-    color: #444;
-}
-
-.ad-calculator-disclaimer-text input[type="checkbox"] {
+.ad-form-disclaimer-text input {
     transform: scale(0.75);
     transform-origin: left center;
 }
 
-.ad-calculator-disclaimer-text .wpforms-field-label-inline {
+.ad-form-disclaimer-text label {
     font-size: 12px !important;
     max-width: 350px;
     hyphens: none;
+}
+
+.ad-form-disclaimer-text a {
+    color: var(--wpforms-button-background-color);
+    text-decoration: underline !important;
+}
+
+.ad-faux-inline-buttons ul {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px !important;
+    margin: 15px 0 0 !important;
+}
+
+.ad-faux-inline-buttons ul li {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+}
+
+.ad-faux-inline-buttons input {
+    display: none !important;
+}
+
+.ad-faux-inline-buttons .wpforms-field-label-inline {
+    border: 1px solid var(--ad-wpforms-control-border-color);
+    color: #1a1918;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    font-size: 13px !important;
+    font-weight: 500;
+    justify-content: center;
+    line-height: 1.2;
+    margin: 0 !important;
+    padding: 10px 16px !important;
+}
+
+.ad-faux-inline-buttons input:checked+.wpforms-field-label-inline {
+    background-color: var(--wpforms-button-background-color);
+    border-color: var(--wpforms-button-background-color);
+    color: #fff;
 }
 
 .ad-wpforms-choices-inline ul {
