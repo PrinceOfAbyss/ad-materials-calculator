@@ -64,17 +64,7 @@ function ad_materials_calc_case_6_line_items( array $answers ) {
     }
 
     $clause_key = $code;
-    $clause     = '';
-
-    if ( $code === 'matte_max' ) {
-        $clause = 'Matte - Dual-Layer System - (Max Duty - 2× Satin + 1× Matte): Excel reference is row 138-146';
-    } elseif ( $code === 'matte_standard' ) {
-        $clause = 'Matte - Dual-Layer System - (Standard Duty - 1× Satin + 1× Matte): Excel reference is row 114-122';
-    } elseif ( $code === 'satin_max' ) {
-        $clause = 'Satin - (Max Duty - 3× Coats): Excel reference is row 138-144';
-    } elseif ( $code === 'satin_standard' ) {
-        $clause = 'Satin - (Standard Duty - 1× Coat): Excel reference is row 114-120';
-    }
+    $clause     = 'case_6:' . $clause_key;
 
     $tile_joint_factor = 0;
 
@@ -116,7 +106,7 @@ function ad_materials_calc_case_6_line_items( array $answers ) {
     ];
 
     // -----------------------------------------------------
-    // Fibermesh (all Case 6 clauses)
+    // Fibermesh
     // -----------------------------------------------------
     $mesh_product = ad_materials_calc_get_product_by_sku( '5200433500619' );
 
@@ -186,7 +176,7 @@ function ad_materials_calc_case_6_line_items( array $answers ) {
     );
 
     // -----------------------------------------------------
-    // Systems
+    // System(s)
     // -----------------------------------------------------
     $system_counters = [
         'medium_large' => 0,
@@ -711,7 +701,7 @@ function ad_materials_calc_case_6_line_items( array $answers ) {
     }
 
     // -----------------------------------------------------
-    // Sealer coverages
+    // Sealer(s)
     // -----------------------------------------------------
     $satin_components = [];
     $matte_components = [];
@@ -736,9 +726,6 @@ function ad_materials_calc_case_6_line_items( array $answers ) {
         $matte_components = $matte_config['values'];
     }
 
-    // -----------------------------------------------------
-    // Satin sealer
-    // -----------------------------------------------------
     if ( array_sum( $satin_components ) > 0 ) {
         $satin_kg = round( $sqm * array_sum( $satin_components ), 2 );
 
@@ -777,9 +764,6 @@ function ad_materials_calc_case_6_line_items( array $answers ) {
         );
     }
 
-    // -----------------------------------------------------
-    // Matte sealer pair
-    // -----------------------------------------------------
     if ( array_sum( $matte_components ) > 0 ) {
         $matte_kg = round( $sqm * array_sum( $matte_components ), 2 );
 

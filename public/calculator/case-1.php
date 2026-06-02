@@ -77,37 +77,7 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
     }
 
     $clause_key = ( $has_fibermesh ? 'with_fibermesh_' : 'no_fibermesh_' ) . $code;
-    $clause     = '';
-
-    if ( ! $has_fibermesh ) {
-        if ( $code === 'matte_standard' ) {
-            $clause = 'Matte - No fibermesh - Standard Duty: Rows 71-74';
-        } elseif ( $code === 'matte_max' ) {
-            $clause = 'Matte - No fibermesh - Max Duty: Rows 71-73 and cells G117 + G118 in the Assuptions tab replace cell 74 in the Medium tab';
-        } elseif ( $code === 'semigloss_standard' ) {
-            $clause = 'Semi-Gloss - No fibermesh - Standard Duty: Rows 71-73 + G162 in the Assuptions tab replace cell 74 in the medium tab';
-        } elseif ( $code === 'semigloss_max' ) {
-            $clause = 'Semi-Gloss - No fibermesh - Max Duty: Rows 71-73 + G162 + G163 in the Assuptions tab replace cell 74 in the medium tab';
-        } elseif ( $code === 'satin_standard' ) {
-            $clause = 'Satin - No fibermesh - Standard Duty: Rows 71-73 + G113 in the Assuptions tab replace cell 74 in the medium tab';
-        } elseif ( $code === 'satin_max' ) {
-            $clause = 'Satin - No fibermesh - Max Duty: Rows 71-73 + G131 in the Assuptions tab replace cell 74 in the medium tab';
-        }
-    } else {
-        if ( $code === 'matte_standard' ) {
-            $clause = 'Matte - With fibermesh - Standard Duty: Rows 92-96';
-        } elseif ( $code === 'matte_max' ) {
-            $clause = 'Matte - With fibermesh - Max Duty: Rows 92-95 and cells G117+G118 in the Assuptions tab replace cell 76 in the medium tab';
-        } elseif ( $code === 'semigloss_standard' ) {
-            $clause = 'Semi-Gloss - With fibermesh - Standard Duty: Rows 92-95  + G162 in the Assuptions tab replace cell 76 in the medium tab';
-        } elseif ( $code === 'semigloss_max' ) {
-            $clause = 'Semi-Gloss - With fibermesh - Max Duty: Rows 92-95  + G162 + G163 in the Assuptions tab replace cell 76 in the medium tab';
-        } elseif ( $code === 'satin_standard' ) {
-            $clause = 'Satin - With fibermesh - Standard Duty: Rows 92-95 + G113 in the Assuptions tab replace cell 76 in the medium tab';
-        } elseif ( $code === 'satin_max' ) {
-            $clause = 'Satin - With fibermesh - Max Duty: Rows 92-95 + G131 in the Assuptions tab replace cell 76 in the medium tab';
-        }
-    }
+    $clause     = 'case_1:' . $clause_key;
 
     $items = [];
 
@@ -122,7 +92,7 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
     ];
 
     // -----------------------------------------------------
-    // Fibermesh (only for "With fibermesh")
+    // Fibermesh (where applicable)
     // -----------------------------------------------------
     if ( $has_fibermesh ) {
         $mesh_product = ad_materials_calc_get_product_by_sku( '5200433500619' );
@@ -149,7 +119,7 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
     }
 
     // -----------------------------------------------------
-    // Primer (all systems, all clauses)
+    // Primer
     // -----------------------------------------------------
     $primer_config = ad_materials_calc_get_configured_coverage_values( 'case_1', $clause_key, $system_label, 'primer', 'Case 1 error:' );
 
@@ -542,7 +512,7 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
     }
 
     // -----------------------------------------------------
-    // Colorant (ONLY if Pigment is chosen)
+    // Colorant
     // -----------------------------------------------------
     if ( ! ad_materials_calc_is_unpigmented( $pigment_label ) ) {
         $colorant_data = ad_materials_calc_get_colorant_line_data( $system_label, $system_counters );
@@ -590,7 +560,7 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
     }
 
     // -----------------------------------------------------
-    // Sealer
+    // Sealer(s)
     // -----------------------------------------------------
     if ( $code === 'matte_standard' ) {
         $sealer_config = ad_materials_calc_get_configured_coverage_values( 'case_1', $clause_key, $system_label, 'sealer_matte', 'Case 1 error:' );
@@ -674,7 +644,7 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
         $sealer_qty        = (int) ceil( $sealer_kg / 5 );
 
         $debug['lines'][] = [
-            'line'               => 'Sealer b1 - Semi Gloss',
+            'line'               => 'Sealer b1 - Semi-Gloss',
             'coverage_kg_per_m2' => $sealer_components,
             'sqm'                => $sqm,
             'required_kg'        => $sealer_kg,
@@ -705,7 +675,7 @@ function ad_materials_calc_case_1_line_items( array $answers ) {
         $sealer_qty        = (int) ceil( $sealer_kg / 5 );
 
         $debug['lines'][] = [
-            'line'               => 'Sealer b2 - Semi Gloss',
+            'line'               => 'Sealer b2 - Semi-Gloss',
             'coverage_kg_per_m2' => $sealer_components,
             'sqm'                => $sqm,
             'required_kg'        => $sealer_kg,

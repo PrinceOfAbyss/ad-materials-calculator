@@ -34,8 +34,9 @@ function ad_materials_calc_case_5_line_items( array $answers ) {
     $system_label  = isset( $answers['terrazzo_system'] ) ? (string) $answers['terrazzo_system'] : '';
     $pigment_label = isset( $answers['pigment_color'] ) ? (string) $answers['pigment_color'] : '';
     $finish_color  = isset( $answers['finish_color'] ) ? (string) $answers['finish_color'] : '';
-    $clause_key    = 'pool_interior_fixed';
-    $clause        = 'Pool Interior System: single fixed clause';
+
+    $clause_key = 'pool_interior_fixed';
+    $clause     = 'case_5:' . $clause_key;
 
     $items = [];
 
@@ -74,7 +75,7 @@ function ad_materials_calc_case_5_line_items( array $answers ) {
     }
 
     // -----------------------------------------------------
-    // Epoxy Primer pair (20kg / 10kg)
+    // Primer
     // -----------------------------------------------------
     $primer_config = ad_materials_calc_get_configured_coverage_values( 'case_5', $clause_key, $system_label, 'epoxy_primer_pair', 'Case 5 error:' );
 
@@ -134,7 +135,7 @@ function ad_materials_calc_case_5_line_items( array $answers ) {
     }
 
     // -----------------------------------------------------
-    // Systems
+    // System(s)
     // -----------------------------------------------------
     $system_counters = [
         'medium_large' => 0,
@@ -530,7 +531,7 @@ function ad_materials_calc_case_5_line_items( array $answers ) {
     }
 
     // -----------------------------------------------------
-    // Pool Sealer pair (10kg only)
+    // Sealer(s)
     // -----------------------------------------------------
     $pool_sealer_config = ad_materials_calc_get_configured_coverage_values( 'case_5', $clause_key, $system_label, 'pool_sealer_pair', 'Case 5 error:' );
 
@@ -568,7 +569,7 @@ function ad_materials_calc_case_5_line_items( array $answers ) {
     }
 
     // -----------------------------------------------------
-    // Silica sand notice only (not sold in e-shop)
+    // Silica sand (notice only)
     // -----------------------------------------------------
     $silica_kg       = round( $sqm * 1, 2 );
     $silica_packages = (int) ceil( $silica_kg / 23 );

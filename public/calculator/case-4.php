@@ -55,13 +55,7 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
     }
 
     $clause_key = $code;
-    $clause     = '';
-
-    if ( $code === 'max' ) {
-        $clause = 'Matte - Dual-Layer System - Max Duty, 2× Satin + 1× Matte: Excel reference is row 162-171';
-    } elseif ( $code === 'standard' ) {
-        $clause = 'Matte - Dual-Layer System - Standard Duty, 1× Satin + 1× Matte: Excel reference is row 187-196';
-    }
+    $clause     = 'case_4:' . $clause_key;
 
     $tile_joint_factor = 0;
 
@@ -103,7 +97,7 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
     ];
 
     // -----------------------------------------------------
-    // Fibermesh (all Case 4 clauses)
+    // Fibermesh
     // -----------------------------------------------------
     $mesh_product = ad_materials_calc_get_product_by_sku( '5200433500619' );
 
@@ -128,7 +122,7 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
     }
 
     // -----------------------------------------------------
-    // Epoxy Primer pair (all Case 4 clauses)
+    // Primer
     // -----------------------------------------------------
     $epoxy_primer_config = ad_materials_calc_get_configured_coverage_values( 'case_4', $clause_key, $system_label, 'epoxy_primer_pair', 'Case 4 error:' );
 
@@ -189,7 +183,7 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
     }
 
     // -----------------------------------------------------
-    // Systems
+    // System(s)
     // -----------------------------------------------------
     $system_counters = [
         'medium_large' => 0,
@@ -712,24 +706,7 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
     }
 
     // -----------------------------------------------------
-    // Silica sand notice only (not sold in e-shop)
-    // -----------------------------------------------------
-    $silica_kg       = round( $sqm * 1, 2 );
-    $silica_packages = (int) ceil( $silica_kg / 23 );
-
-    $debug['lines'][] = [
-        'line'               => 'Silica Sand (notice only)',
-        'coverage_kg_per_m2' => 1,
-        'sqm'                => $sqm,
-        'required_kg'        => $silica_kg,
-        'package_size_kg'    => 23,
-        'packages_needed'    => $silica_packages,
-    ];
-
-    $notice = ad_materials_calc_get_silica_notice_html( $silica_packages );
-
-    // -----------------------------------------------------
-    // Sealer coverages
+    // Sealer(s)
     // -----------------------------------------------------
     $satin_config = ad_materials_calc_get_configured_coverage_values( 'case_4', $clause_key, $system_label, 'sealer_satin', 'Case 4 error:' );
 
@@ -746,9 +723,6 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
     $satin_components = $satin_config['values'];
     $matte_components = $matte_config['values'];
 
-    // -----------------------------------------------------
-    // Satin sealer
-    // -----------------------------------------------------
     if ( array_sum( $satin_components ) > 0 ) {
         $satin_kg = round( $sqm * array_sum( $satin_components ), 2 );
 
@@ -787,9 +761,6 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
         );
     }
 
-    // -----------------------------------------------------
-    // Matte sealer pair
-    // -----------------------------------------------------
     $matte_kg = round( $sqm * array_sum( $matte_components ), 2 );
 
     $matte_bucket_prices = [
@@ -840,6 +811,23 @@ function ad_materials_calc_case_4_line_items( array $answers ) {
         $items[] = ad_materials_calc_build_line_item_from_product( $matte_1kg_sealer_product, $matte_1kg_qty );
         $items[] = ad_materials_calc_build_line_item_from_product( $matte_1kg_activator, $matte_1kg_qty );
     }
+
+    // -----------------------------------------------------
+    // Silica sand (notice only)
+    // -----------------------------------------------------
+    $silica_kg       = round( $sqm * 1, 2 );
+    $silica_packages = (int) ceil( $silica_kg / 23 );
+
+    $debug['lines'][] = [
+        'line'               => 'Silica sand notice only',
+        'coverage_kg_per_m2' => 1,
+        'sqm'                => $sqm,
+        'required_kg'        => $silica_kg,
+        'package_size_kg'    => 23,
+        'packages_needed'    => $silica_packages,
+    ];
+
+    $notice = ad_materials_calc_get_silica_notice_html( $silica_packages );
 
     return [
         'clause'            => $clause,
