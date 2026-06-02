@@ -967,16 +967,52 @@ function ad_materials_calc_add_payload_items_to_cart( array $items, $share_link_
 }
 
 /**
- * Block single-item removal for grouped calculator items
+ * Show a cart notice when non-staff users modify calculated recommendations
  */
-add_action( 'wp', 'ad_materials_calc_block_single_group_item_removal' );
-function ad_materials_calc_block_single_group_item_removal() {
+function ad_materials_calc_add_recommended_quantities_changed_notice() {
 
-    if ( empty( $_GET['remove_item'] ) ) {
+    if ( ad_materials_calc_current_user_has_extended_privileges() ) {
         return;
     }
 
-    if ( ad_materials_calc_current_user_has_extended_privileges() ) {
+    if ( ! ad_materials_calc_cart_has_grouped_items() ) {
+        return;
+    }
+
+    $message = __( 'Attention! You have changed the recommended quantities.', 'ad-materials-calculator' );
+
+    if ( function_exists( 'wc_has_notice' ) && wc_has_notice( $message, 'notice' ) ) {
+        return;
+    }
+
+    wc_add_notice( $message, 'notice' );
+}
+
+/**
+ * Check whether the cart still contains calculated grouped materials
+ */
+function ad_materials_calc_cart_has_grouped_items() {
+
+    if ( ! function_exists( 'WC' ) || ! WC() || ! WC()->cart ) {
+        return false;
+    }
+
+    foreach ( WC()->cart->get_cart() as $cart_item ) {
+        if ( ad_materials_calc_is_grouped_cart_item( $cart_item ) ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Add the recommendation notice when a single calculated material is removed
+ */
+add_action( 'wp_loaded', 'ad_materials_calc_notice_single_group_item_removal', 10 );
+function ad_materials_calc_notice_single_group_item_removal() {
+
+    if ( empty( $_GET['remove_item'] ) ) {
         return;
     }
 
@@ -987,17 +1023,35 @@ function ad_materials_calc_block_single_group_item_removal() {
     $cart_item_key = wc_clean( wp_unslash( $_GET['remove_item'] ) );
     $cart          = WC()->cart->get_cart();
 
-    if ( empty( $cart[$cart_item_key] ) ) {
+    if ( empty( $cart[$cart_item_key] ) || ! ad_materials_calc_is_grouped_cart_item( $cart[$cart_item_key] ) ) {
         return;
     }
 
-    if ( ! ad_materials_calc_is_grouped_cart_item( $cart[$cart_item_key] ) ) {
+    if ( ad_materials_calc_count_grouped_cart_items() <= 1 ) {
         return;
     }
 
-    wc_add_notice( __( 'Calculated materials can only be removed as a whole group.', 'ad-materials-calculator' ), 'notice' );
-    wp_safe_redirect( wc_get_cart_url() );
-    exit;
+    ad_materials_calc_add_recommended_quantities_changed_notice();
+}
+
+/**
+ * Count calculated grouped materials currently in the cart
+ */
+function ad_materials_calc_count_grouped_cart_items() {
+
+    if ( ! function_exists( 'WC' ) || ! WC() || ! WC()->cart ) {
+        return 0;
+    }
+
+    $count = 0;
+
+    foreach ( WC()->cart->get_cart() as $cart_item ) {
+        if ( ad_materials_calc_is_grouped_cart_item( $cart_item ) ) {
+            $count++;
+        }
+    }
+
+    return $count;
 }
 
 /**
@@ -1038,37 +1092,21 @@ function ad_materials_calc_handle_group_remove_request() {
         ad_materials_calc_restore_shippo_rate_triggers( $shippo_state );
     }
 
+    ad_materials_calc_add_recommended_quantities_changed_notice();
+
     wc_add_notice( __( 'The calculated materials group was removed from your cart.', 'ad-materials-calculator' ), 'success' );
     wp_safe_redirect( wc_get_cart_url() );
     exit;
 }
 
 /**
- * Lock grouped calculator quantities in the cart
+ * Add the recommendation notice when calculated quantities are edited
  */
-add_filter( 'woocommerce_cart_item_quantity', 'ad_materials_calc_render_locked_group_quantity', 10, 3 );
-function ad_materials_calc_render_locked_group_quantity( $product_quantity, $cart_item_key, $cart_item ) {
+add_filter( 'woocommerce_update_cart_validation', 'ad_materials_calc_notice_group_quantity_updates', 10, 4 );
+function ad_materials_calc_notice_group_quantity_updates( $passed, $cart_item_key, $cart_item, $quantity ) {
 
-    if ( ! ad_materials_calc_is_grouped_cart_item( $cart_item ) || ad_materials_calc_current_user_has_extended_privileges() ) {
-        return $product_quantity;
-    }
-
-    return '<span class="ad-materials-calc-locked-qty">' . esc_html( (int) $cart_item['quantity'] ) . '</span>';
-}
-
-/**
- * Prevent quantity updates for grouped calculator items
- */
-add_filter( 'woocommerce_update_cart_validation', 'ad_materials_calc_block_group_quantity_updates', 10, 4 );
-function ad_materials_calc_block_group_quantity_updates( $passed, $cart_item_key, $cart_item, $quantity ) {
-
-    if ( ! ad_materials_calc_is_grouped_cart_item( $cart_item ) || ad_materials_calc_current_user_has_extended_privileges() ) {
-        return $passed;
-    }
-
-    if ( (int) $quantity !== (int) $cart_item['quantity'] ) {
-        wc_add_notice( __( 'Calculated materials quantities cannot be edited individually. Please remove the whole group and calculate again if needed.', 'ad-materials-calculator' ), 'error' );
-        return false;
+    if ( ad_materials_calc_is_grouped_cart_item( $cart_item ) && (int) $quantity !== (int) $cart_item['quantity'] ) {
+        ad_materials_calc_add_recommended_quantities_changed_notice();
     }
 
     return $passed;
@@ -1101,33 +1139,17 @@ function ad_materials_calc_apply_group_item_unit_prices( $cart ) {
 }
 
 /**
- * Add remove-link titles and hide grouped item remove links
+ * Add remove-link titles
  */
-add_filter( 'woocommerce_cart_item_remove_link', 'ad_materials_calc_hide_grouped_item_remove_link', 10, 2 );
-function ad_materials_calc_hide_grouped_item_remove_link( $remove_link, $cart_item_key ) {
+add_filter( 'woocommerce_cart_item_remove_link', 'ad_materials_calc_add_cart_item_remove_link_title', 10, 1 );
+function ad_materials_calc_add_cart_item_remove_link_title( $remove_link ) {
 
-    if ( ! function_exists( 'WC' ) || ! WC() || ! WC()->cart ) {
-        return $remove_link;
-    }
-
-    $cart = WC()->cart->get_cart();
-
-    if ( empty( $cart[$cart_item_key] ) ) {
-        return $remove_link;
-    }
-
-    $cart_item = $cart[$cart_item_key];
-
-    if ( ! ad_materials_calc_is_grouped_cart_item( $cart_item ) || ad_materials_calc_current_user_has_extended_privileges() ) {
-        return preg_replace(
-            '/<a\b(?![^>]*\btitle=)/',
-            '<a title="' . esc_attr__( 'Remove product from the cart', 'ad-materials-calculator' ) . '"',
-            $remove_link,
-            1
-        );
-    }
-
-    return '';
+    return preg_replace(
+        '/<a\b(?![^>]*\btitle=)/',
+        '<a title="' . esc_attr__( 'Remove product from the cart', 'ad-materials-calculator' ) . '"',
+        $remove_link,
+        1
+    );
 }
 
 add_action( 'woocommerce_cart_calculate_fees', 'ad_materials_calc_apply_group_discount_fees', 20 );
