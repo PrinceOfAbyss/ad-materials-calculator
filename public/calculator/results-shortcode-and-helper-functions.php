@@ -90,6 +90,10 @@ function ad_materials_calc_get_calculation_from_answers( array $answers ) {
             'callback'    => 'ad_materials_calc_case_5_line_items',
             'debug_title' => 'Case 5 calculation debug:',
         ],
+        'Countertop / Vanity'               => [
+            'callback'    => 'ad_materials_calc_case_6_line_items',
+            'debug_title' => 'Case 6 calculation debug:',
+        ],
     ];
 
     if ( empty( $case_map[$surface_type] ) ) {
@@ -382,6 +386,12 @@ function ad_materials_calc_get_project_meta_keys( $surface_type ) {
             'usage_level_exterior_floor',
         ],
         'Pool Interior'                     => [],
+        'Countertop / Vanity'               => [
+            'existing_tile_countertop_vanity',
+            'tile_joint_condition_countertop_vanity',
+            'sheen_countertop_vanity',
+            'usage_level_countertop_vanity',
+        ],
     ];
 
     if ( empty( $surface_specific_keys[$surface_type] ) ) {
@@ -394,22 +404,26 @@ function ad_materials_calc_get_project_meta_keys( $surface_type ) {
 function ad_materials_calc_get_project_answer_labels() {
 
     return [
-        'finish_color'                        => 'Finish color',
-        'substrate_type_wall'                 => 'Substrate',
-        'sheen_wall'                          => 'Sheen',
-        'usage_level_wall'                    => 'Usage Level',
-        'existing_tile_wet_area'              => 'Existing Tile',
-        'tile_joint_condition_wet_area'       => 'Tile Joint Condition',
-        'sheen_wet_area'                      => 'Sheen',
-        'usage_level_wet_area'                => 'Usage Level',
-        'existing_tile_interior_floor'        => 'Existing Tile',
-        'tile_joint_condition_interior_floor' => 'Tile Joint Condition',
-        'moisture_exposure_interior_floor'    => 'Moisture Exposure',
-        'usage_level_interior_floor'          => 'Usage Level',
-        'sheen_interior_floor'                => 'Sheen',
-        'existing_tile_exterior_floor'        => 'Existing Tile',
-        'tile_joint_condition_exterior_floor' => 'Tile Joint Condition',
-        'usage_level_exterior_floor'          => 'Usage Level',
+        'finish_color'                           => 'Finish color',
+        'substrate_type_wall'                    => 'Substrate',
+        'sheen_wall'                             => 'Sheen',
+        'usage_level_wall'                       => 'Usage Level',
+        'existing_tile_wet_area'                 => 'Existing Tile',
+        'tile_joint_condition_wet_area'          => 'Tile Joint Condition',
+        'sheen_wet_area'                         => 'Sheen',
+        'usage_level_wet_area'                   => 'Usage Level',
+        'existing_tile_interior_floor'           => 'Existing Tile',
+        'tile_joint_condition_interior_floor'    => 'Tile Joint Condition',
+        'moisture_exposure_interior_floor'       => 'Moisture Exposure',
+        'usage_level_interior_floor'             => 'Usage Level',
+        'sheen_interior_floor'                   => 'Sheen',
+        'existing_tile_exterior_floor'           => 'Existing Tile',
+        'tile_joint_condition_exterior_floor'    => 'Tile Joint Condition',
+        'usage_level_exterior_floor'             => 'Usage Level',
+        'existing_tile_countertop_vanity'        => 'Existing Tile',
+        'tile_joint_condition_countertop_vanity' => 'Tile Joint Condition',
+        'sheen_countertop_vanity'                => 'Sheen',
+        'usage_level_countertop_vanity'          => 'Usage Level',
     ];
 }
 

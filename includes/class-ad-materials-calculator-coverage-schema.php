@@ -244,6 +244,42 @@ class Ad_Materials_Calculator_Coverage_Schema {
                     ] ),
                 ],
             ],
+            'case_6' => [
+                'title'       => 'Case 6. Countertop / Vanity',
+                'description' => 'Grouped by sheen and duty level.',
+                'clauses'     => [
+                    'matte_max'      => self::build_clause_schema( 'Matte / Dual-Layer / Max Duty', [
+                        'primer'          => self::build_material_schema( 'Primer (Eco Grip Quartz Primer)', ['', '', ''] ),
+                        'system_medium'   => self::build_material_schema( 'System', ['', '', ''] ),
+                        'system_fine_top' => self::build_material_schema( 'System', ['', '', ''] ),
+                        'system_micro'    => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_satin'    => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte'    => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'matte_standard' => self::build_clause_schema( 'Matte / Dual-Layer / Standard Duty', [
+                        'primer'          => self::build_material_schema( 'Primer (Eco Grip Quartz Primer)', ['', '', ''] ),
+                        'system_medium'   => self::build_material_schema( 'System', ['', '', ''] ),
+                        'system_fine_top' => self::build_material_schema( 'System', ['', '', ''] ),
+                        'system_micro'    => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_satin'    => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte'    => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'satin_max'      => self::build_clause_schema( 'Satin / Single-Layer / Max Duty', [
+                        'primer'          => self::build_material_schema( 'Primer (Eco Grip Quartz Primer)', ['', '', ''] ),
+                        'system_medium'   => self::build_material_schema( 'System', ['', '', ''] ),
+                        'system_fine_top' => self::build_material_schema( 'System', ['', '', ''] ),
+                        'system_micro'    => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_satin'    => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                    'satin_standard' => self::build_clause_schema( 'Satin / Single-Layer / Standard Duty', [
+                        'primer'          => self::build_material_schema( 'Primer (Eco Grip Quartz Primer)', ['', '', ''] ),
+                        'system_medium'   => self::build_material_schema( 'System', ['', '', ''] ),
+                        'system_fine_top' => self::build_material_schema( 'System', ['', '', ''] ),
+                        'system_micro'    => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_satin'    => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                ],
+            ],
         ];
     }
 
