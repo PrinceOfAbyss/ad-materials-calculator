@@ -143,11 +143,11 @@ function ad_materials_calc_case_6_line_items( array $answers ) {
     $primer_kg            = round( $sqm * array_sum( $primer_components ), 2 );
     $primer_bucket_prices = [
         15 => ad_materials_calc_get_product_price_by_sku( '5200433500541' ),
-        3  => ad_materials_calc_get_product_price_by_sku( '5200433501811' ),
+        //3  => ad_materials_calc_get_product_price_by_sku( '5200433501811' ),
         1  => ad_materials_calc_get_product_price_by_sku( '5200433501813' ),
     ];
 
-    $primer_combo = ad_materials_calc_get_best_3bucket_combo( $primer_kg, $primer_bucket_prices );
+    $primer_combo = ad_materials_calc_get_best_2bucket_combo( $primer_kg, $primer_bucket_prices );
 
     $debug['lines'][] = [
         'line'               => 'Primer',
@@ -158,7 +158,7 @@ function ad_materials_calc_case_6_line_items( array $answers ) {
         'combo_result'       => $primer_combo,
         'sku_map'            => [
             15 => '5200433500541',
-            3  => '5200433501811',
+            //3  => '5200433501811',
             1  => '5200433501813',
         ],
     ];
@@ -169,7 +169,7 @@ function ad_materials_calc_case_6_line_items( array $answers ) {
             $primer_combo,
             [
                 15 => '5200433500541',
-                3  => '5200433501811',
+                //3  => '5200433501811',
                 1  => '5200433501813',
             ]
         )
