@@ -102,6 +102,12 @@ class Ad_Materials_Calculator_Public {
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ad-materials-calculator-public.css', array(), $this->version, 'all' );
 		wp_enqueue_style( $this->plugin_name . '-wpforms', plugin_dir_url( __FILE__ ) . 'css/ad-materials-calculator-wpforms.css', array( 'wpforms-modern-full' ), $this->version, 'all' );
 
+		$wpforms_accent_color_css = $this->get_wpforms_accent_color_css();
+
+		if ( $wpforms_accent_color_css !== '' ) {
+			wp_add_inline_style( $this->plugin_name . '-wpforms', $wpforms_accent_color_css );
+		}
+
 	}
 
 	/**
@@ -162,6 +168,23 @@ class Ad_Materials_Calculator_Public {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Return the WPForms accent color CSS.
+	 *
+	 * @since    1.2.2
+	 * @return   string
+	 */
+	private function get_wpforms_accent_color_css() {
+
+		$color = sanitize_hex_color_no_hash( get_option( 'ad_materials_calculator_wpforms_accent_color', '' ) );
+
+		if ( ! $color ) {
+			return '';
+		}
+
+		return '.wpforms-form{--wpforms-button-background-color: #' . $color . ';}';
 	}
 
 	/**

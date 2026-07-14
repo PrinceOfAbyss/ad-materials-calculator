@@ -13,10 +13,6 @@
     --ad-wpforms-control-border-color: rgba(26, 25, 24, 0.18);
 }
 
-.wpforms-form {
-    --wpforms-button-background-color: #3e9e86;
-}
-
 .wpforms-field input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
 .wpforms-field textarea,
 .wpforms-field select {

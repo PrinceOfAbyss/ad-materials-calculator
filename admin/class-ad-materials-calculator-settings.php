@@ -47,6 +47,15 @@ class Ad_Materials_Calculator_Settings {
     private $coverages_option_name = 'ad_materials_calculator_coverages_json';
 
     /**
+     * Option name used to persist the WPForms accent color.
+     *
+     * @since    1.2.2
+     * @access   private
+     * @var      string
+     */
+    private $wpforms_accent_color_option_name = 'ad_materials_calculator_wpforms_accent_color';
+
+    /**
      * Option name used to persist the page ID that renders the calculator WPForms form.
      *
      * @since    1.0.7
@@ -245,8 +254,20 @@ class Ad_Materials_Calculator_Settings {
             echo '</section>';
         }
 
+        $accent_color = $this->get_saved_wpforms_accent_color();
+
         echo '<h2>' . esc_html__( 'WPForms Settings', 'ad-materials-calculator' ) . '</h2>';
         echo '<table class="form-table" role="presentation"><tbody>';
+        echo '<tr>';
+        echo '<th scope="row"><label for="ad-materials-calculator-wpforms-accent-color">' . esc_html__( 'WPForms Accent Color', 'ad-materials-calculator' ) . '</label></th>';
+        echo '<td>';
+        printf(
+            '<input type="text" class="regular-text" id="ad-materials-calculator-wpforms-accent-color" name="ad_materials_calculator_wpforms_accent_color" value="%1$s" placeholder="#rrggbb" />',
+            esc_attr( $accent_color )
+        );
+        echo '<p class="description">' . esc_html__( 'Optional hex color for WPForms buttons, focused field underlines, and selected faux buttons. Leave empty to use the WPForms default.', 'ad-materials-calculator' ) . '</p>';
+        echo '</td>';
+        echo '</tr>';
         echo '<tr>';
         echo '<th scope="row"><label for="ad-materials-calculator-wpforms-page-id">' . esc_html__( 'Calculator Page ID', 'ad-materials-calculator' ) . '</label></th>';
         echo '<td>';
@@ -385,6 +406,7 @@ class Ad_Materials_Calculator_Settings {
         $sanitized       = $this->sanitize_coverages_settings( $submitted, $section_schema, $active_section );
         $existing        = $this->get_saved_coverages_settings();
         $merged          = $this->merge_coverages_settings( $existing, $sanitized );
+        $accent_color    = $this->get_submitted_wpforms_accent_color();
         $wpforms_page_id = $this->get_submitted_wpforms_page_id();
         $wpforms_form_id = $this->get_submitted_wpforms_form_id();
         $app_form_id     = $this->get_submitted_applicator_registration_form_id();
@@ -396,6 +418,12 @@ class Ad_Materials_Calculator_Settings {
         $distributor_min = $this->get_submitted_distributor_min_sqft();
 
         update_option( $this->coverages_option_name, wp_json_encode( $merged ) );
+
+        if ( $accent_color !== '' ) {
+            update_option( $this->wpforms_accent_color_option_name, $accent_color );
+        } else {
+            delete_option( $this->wpforms_accent_color_option_name );
+        }
 
         if ( $wpforms_page_id > 0 ) {
             update_option( $this->wpforms_page_id_option_name, $wpforms_page_id );
@@ -469,6 +497,20 @@ class Ad_Materials_Calculator_Settings {
         $decoded = json_decode( $raw, true );
 
         return is_array( $decoded ) ? $decoded : [];
+    }
+
+    /**
+     * Return the saved WPForms accent color.
+     *
+     * @since    1.2.2
+     * @return   string
+     */
+    private function get_saved_wpforms_accent_color() {
+
+        $saved = get_option( $this->wpforms_accent_color_option_name, '' );
+        $color = is_string( $saved ) ? sanitize_hex_color_no_hash( $saved ) : '';
+
+        return $color ? '#' . $color : '';
     }
 
     /**
@@ -574,6 +616,23 @@ class Ad_Materials_Calculator_Settings {
     private function get_saved_distributor_min_sqft() {
 
         return $this->get_saved_positive_decimal_option( $this->distributor_min_sqft_option_name );
+    }
+
+    /**
+     * Read and sanitize the submitted WPForms accent color.
+     *
+     * @since    1.2.2
+     * @return   string
+     */
+    private function get_submitted_wpforms_accent_color() {
+
+        if ( ! isset( $_POST['ad_materials_calculator_wpforms_accent_color'] ) ) {
+            return $this->get_saved_wpforms_accent_color();
+        }
+
+        $submitted = sanitize_hex_color_no_hash( wp_unslash( $_POST['ad_materials_calculator_wpforms_accent_color'] ) );
+
+        return $submitted ? '#' . $submitted : '';
     }
 
     /**
