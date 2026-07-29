@@ -372,7 +372,7 @@ function ad_materials_calc_case_5_line_items( array $answers ) {
         if ( $finish_color === '600Q' ) {
             $micro_large_project_split = ( $sqft >= 250 );
             $micro_bucket_prices       = [
-                22 => ad_materials_calc_get_product_price_by_sku( '5200433500022' ),
+                23 => ad_materials_calc_get_product_price_by_sku( '5200433500022' ),
                 1  => ad_materials_calc_get_product_price_by_sku( '5200433501816' ),
             ];
             $micro_combo     = [];
@@ -380,10 +380,10 @@ function ad_materials_calc_case_5_line_items( array $answers ) {
             $micro_small_qty = 0;
 
             if ( $micro_large_project_split ) {
-                $micro_large_qty = (int) ceil( $micro_kg / 22 );
+                $micro_large_qty = (int) ceil( $micro_kg / 23 );
             } else {
                 $micro_combo     = ad_materials_calc_get_best_2bucket_combo( $micro_kg, $micro_bucket_prices );
-                $micro_large_qty = ad_materials_calc_get_combo_bucket_count( $micro_combo, 22 );
+                $micro_large_qty = ad_materials_calc_get_combo_bucket_count( $micro_combo, 23 );
                 $micro_small_qty = ad_materials_calc_get_combo_bucket_count( $micro_combo, 1 );
             }
 
@@ -393,15 +393,15 @@ function ad_materials_calc_case_5_line_items( array $answers ) {
                 'sqm'                => $sqm,
                 'required_kg'        => $micro_kg,
                 'bucket_prices'      => $micro_large_project_split ? [
-                    22 => $micro_bucket_prices[22],
+                    23 => $micro_bucket_prices[23],
                 ] : $micro_bucket_prices,
                 'combo_result'       => $micro_combo,
                 'resolved_qty'       => [
-                    22 => $micro_large_qty,
+                    23 => $micro_large_qty,
                     1  => $micro_small_qty,
                 ],
                 'sku_map'            => [
-                    22 => '5200433500022',
+                    23 => '5200433500022',
                     1  => '5200433501816',
                 ],
             ];
@@ -411,7 +411,7 @@ function ad_materials_calc_case_5_line_items( array $answers ) {
                     $micro_product = ad_materials_calc_get_product_by_sku( '5200433500022' );
 
                     if ( ! $micro_product ) {
-                        return ['error' => 'Case 5 error: Could not resolve Microterrazzo 22kg SKU 5200433500022.'];
+                        return ['error' => 'Case 5 error: Could not resolve Microterrazzo 23kg SKU 5200433500022.'];
                     }
 
                     $items[] = ad_materials_calc_build_line_item_from_product( $micro_product, $micro_large_qty );
@@ -422,7 +422,7 @@ function ad_materials_calc_case_5_line_items( array $answers ) {
                     ad_materials_calc_expand_combo_to_line_items(
                         $micro_combo,
                         [
-                            22 => '5200433500022',
+                            23 => '5200433500022',
                             1  => '5200433501816',
                         ]
                     )

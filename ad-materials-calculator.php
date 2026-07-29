@@ -16,7 +16,7 @@
  * Plugin Name:       AD Materials Calculator
  * Plugin URI:        https://agencydigital.tech/
  * Description:       Calculates project-specific Terrazzo materials in WooCommerce and adds the calculated products to the cart as a grouped set.
- * Version:           1.2.2
+ * Version:           1.2.3
  * Author:            Agency Digital
  * Author URI:        https://agencydigital.tech//
  * License:           GPL-2.0+
@@ -35,7 +35,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'AD_MATERIALS_CALCULATOR_VERSION', '1.2.2' );
+define( 'AD_MATERIALS_CALCULATOR_VERSION', '1.2.3' );
 
 /**
  * The code that runs during plugin activation.

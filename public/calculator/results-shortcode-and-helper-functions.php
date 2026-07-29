@@ -605,7 +605,7 @@ function ad_materials_calc_get_colorant_line_data( $system_label, array $system_
     }
 
     if ( $system_label === 'Terrazzo Granitech Microterrazzo' ) {
-        $result['micro_small_fraction'] = ad_materials_calc_format_fraction_debug( $micro_small, 22 );
+        $result['micro_small_fraction'] = ad_materials_calc_format_fraction_debug( $micro_small, 23 );
 
         $qty = $micro_large + ( $micro_small > 0 ? 1 : 0 );
 
