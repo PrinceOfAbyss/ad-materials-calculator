@@ -806,6 +806,60 @@ function ad_materials_calc_get_product_normal_unit_price( $product ) {
     return ad_materials_calc_sanitize_unit_price( $price );
 }
 
+function ad_materials_calc_get_product_frontend_unit_price( $product ) {
+
+    if ( ! $product || ! is_object( $product ) || ! method_exists( $product, 'get_price' ) ) {
+        return 0.0;
+    }
+
+    $price = $product->get_price();
+
+    if ( '' === $price && method_exists( $product, 'get_regular_price' ) ) {
+        $price = $product->get_regular_price();
+    }
+
+    return ad_materials_calc_sanitize_unit_price( $price );
+}
+
+function ad_materials_calc_get_display_unit_price_for_item( array $item ) {
+
+    $unit_price = isset( $item['unit_price'] ) ? ad_materials_calc_sanitize_unit_price( $item['unit_price'] ) : 0.0;
+    $sku        = isset( $item['sku'] ) ? trim( (string) $item['sku'] ) : '';
+
+    if ( $sku === '' ) {
+        return $unit_price;
+    }
+
+    $product = ad_materials_calc_get_product_by_sku( $sku );
+
+    if ( ! $product ) {
+        return $unit_price;
+    }
+
+    $raw_product_price = ad_materials_calc_get_product_normal_unit_price( $product );
+
+    if ( abs( $unit_price - $raw_product_price ) > 0.01 ) {
+        return $unit_price;
+    }
+
+    $frontend_price = ad_materials_calc_get_product_frontend_unit_price( $product );
+
+    return $frontend_price > 0 ? $frontend_price : $unit_price;
+}
+
+function ad_materials_calc_get_items_display_subtotal( array $items ) {
+
+    $subtotal = 0.0;
+
+    foreach ( $items as $item ) {
+        $qty  = isset( $item['qty'] ) ? (int) $item['qty'] : 0;
+        $unit = ad_materials_calc_get_display_unit_price_for_item( $item );
+        $subtotal += $unit * $qty;
+    }
+
+    return max( 0, $subtotal );
+}
+
 function ad_materials_calc_sanitize_unit_price( $price ) {
 
     if ( ! is_scalar( $price ) ) {
@@ -827,8 +881,10 @@ function ad_materials_calc_render_results_table( array $items, array $answers = 
         return '<div>No products were calculated.</div>';
     }
 
-    $subtotal      = ad_materials_calc_get_items_subtotal( $items );
-    $discount_data = ad_materials_calc_get_effective_discount_data( $answers, $subtotal );
+    $subtotal         = ad_materials_calc_get_items_subtotal( $items );
+    $display_subtotal = ad_materials_calc_get_items_display_subtotal( $items );
+    $discount_data    = ad_materials_calc_get_effective_discount_data( $answers, $subtotal );
+    $display_discount = ad_materials_calc_get_effective_discount_data( $answers, $display_subtotal );
 
     $html = '<table class="shop_table shop_table_responsive shop-table-with-img cart woocommerce-cart-form__contents" cellspacing="0">';
     $html .= '<thead>';
@@ -860,8 +916,11 @@ function ad_materials_calc_render_results_table( array $items, array $answers = 
         $html .= '<div class="ad-materials-calc-results-sku">' . esc_html( $item['sku'] ) . '</div>';
         $html .= '</td>';
 
+        $display_unit_price = ad_materials_calc_get_display_unit_price_for_item( $item );
+        $display_partial    = $display_unit_price * ( isset( $item['qty'] ) ? (int) $item['qty'] : 0 );
+
         $html .= '<td class="product-price" data-title="Price">';
-        $html .= wp_kses_post( wc_price( $item['unit_price'] ) );
+        $html .= wp_kses_post( wc_price( $display_unit_price ) );
         $html .= '</td>';
 
         $html .= '<td class="product-quantity" data-title="Quantity">';
@@ -869,7 +928,7 @@ function ad_materials_calc_render_results_table( array $items, array $answers = 
         $html .= '</td>';
 
         $html .= '<td class="product-subtotal" data-title="Subtotal">';
-        $html .= wp_kses_post( wc_price( $item['partial'] ) );
+        $html .= wp_kses_post( wc_price( $display_partial ) );
         $html .= '</td>';
 
         $html .= '</tr>';
@@ -877,7 +936,7 @@ function ad_materials_calc_render_results_table( array $items, array $answers = 
 
     $html .= '<tr class="wd-cart-action-row">';
     $html .= '<td colspan="4" class="ad-materials-calc-results-summary-label"><strong>Subtotal</strong></td>';
-    $html .= '<td class="product-subtotal"><strong>' . wp_kses_post( wc_price( $subtotal ) ) . '</strong></td>';
+    $html .= '<td class="product-subtotal"><strong>' . wp_kses_post( wc_price( $display_subtotal ) ) . '</strong></td>';
     $html .= '</tr>';
 
     if ( $discount_data['applied_value'] > 0 ) {
@@ -893,13 +952,13 @@ function ad_materials_calc_render_results_table( array $items, array $answers = 
 
         $html .= '<tr class="wd-cart-action-row">';
         $html .= '<td colspan="4" class="ad-materials-calc-results-summary-label ad-materials-calc-results-discount-label"><strong>' . esc_html( $discount_row_label ) . '</strong></td>';
-        $html .= '<td class="product-subtotal ad-materials-calc-results-discount-value"><strong>-' . wp_kses_post( wc_price( $discount_data['applied_value'] ) ) . '</strong></td>';
+        $html .= '<td class="product-subtotal ad-materials-calc-results-discount-value"><strong>-' . wp_kses_post( wc_price( $display_discount['applied_value'] ) ) . '</strong></td>';
         $html .= '</tr>';
     }
 
     $html .= '<tr class="wd-cart-action-row">';
     $html .= '<td colspan="4" class="ad-materials-calc-results-summary-label"><strong>Total</strong></td>';
-    $html .= '<td class="product-subtotal"><strong>' . wp_kses_post( wc_price( $discount_data['final_total'] ) ) . '</strong></td>';
+    $html .= '<td class="product-subtotal"><strong>' . wp_kses_post( wc_price( $display_discount['final_total'] ) ) . '</strong></td>';
     $html .= '</tr>';
 
     $html .= '</tbody>';
