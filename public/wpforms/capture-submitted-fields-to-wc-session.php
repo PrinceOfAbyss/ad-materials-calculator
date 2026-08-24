@@ -59,44 +59,36 @@ function ad_materials_calc_capture_answers( $fields, $entry, $form_data, $entry_
     $discount = ad_materials_calc_get_normalized_discount_from_entry_fields( $entry_fields );
 
     $answers = [
-        'total_area_sqft'                        => $total_area,
-        'surface_type'                           => $surface_type,
-        'terrazzo_system'                        => $system,
-        'pigment_color'                          => $pigment,
-        'finish_color'                           => ad_materials_calc_get_entry_value( $entry_fields, 30 ),
-        'discount_type'                          => $discount['discount_type'],
-        'discount_label'                         => $discount['discount_label'],
-        'discount_value'                         => $discount['discount_value'],
-        'discount_allowed'                       => $discount['discount_allowed'],
+        'total_area_sqft'                  => $total_area,
+        'surface_type'                     => $surface_type,
+        'terrazzo_system'                  => $system,
+        'pigment_color'                    => $pigment,
+        'finish_color'                     => ad_materials_calc_get_entry_value( $entry_fields, 30 ),
+        'discount_type'                    => $discount['discount_type'],
+        'discount_label'                   => $discount['discount_label'],
+        'discount_value'                   => $discount['discount_value'],
+        'discount_allowed'                 => $discount['discount_allowed'],
 
         // Surface type option 1: Interior / Exterior Walls
-        'substrate_type_wall'                    => ad_materials_calc_get_entry_value( $entry_fields, 3 ),
-        'sheen_wall'                             => ad_materials_calc_get_entry_value( $entry_fields, 4 ),
-        'usage_level_wall'                       => ad_materials_calc_get_entry_value( $entry_fields, 5 ),
+        'substrate_type_wall'              => ad_materials_calc_get_entry_value( $entry_fields, 3 ),
+        'sheen_wall'                       => ad_materials_calc_get_entry_value( $entry_fields, 4 ),
+        'usage_level_wall'                 => ad_materials_calc_get_entry_value( $entry_fields, 5 ),
 
         // Surface type option 2: Wet Area Walls
-        'existing_tile_wet_area'                 => ad_materials_calc_get_entry_value( $entry_fields, 6 ),
-        'tile_joint_condition_wet_area'          => ad_materials_calc_get_entry_value( $entry_fields, 7 ),
-        'sheen_wet_area'                         => $sheen_wet_area,
-        'usage_level_wet_area'                   => $usage_level_wet_area,
+        'sheen_wet_area'                   => $sheen_wet_area,
+        'usage_level_wet_area'             => $usage_level_wet_area,
 
         // Surface type option 3: Interior Floor
-        'existing_tile_interior_floor'           => ad_materials_calc_get_entry_value( $entry_fields, 10 ),
-        'tile_joint_condition_interior_floor'    => ad_materials_calc_get_entry_value( $entry_fields, 11 ),
-        'moisture_exposure_interior_floor'       => ad_materials_calc_get_entry_value( $entry_fields, 12 ),
-        'usage_level_interior_floor'             => ad_materials_calc_get_entry_value( $entry_fields, 26 ),
-        'sheen_interior_floor'                   => $sheen_interior_floor,
+        'moisture_exposure_interior_floor' => ad_materials_calc_get_entry_value( $entry_fields, 12 ),
+        'usage_level_interior_floor'       => ad_materials_calc_get_entry_value( $entry_fields, 26 ),
+        'sheen_interior_floor'             => $sheen_interior_floor,
 
         // Surface type option 4: Exterior Floor
-        'existing_tile_exterior_floor'           => ad_materials_calc_get_entry_value( $entry_fields, 13 ),
-        'tile_joint_condition_exterior_floor'    => ad_materials_calc_get_entry_value( $entry_fields, 14 ),
-        'usage_level_exterior_floor'             => ad_materials_calc_get_entry_value( $entry_fields, 15 ),
+        'usage_level_exterior_floor'       => ad_materials_calc_get_entry_value( $entry_fields, 15 ),
 
         // Case 6: Countertop / Vanity
-        'existing_tile_countertop_vanity'        => ad_materials_calc_get_entry_value( $entry_fields, 43 ),
-        'tile_joint_condition_countertop_vanity' => ad_materials_calc_get_entry_value( $entry_fields, 44 ),
-        'sheen_countertop_vanity'                => ad_materials_calc_get_entry_value( $entry_fields, 45 ),
-        'usage_level_countertop_vanity'          => ad_materials_calc_get_entry_value( $entry_fields, 46 ),
+        'sheen_countertop_vanity'          => ad_materials_calc_get_entry_value( $entry_fields, 45 ),
+        'usage_level_countertop_vanity'    => ad_materials_calc_get_entry_value( $entry_fields, 46 ),
     ];
 
     // Store in WooCommerce session for the next step (results rendering / add-to-cart)

@@ -37,10 +37,6 @@ function ad_materials_calc_results_shortcode() {
 
     $output .= ad_materials_calc_render_partner_savings_note( $calc );
 
-    if ( ! empty( $calc['joint_filler_note'] ) ) {
-        $output .= ad_materials_calc_render_results_joint_filler_note( (string) $calc['joint_filler_note'] );
-    }
-
     if ( ! empty( $calc['notice'] ) ) {
         $output .= '<div class="ad-materials-calc-results-notice">';
         $output .= wp_kses_post( $calc['notice'] );
@@ -207,20 +203,11 @@ function ad_materials_calc_build_cart_payload_from_calc( array $calc, array $ans
 
     $project_meta = ad_materials_calc_build_project_meta_from_answers( $answers );
 
-    if ( ! empty( $calc['joint_filler_note'] ) ) {
-        $joint_filler_meta = ad_materials_calc_render_group_joint_filler_note( (string) $calc['joint_filler_note'] );
-        $project_meta      = $project_meta !== ''
-        ? $project_meta . '<br>' . $joint_filler_meta
-        : $joint_filler_meta;
-    }
-
     return [
         'surface_type'             => isset( $calc['surface_type'] ) ? (string) $calc['surface_type'] : ( isset( $answers['surface_type'] ) ? (string) $answers['surface_type'] : '' ),
         'system_label'             => isset( $answers['terrazzo_system'] ) ? (string) $answers['terrazzo_system'] : '',
         'project_title'            => ad_materials_calc_build_project_title_from_answers( $answers ),
         'project_meta'             => $project_meta,
-        'joint_filler_note'        => ! empty( $calc['joint_filler_note'] ) ? (string) $calc['joint_filler_note'] : '',
-        'joint_filler_kg'          => ! empty( $calc['joint_filler_kg'] ) ? (float) $calc['joint_filler_kg'] : 0.0,
         'area_sqft'                => isset( $answers['total_area_sqft'] ) ? (float) $answers['total_area_sqft'] : 0,
         'discount_type'            => $discount_data['type'],
         'discount_label'           => $discount_data['label'],
@@ -368,27 +355,19 @@ function ad_materials_calc_get_project_meta_keys( $surface_type ) {
             'usage_level_wall',
         ],
         'Wet Area Walls'                    => [
-            'existing_tile_wet_area',
-            'tile_joint_condition_wet_area',
             'sheen_wet_area',
             'usage_level_wet_area',
         ],
         'Interior Floor'                    => [
-            'existing_tile_interior_floor',
-            'tile_joint_condition_interior_floor',
             'moisture_exposure_interior_floor',
             'usage_level_interior_floor',
             'sheen_interior_floor',
         ],
         'Exterior Floor (incl. Pool Decks)' => [
-            'existing_tile_exterior_floor',
-            'tile_joint_condition_exterior_floor',
             'usage_level_exterior_floor',
         ],
         'Pool Interior'                     => [],
         'Countertop / Vanity'               => [
-            'existing_tile_countertop_vanity',
-            'tile_joint_condition_countertop_vanity',
             'sheen_countertop_vanity',
             'usage_level_countertop_vanity',
         ],
@@ -404,26 +383,18 @@ function ad_materials_calc_get_project_meta_keys( $surface_type ) {
 function ad_materials_calc_get_project_answer_labels() {
 
     return [
-        'finish_color'                           => 'Finish color',
-        'substrate_type_wall'                    => 'Substrate',
-        'sheen_wall'                             => 'Sheen',
-        'usage_level_wall'                       => 'Usage Level',
-        'existing_tile_wet_area'                 => 'Existing Tile',
-        'tile_joint_condition_wet_area'          => 'Tile Joint Condition',
-        'sheen_wet_area'                         => 'Sheen',
-        'usage_level_wet_area'                   => 'Usage Level',
-        'existing_tile_interior_floor'           => 'Existing Tile',
-        'tile_joint_condition_interior_floor'    => 'Tile Joint Condition',
-        'moisture_exposure_interior_floor'       => 'Moisture Exposure',
-        'usage_level_interior_floor'             => 'Usage Level',
-        'sheen_interior_floor'                   => 'Sheen',
-        'existing_tile_exterior_floor'           => 'Existing Tile',
-        'tile_joint_condition_exterior_floor'    => 'Tile Joint Condition',
-        'usage_level_exterior_floor'             => 'Usage Level',
-        'existing_tile_countertop_vanity'        => 'Existing Tile',
-        'tile_joint_condition_countertop_vanity' => 'Tile Joint Condition',
-        'sheen_countertop_vanity'                => 'Sheen',
-        'usage_level_countertop_vanity'          => 'Usage Level',
+        'finish_color'                     => 'Finish color',
+        'substrate_type_wall'              => 'Substrate',
+        'sheen_wall'                       => 'Sheen',
+        'usage_level_wall'                 => 'Usage Level',
+        'sheen_wet_area'                   => 'Sheen',
+        'usage_level_wet_area'             => 'Usage Level',
+        'moisture_exposure_interior_floor' => 'Moisture Exposure',
+        'usage_level_interior_floor'       => 'Usage Level',
+        'sheen_interior_floor'             => 'Sheen',
+        'usage_level_exterior_floor'       => 'Usage Level',
+        'sheen_countertop_vanity'          => 'Sheen',
+        'usage_level_countertop_vanity'    => 'Usage Level',
     ];
 }
 
@@ -435,21 +406,6 @@ function ad_materials_calc_format_weight( $weight ) {
 function ad_materials_calc_convert_kg_to_lb( $kg ) {
 
     return round( (float) $kg * 2.20462, 2 );
-}
-
-function ad_materials_calc_render_results_joint_filler_note( $note_text ) {
-
-    $note_text = trim( (string) $note_text );
-
-    if ( $note_text === '' ) {
-        return '';
-    }
-
-    return sprintf(
-        '<div class="ad-materials-calc-results-note"><span class="ad-materials-calc-results-note__prefix">%s</span><span class="ad-materials-calc-results-note__text">%s</span></div>',
-        esc_html__( 'Note: ', 'ad-materials-calculator' ),
-        esc_html( $note_text )
-    );
 }
 
 function ad_materials_calc_render_partner_savings_note( array $calc ) {
@@ -500,47 +456,6 @@ function ad_materials_calc_get_partner_savings_amount( array $items ) {
     }
 
     return max( 0.0, round( $normal_subtotal - $partner_subtotal, wc_get_price_decimals() ) );
-}
-
-function ad_materials_calc_render_group_joint_filler_note( $note_text ) {
-
-    $note_text = trim( (string) $note_text );
-
-    if ( $note_text === '' ) {
-        return '';
-    }
-
-    return sprintf(
-        '<span class="ad-materials-calc-group-header__joint-filler-note">%s</span>',
-        esc_html( $note_text )
-    );
-}
-
-function ad_materials_calc_get_joint_filler_required_kg( $existing_tile_label, $sqm, $tile_joint_factor ) {
-
-    if ( $existing_tile_label !== 'Yes' ) {
-        return 0.0;
-    }
-
-    if ( (float) $tile_joint_factor <= 0 ) {
-        return 0.0;
-    }
-
-    return round( (float) $sqm * (float) $tile_joint_factor, 2 );
-}
-
-function ad_materials_calc_build_joint_filler_note( $joint_filler_kg ) {
-
-    $joint_filler_kg = (float) $joint_filler_kg;
-
-    if ( $joint_filler_kg <= 0 ) {
-        return '';
-    }
-
-    return sprintf(
-        'Includes %s lb of Terrazzo Granitech Fine material calculated for joint filler',
-        ad_materials_calc_format_weight( ad_materials_calc_convert_kg_to_lb( $joint_filler_kg ) )
-    );
 }
 
 function ad_materials_calc_get_colorant_line_data( $system_label, array $system_counters ) {

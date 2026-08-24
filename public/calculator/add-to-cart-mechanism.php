@@ -148,16 +148,6 @@ function ad_materials_calc_get_group_label_from_cart_item( array $cart_item ) {
     return ! empty( $cart_item['ad_materials_calc_group_label'] ) ? (string) $cart_item['ad_materials_calc_group_label'] : '';
 }
 
-function ad_materials_calc_get_group_joint_filler_note_from_cart_item( array $cart_item ) {
-
-    return ! empty( $cart_item['ad_materials_calc_joint_filler_note'] ) ? (string) $cart_item['ad_materials_calc_joint_filler_note'] : '';
-}
-
-function ad_materials_calc_get_group_joint_filler_kg_from_cart_item( array $cart_item ) {
-
-    return isset( $cart_item['ad_materials_calc_joint_filler_kg'] ) ? (float) $cart_item['ad_materials_calc_joint_filler_kg'] : 0.0;
-}
-
 function ad_materials_calc_get_group_discount_type_from_cart_item( array $cart_item ) {
 
     return ! empty( $cart_item['ad_materials_calc_discount_type'] ) ? (string) $cart_item['ad_materials_calc_discount_type'] : 'none';
@@ -723,8 +713,6 @@ function ad_materials_calc_build_share_cart_payload_from_cart() {
             $groups[$group_id] = [
                 'project_title'            => ad_materials_calc_get_group_title_from_cart_item( $cart_item ),
                 'project_meta'             => ad_materials_calc_get_group_label_from_cart_item( $cart_item ),
-                'joint_filler_note'        => ad_materials_calc_get_group_joint_filler_note_from_cart_item( $cart_item ),
-                'joint_filler_kg'          => ad_materials_calc_get_group_joint_filler_kg_from_cart_item( $cart_item ),
                 'discount_type'            => ad_materials_calc_get_group_discount_type_from_cart_item( $cart_item ),
                 'discount_label'           => ad_materials_calc_get_group_discount_label_from_cart_item( $cart_item ),
                 'discount_requested_value' => ad_materials_calc_get_group_discount_requested_value_from_cart_item( $cart_item ),
@@ -864,8 +852,6 @@ function ad_materials_calc_add_payload_group_to_cart( array $payload, $share_lin
                 'ad_materials_calc_grouped'                  => 1,
                 'ad_materials_calc_unit_price'               => $unit_price,
                 'ad_materials_calc_pricing_tier'             => ! empty( $payload['pricing_tier'] ) ? sanitize_key( (string) $payload['pricing_tier'] ) : 'normal',
-                'ad_materials_calc_joint_filler_note'        => isset( $payload['joint_filler_note'] ) ? (string) $payload['joint_filler_note'] : '',
-                'ad_materials_calc_joint_filler_kg'          => isset( $payload['joint_filler_kg'] ) ? (float) $payload['joint_filler_kg'] : 0.0,
                 'ad_materials_calc_discount_type'            => isset( $payload['discount_type'] ) ? (string) $payload['discount_type'] : 'none',
                 'ad_materials_calc_discount_label'           => isset( $payload['discount_label'] ) ? (string) $payload['discount_label'] : '',
                 'ad_materials_calc_discount_requested_value' => isset( $payload['discount_requested_value'] ) ? (float) $payload['discount_requested_value'] : 0.0,
@@ -1256,8 +1242,6 @@ function ad_materials_calc_add_group_discount_order_meta( $order, $data ) {
             'group_id'                 => $group_id,
             'group_title'              => ad_materials_calc_get_group_title_from_cart_item( $cart_item ),
             'group_label'              => ad_materials_calc_get_group_label_from_cart_item( $cart_item ),
-            'joint_filler_note'        => ad_materials_calc_get_group_joint_filler_note_from_cart_item( $cart_item ),
-            'joint_filler_kg'          => ad_materials_calc_get_group_joint_filler_kg_from_cart_item( $cart_item ),
             'discount_type'            => ad_materials_calc_get_group_discount_type_from_cart_item( $cart_item ),
             'discount_label'           => ad_materials_calc_get_group_discount_label_from_cart_item( $cart_item ),
             'discount_requested_value' => ad_materials_calc_get_group_discount_requested_value_from_cart_item( $cart_item ),

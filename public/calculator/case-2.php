@@ -31,13 +31,11 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
 
     $sqm = round( $sqft / 10.76 * 1.1, 1 );
 
-    $sheen            = isset( $answers['sheen_wet_area'] ) ? (string) $answers['sheen_wet_area'] : '';
-    $usage            = isset( $answers['usage_level_wet_area'] ) ? (string) $answers['usage_level_wet_area'] : '';
-    $system_label     = isset( $answers['terrazzo_system'] ) ? (string) $answers['terrazzo_system'] : '';
-    $pigment_label    = isset( $answers['pigment_color'] ) ? (string) $answers['pigment_color'] : '';
-    $finish_color     = isset( $answers['finish_color'] ) ? (string) $answers['finish_color'] : '';
-    $existing_tile    = isset( $answers['existing_tile_wet_area'] ) ? (string) $answers['existing_tile_wet_area'] : '';
-    $tile_joint_label = isset( $answers['tile_joint_condition_wet_area'] ) ? (string) $answers['tile_joint_condition_wet_area'] : '';
+    $sheen         = isset( $answers['sheen_wet_area'] ) ? (string) $answers['sheen_wet_area'] : '';
+    $usage         = isset( $answers['usage_level_wet_area'] ) ? (string) $answers['usage_level_wet_area'] : '';
+    $system_label  = isset( $answers['terrazzo_system'] ) ? (string) $answers['terrazzo_system'] : '';
+    $pigment_label = isset( $answers['pigment_color'] ) ? (string) $answers['pigment_color'] : '';
+    $finish_color  = isset( $answers['finish_color'] ) ? (string) $answers['finish_color'] : '';
 
     if ( $sheen !== 'Matte Dual-Layer' && $sheen !== 'Matte Single-Layer' && $sheen !== 'Satin' ) {
         return ['error' => 'Case 2 error: Unknown "Sheen" value: ' . $sheen];
@@ -70,43 +68,16 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
     $clause_key = $code;
     $clause     = 'case_2:' . $clause_key;
 
-    $tile_joint_factor = 0;
-
-    if ( $tile_joint_label === 'Standard Tile Joints' ) {
-        $tile_joint_factor = 0.051;
-    } elseif ( $tile_joint_label === 'Deep Tile Joints' ) {
-        $tile_joint_factor = 0.060;
-    } elseif ( $tile_joint_label === 'Mosaic / Very Uneven Surface' ) {
-        $tile_joint_factor = 0.070;
-    } elseif ( $tile_joint_label === 'Close joints with regular thinset' || $tile_joint_label === '' ) {
-        $tile_joint_factor = 0;
-    } else {
-        return ['error' => 'Case 2 error: Unknown Tile Joint Condition value: ' . $tile_joint_label];
-    }
-
     $items = [];
 
     $debug = [
-        'sqft'              => $sqft,
-        'sqm'               => $sqm,
-        'system_label'      => $system_label,
-        'pigment'           => $pigment_label,
-        'finish_color'      => $finish_color,
-        'existing_tile'     => $existing_tile,
-        'tile_joint_label'  => $tile_joint_label,
-        'tile_joint_factor' => $tile_joint_factor,
-        'clause_code'       => $code,
-        'lines'             => [],
-    ];
-
-    $joint_filler_kg = ad_materials_calc_get_joint_filler_required_kg( $existing_tile, $sqm, $tile_joint_factor );
-
-    $debug['lines'][] = [
-        'line'                     => 'Joint Filler requirement',
-        'existing_tile'            => $existing_tile,
-        'tile_joint_label'         => $tile_joint_label,
-        'tile_joint_factor'        => $tile_joint_factor,
-        'joint_filler_required_kg' => $joint_filler_kg,
+        'sqft'         => $sqft,
+        'sqm'          => $sqm,
+        'system_label' => $system_label,
+        'pigment'      => $pigment_label,
+        'finish_color' => $finish_color,
+        'clause_code'  => $code,
+        'lines'        => [],
     ];
 
     // -----------------------------------------------------
@@ -263,39 +234,6 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
 
         $system_counters['medium_large'] = $medium_large_qty;
         $system_counters['medium_small'] = $medium_small_qty;
-
-        if ( $joint_filler_kg > 0 ) {
-            $fine_bucket_prices = [
-                10 => ad_materials_calc_get_product_price_by_sku( '5200433500008' ),
-                1  => ad_materials_calc_get_product_price_by_sku( '5200433501815' ),
-            ];
-
-            $joint_filler_combo = ad_materials_calc_get_best_2bucket_combo( $joint_filler_kg, $fine_bucket_prices );
-
-            $debug['lines'][] = [
-                'line'               => 'Joint Filler - Fine',
-                'coverage_kg_per_m2' => [$tile_joint_factor],
-                'sqm'                => $sqm,
-                'required_kg'        => $joint_filler_kg,
-                'bucket_prices'      => $fine_bucket_prices,
-                'combo_result'       => $joint_filler_combo,
-                'sku_map'            => [
-                    10 => '5200433500008',
-                    1  => '5200433501815',
-                ],
-            ];
-
-            $items = array_merge(
-                $items,
-                ad_materials_calc_expand_combo_to_line_items(
-                    $joint_filler_combo,
-                    [
-                        10 => '5200433500008',
-                        1  => '5200433501815',
-                    ]
-                )
-            );
-        }
     } elseif ( $system_label === 'Terrazzo Granitech Fine' ) {
         $medium_config = ad_materials_calc_get_configured_coverage_values( 'case_2', $clause_key, $system_label, 'system_medium', 'Case 2 error:' );
 
@@ -377,7 +315,7 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
 
         $fine_application_components = $fine_config['values'];
         $fine_application_kg         = round( $sqm * array_sum( $fine_application_components ), 2 );
-        $fine_purchase_kg            = round( $fine_application_kg + $joint_filler_kg, 2 );
+        $fine_purchase_kg            = $fine_application_kg;
         $fine_large_project_split    = ( $sqft >= 250 );
 
         $fine_bucket_prices = [
@@ -387,7 +325,6 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
 
         $fine_application_combo  = [];
         $fine_purchase_combo     = [];
-        $joint_filler_combo      = [];
         $fine_large_qty          = 0;
         $fine_small_qty          = 0;
         $fine_purchase_large_qty = 0;
@@ -396,13 +333,6 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
         if ( $fine_large_project_split ) {
             $fine_large_qty          = (int) ceil( $fine_application_kg / 10 );
             $fine_purchase_large_qty = $fine_large_qty;
-
-            if ( $joint_filler_kg > 0 ) {
-                $joint_filler_combo = ad_materials_calc_get_best_2bucket_combo( $joint_filler_kg, $fine_bucket_prices );
-
-                $fine_purchase_large_qty += ad_materials_calc_get_combo_bucket_count( $joint_filler_combo, 10 );
-                $fine_purchase_small_qty = ad_materials_calc_get_combo_bucket_count( $joint_filler_combo, 1 );
-            }
         } else {
             $fine_application_combo = ad_materials_calc_get_best_2bucket_combo( $fine_application_kg, $fine_bucket_prices );
             $fine_purchase_combo    = ad_materials_calc_get_best_2bucket_combo( $fine_purchase_kg, $fine_bucket_prices );
@@ -433,17 +363,16 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
         ];
 
         $debug['lines'][] = [
-            'line'            => 'System - Fine purchased buckets',
-            'application_kg'  => $fine_application_kg,
-            'joint_filler_kg' => $joint_filler_kg,
-            'required_kg'     => $fine_purchase_kg,
-            'bucket_prices'   => $fine_bucket_prices,
-            'combo_result'    => $fine_large_project_split ? $joint_filler_combo : $fine_purchase_combo,
-            'resolved_qty'    => [
+            'line'           => 'System - Fine purchased buckets',
+            'application_kg' => $fine_application_kg,
+            'required_kg'    => $fine_purchase_kg,
+            'bucket_prices'  => $fine_bucket_prices,
+            'combo_result'   => $fine_purchase_combo,
+            'resolved_qty'   => [
                 10 => $fine_purchase_large_qty,
                 1  => $fine_purchase_small_qty,
             ],
-            'sku_map'         => [
+            'sku_map'        => [
                 10 => '5200433500008',
                 1  => '5200433501815',
             ],
@@ -458,32 +387,6 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
 
             if ( $fine_large_qty > 0 ) {
                 $items[] = ad_materials_calc_build_line_item_from_product( $fine_product, $fine_large_qty );
-            }
-
-            if ( $joint_filler_kg > 0 ) {
-                $debug['lines'][] = [
-                    'line'               => 'Joint Filler - Fine',
-                    'coverage_kg_per_m2' => [$tile_joint_factor],
-                    'sqm'                => $sqm,
-                    'required_kg'        => $joint_filler_kg,
-                    'bucket_prices'      => $fine_bucket_prices,
-                    'combo_result'       => $joint_filler_combo,
-                    'sku_map'            => [
-                        10 => '5200433500008',
-                        1  => '5200433501815',
-                    ],
-                ];
-
-                $items = array_merge(
-                    $items,
-                    ad_materials_calc_expand_combo_to_line_items(
-                        $joint_filler_combo,
-                        [
-                            10 => '5200433500008',
-                            1  => '5200433501815',
-                        ]
-                    )
-                );
             }
         } else {
             $items = array_merge(
@@ -618,39 +521,6 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
             $system_counters['micro_large'] = $roma_qty;
         } else {
             return ['error' => 'Case 2 error: Unknown / missing Finish Color for Microterrazzo.'];
-        }
-
-        if ( $joint_filler_kg > 0 ) {
-            $fine_bucket_prices = [
-                10 => ad_materials_calc_get_product_price_by_sku( '5200433500008' ),
-                1  => ad_materials_calc_get_product_price_by_sku( '5200433501815' ),
-            ];
-
-            $joint_filler_combo = ad_materials_calc_get_best_2bucket_combo( $joint_filler_kg, $fine_bucket_prices );
-
-            $debug['lines'][] = [
-                'line'               => 'Joint Filler - Fine',
-                'coverage_kg_per_m2' => [$tile_joint_factor],
-                'sqm'                => $sqm,
-                'required_kg'        => $joint_filler_kg,
-                'bucket_prices'      => $fine_bucket_prices,
-                'combo_result'       => $joint_filler_combo,
-                'sku_map'            => [
-                    10 => '5200433500008',
-                    1  => '5200433501815',
-                ],
-            ];
-
-            $items = array_merge(
-                $items,
-                ad_materials_calc_expand_combo_to_line_items(
-                    $joint_filler_combo,
-                    [
-                        10 => '5200433500008',
-                        1  => '5200433501815',
-                    ]
-                )
-            );
         }
     } else {
         return ['error' => 'Case 2 error: Unknown System value: ' . $system_label];
@@ -822,11 +692,9 @@ function ad_materials_calc_case_2_line_items( array $answers ) {
     }
 
     return [
-        'clause'            => $clause,
-        'sqm'               => $sqm,
-        'items'             => $items,
-        'debug'             => $debug,
-        'joint_filler_kg'   => $joint_filler_kg,
-        'joint_filler_note' => ad_materials_calc_build_joint_filler_note( $joint_filler_kg ),
+        'clause' => $clause,
+        'sqm'    => $sqm,
+        'items'  => $items,
+        'debug'  => $debug,
     ];
 }
