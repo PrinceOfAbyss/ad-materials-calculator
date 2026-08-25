@@ -52,7 +52,24 @@ function ad_materials_calc_results_shortcode() {
 
 function ad_materials_calc_current_user_can_view_debug_output() {
 
-    return in_array( get_current_user_id(), [1, 7], true );
+    $user_id = get_current_user_id();
+
+    if ( $user_id <= 0 ) {
+        return false;
+    }
+
+    return in_array( $user_id, ad_materials_calc_get_debug_user_ids(), true );
+}
+
+function ad_materials_calc_get_debug_user_ids() {
+
+    $saved_ids = get_option( 'ad_materials_calculator_debug_user_ids', [] );
+
+    if ( ! is_array( $saved_ids ) ) {
+        return [];
+    }
+
+    return array_filter( array_map( 'absint', $saved_ids ) );
 }
 
 function ad_materials_calc_get_calculation_from_answers( array $answers ) {

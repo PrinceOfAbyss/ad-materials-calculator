@@ -101,6 +101,15 @@ class Ad_Materials_Calculator_Settings {
     private $privileged_user_ids_option_name = 'ad_materials_calculator_privileged_user_ids';
 
     /**
+     * Option name used to persist the user IDs allowed to view calculator debug output
+     *
+     * @since    1.3.4
+     * @access   private
+     * @var      string
+     */
+    private $debug_user_ids_option_name = 'ad_materials_calculator_debug_user_ids';
+
+    /**
      * Option name used to persist the B2BKing applicator group ID.
      *
      * @since    1.0.4
@@ -311,6 +320,7 @@ class Ad_Materials_Calculator_Settings {
         echo '</tbody></table>';
 
         $privileged_user_ids = $this->get_saved_privileged_user_ids();
+        $debug_user_ids      = $this->get_saved_debug_user_ids();
         $users               = get_users(
             [
                 'orderby' => 'display_name',
@@ -336,6 +346,24 @@ class Ad_Materials_Calculator_Settings {
 
         echo '</select>';
         echo '<p class="description">' . esc_html__( 'Selected users can apply discounts and create share links for calculated materials. If empty, these extended privileges stay inactive.', 'ad-materials-calculator' ) . '</p>';
+        echo '</td>';
+        echo '</tr>';
+        echo '<tr>';
+        echo '<th scope="row"><label for="ad-materials-calculator-debug-user-ids">' . esc_html__( 'Debug Output Viewers', 'ad-materials-calculator' ) . '</label></th>';
+        echo '<td>';
+        echo '<select id="ad-materials-calculator-debug-user-ids" name="ad_materials_calculator_debug_user_ids[]" class="ad-mc-settings-user-select" multiple="multiple" data-placeholder="' . esc_attr__( 'Select debug viewers...', 'ad-materials-calculator' ) . '">';
+
+        foreach ( $users as $user ) {
+            printf(
+                '<option value="%1$d"%2$s>%3$s</option>',
+                absint( $user->ID ),
+                selected( in_array( (int) $user->ID, $debug_user_ids, true ), true, false ),
+                esc_html( sprintf( '%s (%s)', $user->display_name, $user->user_login ) )
+            );
+        }
+
+        echo '</select>';
+        echo '<p class="description">' . esc_html__( 'Selected users can view calculator debug output below calculated materials results. If empty, debug output stays hidden.', 'ad-materials-calculator' ) . '</p>';
         echo '</td>';
         echo '</tr>';
         echo '</tbody></table>';
@@ -412,6 +440,7 @@ class Ad_Materials_Calculator_Settings {
         $app_form_id     = $this->get_submitted_applicator_registration_form_id();
         $dist_form_id    = $this->get_submitted_distributor_registration_form_id();
         $privileged_ids  = $this->get_submitted_privileged_user_ids();
+        $debug_user_ids  = $this->get_submitted_debug_user_ids();
         $applicator_id   = $this->get_submitted_b2bking_applicator_group_id();
         $distributor_id  = $this->get_submitted_b2bking_distributor_group_id();
         $applicator_min  = $this->get_submitted_applicator_min_sqft();
@@ -453,6 +482,12 @@ class Ad_Materials_Calculator_Settings {
             update_option( $this->privileged_user_ids_option_name, $privileged_ids );
         } else {
             delete_option( $this->privileged_user_ids_option_name );
+        }
+
+        if ( ! empty( $debug_user_ids ) ) {
+            update_option( $this->debug_user_ids_option_name, $debug_user_ids );
+        } else {
+            delete_option( $this->debug_user_ids_option_name );
         }
 
         if ( $applicator_id > 0 ) {
@@ -566,6 +601,23 @@ class Ad_Materials_Calculator_Settings {
     private function get_saved_privileged_user_ids() {
 
         $saved_ids = get_option( $this->privileged_user_ids_option_name, [] );
+
+        if ( ! is_array( $saved_ids ) ) {
+            return [];
+        }
+
+        return array_filter( array_map( 'absint', $saved_ids ) );
+    }
+
+    /**
+     * Return the saved user IDs allowed to view calculator debug output
+     *
+     * @since    1.3.4
+     * @return   array
+     */
+    private function get_saved_debug_user_ids() {
+
+        $saved_ids = get_option( $this->debug_user_ids_option_name, [] );
 
         if ( ! is_array( $saved_ids ) ) {
             return [];
@@ -716,6 +768,23 @@ class Ad_Materials_Calculator_Settings {
         }
 
         $submitted_ids = wp_unslash( $_POST['ad_materials_calculator_privileged_user_ids'] );
+
+        return array_filter( array_map( 'absint', $submitted_ids ) );
+    }
+
+    /**
+     * Read and sanitize the submitted debug output viewer user IDs
+     *
+     * @since    1.3.4
+     * @return   array
+     */
+    private function get_submitted_debug_user_ids() {
+
+        if ( ! isset( $_POST['ad_materials_calculator_debug_user_ids'] ) || ! is_array( $_POST['ad_materials_calculator_debug_user_ids'] ) ) {
+            return [];
+        }
+
+        $submitted_ids = wp_unslash( $_POST['ad_materials_calculator_debug_user_ids'] );
 
         return array_filter( array_map( 'absint', $submitted_ids ) );
     }
