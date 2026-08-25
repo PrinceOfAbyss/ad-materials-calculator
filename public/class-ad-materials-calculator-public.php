@@ -188,6 +188,22 @@ class Ad_Materials_Calculator_Public {
 	}
 
 	/**
+	 * Add a page-state class when the calculator results flag is present.
+	 *
+	 * @since    1.3.2
+	 * @param    array $classes Body classes.
+	 * @return   array
+	 */
+	public function add_calculator_results_body_class( $classes ) {
+
+		if ( isset( $_GET['mc'] ) && '1' === (string) wp_unslash( $_GET['mc'] ) ) {
+			$classes[] = 'ad-materials-calc-has-results';
+		}
+
+		return $classes;
+	}
+
+	/**
 	 * Redirect logged-out My Account visitors to the custom login page.
 	 *
 	 * @since    1.0.9

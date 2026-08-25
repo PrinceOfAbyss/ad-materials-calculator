@@ -188,6 +188,18 @@
     text-align: right;
 }
 
+.ad-materials-calc-results-panel {
+    display: none !important;
+}
+
+.ad-materials-calc-has-results .ad-materials-calc-form-panel {
+    display: none !important;
+}
+
+.ad-materials-calc-has-results .ad-materials-calc-results-panel {
+    display: block !important;
+}
+
 /* Calculator result notes below the add-to-cart button */
 .ad-materials-calc-results-note {
     color: #444;
