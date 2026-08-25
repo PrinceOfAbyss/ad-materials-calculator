@@ -138,6 +138,7 @@ function ad_materials_calc_render_calculation_result( array $calc, array $answer
     }
 
     $html = '<div class="materials-calc-results">';
+    $html .= ad_materials_calc_render_project_summary_card( $answers );
 
     $html .= ad_materials_calc_render_results_table(
         isset( $calc['items'] ) && is_array( $calc['items'] ) ? $calc['items'] : [],
@@ -147,6 +148,96 @@ function ad_materials_calc_render_calculation_result( array $calc, array $answer
     $html .= '</div>';
 
     return $html;
+}
+
+function ad_materials_calc_render_project_summary_card( array $answers ) {
+
+    $summary_items = ad_materials_calc_get_project_summary_items( $answers );
+
+    if ( empty( $summary_items ) ) {
+        return '';
+    }
+
+    $html = '<div class="ad-materials-calc-project-summary">';
+    $html .= '<div class="ad-materials-calc-project-summary__eyebrow">' . esc_html__( 'Project Summary', 'ad-materials-calculator' ) . '</div>';
+    $html .= '<a class="ad-materials-calc-project-summary__edit" href="' . esc_url( home_url( '/materials-calculator/' ) ) . '">' . esc_html__( 'Edit project', 'ad-materials-calculator' ) . '</a>';
+    $html .= '<div class="ad-materials-calc-project-summary__grid">';
+
+    foreach ( $summary_items as $item ) {
+        $html .= '<div class="ad-materials-calc-project-summary__item">';
+        $html .= '<div class="ad-materials-calc-project-summary__label">' . esc_html( $item['label'] ) . '</div>';
+        $html .= '<div class="ad-materials-calc-project-summary__value">' . esc_html( $item['value'] ) . '</div>';
+        $html .= '</div>';
+    }
+
+    $html .= '</div>';
+    $html .= '</div>';
+
+    return $html;
+}
+
+function ad_materials_calc_get_project_summary_items( array $answers ) {
+
+    $items         = [];
+    $area_sqft     = isset( $answers['total_area_sqft'] ) ? (float) $answers['total_area_sqft'] : 0;
+    $surface_type  = isset( $answers['surface_type'] ) ? trim( (string) $answers['surface_type'] ) : '';
+    $system_label  = isset( $answers['terrazzo_system'] ) ? trim( (string) $answers['terrazzo_system'] ) : '';
+    $pigment_color = isset( $answers['pigment_color'] ) ? trim( (string) $answers['pigment_color'] ) : '';
+
+    if ( $area_sqft > 0 ) {
+        $items[] = [
+            'label' => __( 'Project Area', 'ad-materials-calculator' ),
+            'value' => rtrim( rtrim( number_format( $area_sqft, 1, '.', '' ), '0' ), '.' ) . ' sq. ft.',
+        ];
+    }
+
+    if ( '' !== $surface_type ) {
+        $items[] = [
+            'label' => __( 'Application', 'ad-materials-calculator' ),
+            'value' => $surface_type,
+        ];
+    }
+
+    if ( '' !== $system_label ) {
+        $items[] = [
+            'label' => __( 'Finish', 'ad-materials-calculator' ),
+            'value' => $system_label,
+        ];
+    }
+
+    if ( '' !== $pigment_color && ! ad_materials_calc_is_unpigmented( $pigment_color ) ) {
+        $items[] = [
+            'label' => __( 'Color', 'ad-materials-calculator' ),
+            'value' => $pigment_color,
+        ];
+    }
+
+    $labels = ad_materials_calc_get_project_answer_labels();
+
+    foreach ( ad_materials_calc_get_project_meta_keys( $surface_type ) as $key ) {
+        if ( empty( $answers[$key] ) ) {
+            continue;
+        }
+
+        $value = trim( (string) $answers[$key] );
+
+        if ( '' === $value ) {
+            continue;
+        }
+
+        $label = isset( $labels[$key] ) ? $labels[$key] : ucwords( str_replace( '_', ' ', $key ) );
+
+        if ( strpos( $key, 'usage_level' ) === 0 ) {
+            $label = __( 'Protection Level', 'ad-materials-calculator' );
+        }
+
+        $items[] = [
+            'label' => $label,
+            'value' => $value,
+        ];
+    }
+
+    return $items;
 }
 
 function ad_materials_calc_render_calculation_debug_output( array $calc, array $answers ) {

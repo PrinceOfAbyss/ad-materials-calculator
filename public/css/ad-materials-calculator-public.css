@@ -188,6 +188,60 @@
     text-align: right;
 }
 
+.ad-materials-calc-project-summary {
+    background: #fff;
+    border: 1px solid var(--e-global-color-secondary);
+    margin-bottom: 28px;
+    padding: 36px 40px;
+    position: relative;
+}
+
+.ad-materials-calc-project-summary__eyebrow {
+    color: var(--e-global-color-primary);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    margin-bottom: 26px;
+    text-transform: uppercase;
+}
+
+.ad-materials-calc-project-summary__grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 26px 72px;
+}
+
+.ad-materials-calc-project-summary__item {
+    flex: 0 1 calc((100% - 144px) / 3);
+}
+
+.ad-materials-calc-project-summary__label {
+    color: var(--e-global-color-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.ad-materials-calc-project-summary__value {
+    color: var(--e-global-color-primary);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.ad-materials-calc-project-summary__edit {
+    color: var(--e-global-color-secondary);
+    font-size: 17px;
+    line-height: 1.3;
+    position: absolute;
+    right: 40px;
+    text-decoration: underline !important;
+    text-underline-offset: 3px;
+    top: 36px;
+}
+
 .ad-materials-calc-results-panel {
     display: none !important;
 }
@@ -369,6 +423,24 @@ button.materials-calc-share-modal__close {
 }
 
 @media (max-width: 768px) {
+
+    .ad-materials-calc-project-summary {
+        padding: 22px;
+    }
+
+    .ad-materials-calc-project-summary__grid {
+        gap: 18px;
+    }
+
+    .ad-materials-calc-project-summary__item {
+        flex-basis: 100%;
+    }
+
+    .ad-materials-calc-project-summary__edit {
+        display: inline-block;
+        margin-top: 16px;
+        position: static;
+    }
 
     .woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-card-header {
         background: #dcdcdc !important;
