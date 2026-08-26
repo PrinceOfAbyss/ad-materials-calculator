@@ -422,7 +422,7 @@ button.materials-calc-share-modal__close {
     background: transparent !important;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
 
     .ad-materials-calc-project-summary {
         padding: 22px;
@@ -437,9 +437,11 @@ button.materials-calc-share-modal__close {
     }
 
     .ad-materials-calc-project-summary__edit {
-        display: inline-block;
-        margin-top: 16px;
-        position: static;
+        position: absolute;
+        top: 22px;
+        right: 22px;
+        margin-top: 0;
+        font-size: 16px;
     }
 
     .woocommerce-cart .woocommerce-cart-form__contents tr.ad-materials-calc-group-card-header {
