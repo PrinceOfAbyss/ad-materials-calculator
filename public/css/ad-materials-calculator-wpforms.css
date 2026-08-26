@@ -196,3 +196,9 @@
 .ad-wpforms-choices-inline ul li {
     width: auto !important;
 }
+
+@media (max-width: 767px) {
+    .ad-materials-calculator-wpforms-form {
+        --ad-wpforms-image-choice-tile-size: 78px;
+    }
+}
