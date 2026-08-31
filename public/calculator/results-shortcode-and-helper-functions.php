@@ -177,7 +177,7 @@ function ad_materials_calc_render_project_summary_card( array $answers ) {
 
     $html = '<div class="ad-materials-calc-project-summary">';
     $html .= '<div class="ad-materials-calc-project-summary__eyebrow">' . esc_html__( 'Project Summary', 'ad-materials-calculator' ) . '</div>';
-    $html .= '<a class="ad-materials-calc-project-summary__edit" href="' . esc_url( home_url( '/materials-calculator/' ) ) . '">' . esc_html__( 'Edit project', 'ad-materials-calculator' ) . '</a>';
+    $html .= '<a class="ad-materials-calc-project-summary__edit" href="' . esc_url( home_url( '/materials-calculator/' ) ) . '">' . esc_html__( 'Reset Calculator', 'ad-materials-calculator' ) . '</a>';
     $html .= '<div class="ad-materials-calc-project-summary__grid">';
 
     foreach ( $summary_items as $item ) {
