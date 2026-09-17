@@ -124,6 +124,20 @@
     margin-left: 8px;
 }
 
+.ad-modern-design .ad-calculator-secondary-link {
+    background-color: var(--e-global-color-accent);
+    display: inline-block;
+    line-height: 1;
+    margin-left: 14px;
+    vertical-align: top;
+}
+
+.ad-modern-design .ad-calculator-secondary-link:hover,
+.ad-modern-design .ad-calculator-secondary-link:focus {
+    background-color: var(--e-global-color-secondary);
+    color: var(--e-global-color-accent);
+}
+
 .ad-partner-login-wpforms-form #ad-partner-password-reset-link {
     margin-top: -35px;
     text-align: right;
