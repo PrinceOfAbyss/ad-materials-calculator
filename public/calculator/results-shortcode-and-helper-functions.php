@@ -107,6 +107,14 @@ function ad_materials_calc_get_calculation_from_answers( array $answers ) {
             'callback'    => 'ad_materials_calc_case_6_line_items',
             'debug_title' => 'Case 6 calculation debug:',
         ],
+        'Interior / Pre-Painted Drywall'    => [
+            'callback'    => 'ad_materials_calc_case_7_line_items',
+            'debug_title' => 'Case 7 calculation debug:',
+        ],
+        'Wet Areas & Exterior Walls'        => [
+            'callback'    => 'ad_materials_calc_case_8_line_items',
+            'debug_title' => 'Case 8 calculation debug:',
+        ],
     ];
 
     if ( empty( $case_map[$surface_type] ) ) {
@@ -479,6 +487,14 @@ function ad_materials_calc_get_project_meta_keys( $surface_type ) {
             'sheen_countertop_vanity',
             'usage_level_countertop_vanity',
         ],
+        'Interior / Pre-Painted Drywall'    => [
+            'sheen_gaia_interior',
+            'usage_level_gaia_interior',
+        ],
+        'Wet Areas & Exterior Walls'        => [
+            'sheen_gaia_wet_area',
+            'usage_level_gaia_wet_area',
+        ],
     ];
 
     if ( empty( $surface_specific_keys[$surface_type] ) ) {
@@ -503,6 +519,10 @@ function ad_materials_calc_get_project_answer_labels() {
         'usage_level_exterior_floor'       => 'Usage Level',
         'sheen_countertop_vanity'          => 'Sheen',
         'usage_level_countertop_vanity'    => 'Usage Level',
+        'sheen_gaia_interior'              => 'Sheen',
+        'usage_level_gaia_interior'        => 'Usage Level',
+        'sheen_gaia_wet_area'              => 'Sheen',
+        'usage_level_gaia_wet_area'        => 'Usage Level',
     ];
 }
 
@@ -573,6 +593,7 @@ function ad_materials_calc_get_colorant_line_data( $system_label, array $system_
         'medium_small_fraction' => '',
         'fine_small_fraction'   => '',
         'micro_small_fraction'  => '',
+        'gaia_small_fraction'   => '',
     ];
 
     $medium_large = isset( $system_counters['medium_large'] ) ? (int) $system_counters['medium_large'] : 0;
@@ -581,6 +602,9 @@ function ad_materials_calc_get_colorant_line_data( $system_label, array $system_
     $fine_small   = isset( $system_counters['fine_small'] ) ? (int) $system_counters['fine_small'] : 0;
     $micro_large  = isset( $system_counters['micro_large'] ) ? (int) $system_counters['micro_large'] : 0;
     $micro_small  = isset( $system_counters['micro_small'] ) ? (int) $system_counters['micro_small'] : 0;
+    $gaia_pail    = isset( $system_counters['gaia_pail'] ) ? (int) $system_counters['gaia_pail'] : 0;
+    $gaia_gallon  = isset( $system_counters['gaia_gallon'] ) ? (int) $system_counters['gaia_gallon'] : 0;
+    $gaia_quart   = isset( $system_counters['gaia_quart'] ) ? (int) $system_counters['gaia_quart'] : 0;
 
     if ( $system_label === 'Terrazzo Granitech Medium' ) {
         $result['medium_small_fraction'] = ad_materials_calc_format_fraction_debug( $medium_small, 19 );
@@ -644,13 +668,33 @@ function ad_materials_calc_get_colorant_line_data( $system_label, array $system_
         return $result;
     }
 
+    if ( $system_label === 'Terrazzo Granitech Gaia' ) {
+        $gaia_small_kg = ( $gaia_gallon * 6 ) + ( $gaia_quart * 1.5 );
+
+        $result['gaia_small_fraction'] = ad_materials_calc_format_fraction_debug( $gaia_small_kg, 15 );
+
+        $qty = $gaia_pail + ( $gaia_small_kg > 0 ? 1 : 0 );
+
+        if ( $qty > 0 ) {
+            $result['lines'][] = [
+                'pigment_family' => 'gaia',
+                'qty'            => $qty,
+                'pail_count'     => $gaia_pail,
+                'gallon_count'   => $gaia_gallon,
+                'quart_count'    => $gaia_quart,
+            ];
+        }
+
+        return $result;
+    }
+
     return $result;
 }
 
 function ad_materials_calc_format_fraction_debug( $numerator, $denominator ) {
 
-    $numerator   = (int) $numerator;
-    $denominator = (int) $denominator;
+    $numerator   = (float) $numerator;
+    $denominator = (float) $denominator;
 
     if ( $denominator <= 0 ) {
         return '';
@@ -659,9 +703,11 @@ function ad_materials_calc_format_fraction_debug( $numerator, $denominator ) {
     $decimal = round( $numerator / $denominator, 2 );
 
     // Remove useless trailing zeros, so 0.20 becomes 0.2
-    $decimal_str = rtrim( rtrim( number_format( $decimal, 2, '.', '' ), '0' ), '.' );
+    $decimal_str     = rtrim( rtrim( number_format( $decimal, 2, '.', '' ), '0' ), '.' );
+    $numerator_str   = rtrim( rtrim( number_format( $numerator, 2, '.', '' ), '0' ), '.' );
+    $denominator_str = rtrim( rtrim( number_format( $denominator, 2, '.', '' ), '0' ), '.' );
 
-    return $numerator . '/' . $denominator . ' (' . $decimal_str . ')';
+    return $numerator_str . '/' . $denominator_str . ' (' . $decimal_str . ')';
 }
 
 /**
@@ -1254,6 +1300,8 @@ function ad_materials_calc_find_pigment_product_by_family_label( $pigment_family
         $parent_product_id = 9838;
     } elseif ( $pigment_family === 'fine' ) {
         $parent_product_id = 9932;
+    } elseif ( $pigment_family === 'gaia' ) {
+        $parent_product_id = 14769;
     } else {
         $pigment_cache[$cache_key] = false;
 
@@ -1315,6 +1363,8 @@ function ad_materials_calc_find_pigment_product_by_label( $system_label, $pigmen
         $pigment_family = 'medium';
     } elseif ( $system_label === 'Terrazzo Granitech Fine' ) {
         $pigment_family = 'fine';
+    } elseif ( $system_label === 'Terrazzo Granitech Gaia' ) {
+        $pigment_family = 'gaia';
     } else {
         return false;
     }
@@ -1609,6 +1659,10 @@ function ad_materials_calc_get_system_section_slug( $system_label ) {
 
     if ( 'Terrazzo Granitech Microterrazzo' === $system_label ) {
         return 'microterrazzo';
+    }
+
+    if ( 'Terrazzo Granitech Gaia' === $system_label ) {
+        return 'gaia';
     }
 
     return '';

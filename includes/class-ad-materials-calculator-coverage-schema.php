@@ -20,6 +20,7 @@ class Ad_Materials_Calculator_Coverage_Schema {
             'case_1' => [
                 'title'       => 'Case 1. Interior / Exterior Walls',
                 'description' => 'Grouped by substrate path, sheen, and duty level.',
+                'sections'    => ['medium', 'fine', 'microterrazzo'],
                 'clauses'     => [
                     'no_fibermesh_matte_standard'       => self::build_clause_schema( 'No fibermesh / Matte / Standard Duty', [
                         'primer'          => self::build_material_schema( 'Primer (Eco Grip Quartz Primer)', ['', '', ''] ),
@@ -110,6 +111,7 @@ class Ad_Materials_Calculator_Coverage_Schema {
             'case_2' => [
                 'title'       => 'Case 2. Wet Area Walls',
                 'description' => 'Grouped by sheen and duty level.',
+                'sections'    => ['medium', 'fine', 'microterrazzo'],
                 'clauses'     => [
                     'matte_dual_max'        => self::build_clause_schema( 'Matte / Dual-Layer / Max Duty', [
                         'primer'          => self::build_material_schema( 'Primer (Eco Grip Quartz Primer)', ['', '', ''] ),
@@ -160,6 +162,7 @@ class Ad_Materials_Calculator_Coverage_Schema {
             'case_3' => [
                 'title'       => 'Case 3. Interior Floor',
                 'description' => 'Grouped by moisture path, sheen, and duty level.',
+                'sections'    => ['medium', 'fine', 'microterrazzo'],
                 'clauses'     => [
                     'wet_matte_max'      => self::build_clause_schema( 'Wet Area / Matte / Dual-Layer / Max Duty', [
                         'primer'          => self::build_material_schema( 'Primer (Eco Grip Quartz Primer)', ['', '', ''] ),
@@ -212,6 +215,7 @@ class Ad_Materials_Calculator_Coverage_Schema {
             'case_4' => [
                 'title'       => 'Case 4. Exterior Floor (incl. Pool Decks)',
                 'description' => 'Grouped by usage level.',
+                'sections'    => ['medium', 'fine', 'microterrazzo'],
                 'clauses'     => [
                     'max'      => self::build_clause_schema( 'Matte / Dual-Layer / Max Duty', [
                         'epoxy_primer_pair' => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
@@ -234,6 +238,7 @@ class Ad_Materials_Calculator_Coverage_Schema {
             'case_5' => [
                 'title'       => 'Case 5. Pool Interior',
                 'description' => 'Single fixed clause, included here so the editor covers the full project.',
+                'sections'    => ['medium', 'fine', 'microterrazzo'],
                 'clauses'     => [
                     'pool_interior_fixed' => self::build_clause_schema( 'Pool Interior fixed clause', [
                         'epoxy_primer_pair' => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
@@ -247,6 +252,7 @@ class Ad_Materials_Calculator_Coverage_Schema {
             'case_6' => [
                 'title'       => 'Case 6. Countertop / Vanity',
                 'description' => 'Grouped by sheen and duty level.',
+                'sections'    => ['medium', 'fine', 'microterrazzo'],
                 'clauses'     => [
                     'matte_max'      => self::build_clause_schema( 'Matte / Dual-Layer / Max Duty', [
                         'primer'          => self::build_material_schema( 'Primer (Eco Grip Quartz Primer)', ['', '', ''] ),
@@ -280,6 +286,76 @@ class Ad_Materials_Calculator_Coverage_Schema {
                     ] ),
                 ],
             ],
+            'case_7' => [
+                'title'       => 'Case 7. Interior / Pre-Painted Drywall',
+                'description' => 'Grouped by sheen and duty level.',
+                'sections'    => ['gaia'],
+                'clauses'     => [
+                    'matte_standard'     => self::build_clause_schema( 'Matte / Standard Duty', [
+                        'system_gaia'  => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_matte' => self::build_material_schema( 'Sealer (X MATTE WALL Varnish)', ['', '', ''] ),
+                    ] ),
+                    'matte_max'          => self::build_clause_schema( 'Matte / Max Duty', [
+                        'system_gaia'  => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_matte' => self::build_material_schema( 'Sealer (X MATTE WALL Varnish)', ['', '', ''] ),
+                    ] ),
+                    'semigloss_standard' => self::build_clause_schema( 'Semi-Gloss / Standard Duty', [
+                        'system_gaia'      => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_semigloss' => self::build_material_schema( 'Sealer (Monopro Semi-gloss Wall Sealer)', ['', '', ''] ),
+                    ] ),
+                    'semigloss_max'      => self::build_clause_schema( 'Semi-Gloss / Max Duty', [
+                        'system_gaia'      => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_semigloss' => self::build_material_schema( 'Sealer (Monopro Semi-gloss Wall Sealer)', ['', '', ''] ),
+                    ] ),
+                    'satin_standard'     => self::build_clause_schema( 'Satin / Standard Duty', [
+                        'system_gaia'  => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_satin' => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                    'satin_max'          => self::build_clause_schema( 'Satin / Max Duty', [
+                        'system_gaia'  => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_satin' => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                ],
+            ],
+            'case_8' => [
+                'title'       => 'Case 8. Wet Areas & Exterior Walls',
+                'description' => 'Grouped by sheen and duty level.',
+                'sections'    => ['gaia'],
+                'clauses'     => [
+                    'matte_dual_max'        => self::build_clause_schema( 'Matte / Dual-Layer / Max Duty', [
+                        'primer'       => self::build_material_schema( 'Primer (Eco Grip Quartz Primer)', ['', '', ''] ),
+                        'system_gaia'  => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_satin' => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte' => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'matte_dual_standard'   => self::build_clause_schema( 'Matte / Dual-Layer / Standard Duty', [
+                        'primer'       => self::build_material_schema( 'Primer (Eco Grip Quartz Primer)', ['', '', ''] ),
+                        'system_gaia'  => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_satin' => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte' => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'matte_single_standard' => self::build_clause_schema( 'Matte / Single-Layer / Standard Duty', [
+                        'primer'       => self::build_material_schema( 'Primer (Eco Grip Quartz Primer)', ['', '', ''] ),
+                        'system_gaia'  => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_matte' => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'satin_max'             => self::build_clause_schema( 'Satin / Single-Layer / Max Duty', [
+                        'primer'       => self::build_material_schema( 'Primer (Eco Grip Quartz Primer)', ['', '', ''] ),
+                        'system_gaia'  => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_satin' => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                    'satin_standard'        => self::build_clause_schema( 'Satin / Single-Layer / Standard Duty', [
+                        'primer'       => self::build_material_schema( 'Primer (Eco Grip Quartz Primer)', ['', '', ''] ),
+                        'system_gaia'  => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_satin' => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                    'satin_minimal'         => self::build_clause_schema( 'Satin / Single-Layer / Minimal Duty', [
+                        'primer'       => self::build_material_schema( 'Primer (Eco Grip Quartz Primer)', ['', '', ''] ),
+                        'system_gaia'  => self::build_material_schema( 'System', ['', '', ''] ),
+                        'sealer_satin' => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                ],
+            ],
         ];
     }
 
@@ -295,6 +371,10 @@ class Ad_Materials_Calculator_Coverage_Schema {
         $filtered = [];
 
         foreach ( $schema as $case_key => $case_config ) {
+            if ( empty( $case_config['sections'] ) || ! in_array( $section, $case_config['sections'], true ) ) {
+                continue;
+            }
+
             $materials_for_case = [];
 
             foreach ( $case_config['clauses'] as $clause_key => $clause_config ) {
@@ -379,6 +459,10 @@ class Ad_Materials_Calculator_Coverage_Schema {
             return $material_key === 'system_micro';
         }
 
+        if ( $section === 'gaia' ) {
+            return $material_key === 'system_gaia';
+        }
+
         return false;
     }
 
@@ -406,6 +490,10 @@ class Ad_Materials_Calculator_Coverage_Schema {
 
         if ( $material_key === 'system_micro' ) {
             return 'System (Terrazzo Granitech Microterrazzo)';
+        }
+
+        if ( $material_key === 'system_gaia' ) {
+            return 'System (Terrazzo Granitech Gaia)';
         }
 
         return $default_label;

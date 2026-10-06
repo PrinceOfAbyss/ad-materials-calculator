@@ -1028,7 +1028,7 @@ class Ad_Materials_Calculator_Settings {
             $section = sanitize_key( wp_unslash( $_GET['section'] ) );
         }
 
-        if ( ! in_array( $section, ['medium', 'fine', 'microterrazzo'], true ) ) {
+        if ( ! in_array( $section, ['medium', 'fine', 'microterrazzo', 'gaia'], true ) ) {
             $section = 'medium';
         }
 
@@ -1047,6 +1047,7 @@ class Ad_Materials_Calculator_Settings {
             'medium'        => __( 'Medium', 'ad-materials-calculator' ),
             'fine'          => __( 'Fine', 'ad-materials-calculator' ),
             'microterrazzo' => __( 'Microterrazzo', 'ad-materials-calculator' ),
+            'gaia'          => __( 'Gaia', 'ad-materials-calculator' ),
         ];
 
         echo '<ul class="subsubsub ad-mc-settings-sections">';

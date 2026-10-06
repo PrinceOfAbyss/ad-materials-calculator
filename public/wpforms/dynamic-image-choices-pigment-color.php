@@ -6,6 +6,7 @@
  * - Configured materials calculator form
  * - Field #23 -> Product 9838 (Medium pigments)
  * - Field #24 -> Product 9932 (Fine pigments)
+ * - Field #49 -> Product 14769 (Gaia pigments)
  */
 
 add_filter( 'wpforms_frontend_form_data', 'ad_wpforms_set_pigment_image_choices_frontend', 50, 1 );
@@ -37,6 +38,7 @@ function ad_wpforms_inject_pigment_image_choices( $form_data ) {
     $field_product_map = [
         23 => 9838, // Medium pigments
         24 => 9932, // Fine pigments
+        49 => 14769, // Gaia pigments
     ];
 
     foreach ( $field_product_map as $field_id => $product_id ) {

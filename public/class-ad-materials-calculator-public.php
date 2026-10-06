@@ -71,6 +71,8 @@ class Ad_Materials_Calculator_Public {
 		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-4.php';
 		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-5.php';
 		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-6.php';
+		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-7.php';
+		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-8.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/rewrite-wpforms-redirect-url.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/capture-submitted-fields-to-wc-session.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/show-calculator-discount-smart-tag.php';
