@@ -71,7 +71,7 @@ function ad_wpforms_inject_pigment_image_choices( $form_data ) {
 
 function ad_wpforms_unpigmented_choice() {
 
-    $img_url = trailingslashit( wp_get_upload_dir()['baseurl'] ) . ltrim( '2025/12/Untinted-Attr.png', '/' );
+    $img_url = trailingslashit( wp_get_upload_dir()['baseurl'] ) . ltrim( '2026/10/swatch-unpigmented-finish.webp', '/' );
 
     return [
         'label' => 'Unpigmented',
