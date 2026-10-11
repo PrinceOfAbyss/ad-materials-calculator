@@ -41,28 +41,53 @@ function ad_wpforms_inject_microterrazzo_finish_image_choices( $form_data ) {
         return $form_data;
     }
 
-    $form_data['fields'][$field_id]['choices'] = ad_wpforms_microterrazzo_finish_choices();
+    $choices = ad_wpforms_microterrazzo_finish_choices();
+
+    if ( ! empty( $choices ) ) {
+        $form_data['fields'][$field_id]['choices'] = $choices;
+    }
 
     return $form_data;
 }
 
 function ad_wpforms_microterrazzo_finish_choices() {
 
-    return [
+    $terms = wc_get_product_terms(
+        10068,
+        'pa_finish',
         [
-            'label' => '600Q',
-            'value' => '600Q',
-            'image' => '/wp-content/uploads/2026/03/600Q-Micro.png',
-        ],
-        [
-            'label' => 'Zambia',
-            'value' => 'Zambia',
-            'image' => '/wp-content/uploads/2026/03/Zambia-Micro.png',
-        ],
-        [
-            'label' => 'Roma',
-            'value' => 'Roma',
-            'image' => '/wp-content/uploads/2026/03/Roma-Micro.png',
-        ],
-    ];
+            'orderby' => 'menu_order',
+            'order'   => 'ASC',
+        ]
+    );
+
+    if ( is_wp_error( $terms ) || empty( $terms ) ) {
+        return [];
+    }
+
+    $choices = [];
+
+    foreach ( $terms as $term ) {
+        $image      = get_term_meta( $term->term_id, 'image', true );
+        $image_id   = is_array( $image ) ? absint( $image['id'] ?? 0 ) : 0;
+        $stored_url = is_array( $image ) ? (string) ( $image['url'] ?? '' ) : ( is_string( $image ) ? $image : '' );
+
+        if ( ! $image_id && $stored_url ) {
+            $image_id = attachment_url_to_postid( $stored_url );
+        }
+
+        $image_url = $image_id ? wp_get_attachment_image_url( $image_id, 'thumbnail' ) : '';
+
+        if ( ! $image_url ) {
+            continue;
+        }
+
+        $choices[] = [
+            'label' => $term->name,
+            'value' => $term->name,
+            'image' => $image_url,
+        ];
+    }
+
+    return $choices;
 }

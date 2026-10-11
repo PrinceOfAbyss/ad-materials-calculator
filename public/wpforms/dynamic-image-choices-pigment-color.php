@@ -82,7 +82,7 @@ function ad_wpforms_unpigmented_choice() {
 
 function ad_wpforms_build_image_choices_from_product( WC_Product_Variable $product ) {
 
-    $variations = $product->get_available_variations();
+    $variations = $product->get_available_variations( 'objects' );
 
     if ( empty( $variations ) ) {
         return [];
@@ -90,20 +90,8 @@ function ad_wpforms_build_image_choices_from_product( WC_Product_Variable $produ
 
     $choices = [];
 
-    foreach ( $variations as $variation_data ) {
-        $variation_id = isset( $variation_data['variation_id'] ) ? (int) $variation_data['variation_id'] : 0;
-
-        if ( ! $variation_id ) {
-            continue;
-        }
-
-        $variation = wc_get_product( $variation_id );
-
-        if ( ! $variation ) {
-            continue;
-        }
-
-        if ( method_exists( $variation, 'is_purchasable' ) && ! $variation->is_purchasable() ) {
+    foreach ( $variations as $variation ) {
+        if ( ! $variation instanceof WC_Product_Variation || ! $variation->is_purchasable() ) {
             continue;
         }
 
@@ -131,19 +119,7 @@ function ad_wpforms_build_image_choices_from_product( WC_Product_Variable $produ
 
 function ad_wpforms_variation_color_label( WC_Product_Variation $variation ) {
 
-    $color_slug = $variation->get_attribute( 'pa_color' );
-
-    if ( empty( $color_slug ) ) {
-        return '';
-    }
-
-    $term = get_term_by( 'slug', $color_slug, 'pa_color' );
-
-    if ( $term && ! is_wp_error( $term ) ) {
-        return $term->name;
-    }
-
-    return (string) $color_slug;
+    return (string) $variation->get_attribute( 'pa_color' );
 }
 
 function ad_wpforms_variation_image_url( WC_Product_Variation $variation ) {
