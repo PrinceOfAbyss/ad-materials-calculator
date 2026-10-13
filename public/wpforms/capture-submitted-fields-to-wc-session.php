@@ -26,6 +26,7 @@ function ad_materials_calc_capture_answers( $fields, $entry, $form_data, $entry_
     // Resolve finish-specific fields without relying on hidden fields being empty
     $surface_type = '';
     $pigment      = '';
+    $finish_color = '';
 
     switch ( $system ) {
         case 'Terrazzo Granitech Medium':
@@ -33,8 +34,13 @@ function ad_materials_calc_capture_answers( $fields, $entry, $form_data, $entry_
             $pigment      = ad_materials_calc_get_entry_value( $entry_fields, 23 );
             break;
 
-        case 'Terrazzo Granitech Fine':
         case 'Terrazzo Granitech Microterrazzo':
+            $surface_type = ad_materials_calc_get_entry_value( $entry_fields, 2 );
+            $pigment      = ad_materials_calc_get_entry_value( $entry_fields, 23 );
+            $finish_color = ad_materials_calc_get_entry_value( $entry_fields, 30 );
+            break;
+
+        case 'Terrazzo Granitech Fine':
             $surface_type = ad_materials_calc_get_entry_value( $entry_fields, 2 );
             $pigment      = ad_materials_calc_get_entry_value( $entry_fields, 24 );
             break;
@@ -84,7 +90,7 @@ function ad_materials_calc_capture_answers( $fields, $entry, $form_data, $entry_
         'surface_type'                     => $surface_type,
         'terrazzo_system'                  => $system,
         'pigment_color'                    => $pigment,
-        'finish_color'                     => ad_materials_calc_get_entry_value( $entry_fields, 30 ),
+        'finish_color'                     => $finish_color,
         'discount_type'                    => $discount['discount_type'],
         'discount_label'                   => $discount['discount_label'],
         'discount_value'                   => $discount['discount_value'],
