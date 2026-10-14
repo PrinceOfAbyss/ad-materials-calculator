@@ -17,7 +17,7 @@ class Ad_Materials_Calculator_Coverage_Schema {
     public static function get_coverages_settings_schema() {
 
         return [
-            'case_1' => [
+            'case_1'  => [
                 'title'       => 'Case 1. Interior / Exterior Walls',
                 'description' => 'Grouped by substrate path, sheen, and duty level.',
                 'sections'    => ['medium', 'fine', 'microterrazzo'],
@@ -108,7 +108,7 @@ class Ad_Materials_Calculator_Coverage_Schema {
                     ] ),
                 ],
             ],
-            'case_2' => [
+            'case_2'  => [
                 'title'       => 'Case 2. Wet Area Walls',
                 'description' => 'Grouped by sheen and duty level.',
                 'sections'    => ['medium', 'fine', 'microterrazzo'],
@@ -159,7 +159,7 @@ class Ad_Materials_Calculator_Coverage_Schema {
                     ] ),
                 ],
             ],
-            'case_3' => [
+            'case_3'  => [
                 'title'       => 'Case 3. Interior Floor',
                 'description' => 'Grouped by moisture path, sheen, and duty level.',
                 'sections'    => ['medium', 'fine', 'microterrazzo'],
@@ -212,7 +212,7 @@ class Ad_Materials_Calculator_Coverage_Schema {
                     ] ),
                 ],
             ],
-            'case_4' => [
+            'case_4'  => [
                 'title'       => 'Case 4. Exterior Floor (incl. Pool Decks)',
                 'description' => 'Grouped by usage level.',
                 'sections'    => ['medium', 'fine', 'microterrazzo'],
@@ -235,7 +235,7 @@ class Ad_Materials_Calculator_Coverage_Schema {
                     ] ),
                 ],
             ],
-            'case_5' => [
+            'case_5'  => [
                 'title'       => 'Case 5. Pool Interior',
                 'description' => 'Single fixed clause, included here so the editor covers the full project.',
                 'sections'    => ['medium', 'fine', 'microterrazzo'],
@@ -249,7 +249,7 @@ class Ad_Materials_Calculator_Coverage_Schema {
                     ] ),
                 ],
             ],
-            'case_6' => [
+            'case_6'  => [
                 'title'       => 'Case 6. Countertop / Vanity',
                 'description' => 'Grouped by sheen and duty level.',
                 'sections'    => ['medium', 'fine', 'microterrazzo'],
@@ -286,7 +286,7 @@ class Ad_Materials_Calculator_Coverage_Schema {
                     ] ),
                 ],
             ],
-            'case_7' => [
+            'case_7'  => [
                 'title'       => 'Case 7. Interior / Pre-Painted Drywall',
                 'description' => 'Grouped by sheen and duty level.',
                 'sections'    => ['gaia'],
@@ -317,7 +317,7 @@ class Ad_Materials_Calculator_Coverage_Schema {
                     ] ),
                 ],
             ],
-            'case_8' => [
+            'case_8'  => [
                 'title'       => 'Case 8. Wet Areas & Exterior Walls',
                 'description' => 'Grouped by sheen and duty level.',
                 'sections'    => ['gaia'],
@@ -353,6 +353,242 @@ class Ad_Materials_Calculator_Coverage_Schema {
                         'primer'       => self::build_material_schema( 'Primer (Eco Grip Quartz Primer)', ['', '', ''] ),
                         'system_gaia'  => self::build_material_schema( 'System', ['', '', ''] ),
                         'sealer_satin' => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                ],
+            ],
+            'case_9'  => [
+                'title'       => 'Case 9. Exterior Floor / Foot Traffic (Walkways, Patios)',
+                'description' => 'Grouped by optional sealer protection and sheen.',
+                'sections'    => ['monolith'],
+                'clauses'     => [
+                    'no_sealer'      => self::build_clause_schema( 'No Sealer', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                    ] ),
+                    'matte_max'      => self::build_clause_schema( 'Matte / Dual-Layer / Max Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte'            => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'matte_standard' => self::build_clause_schema( 'Matte / Dual-Layer / Standard Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte'            => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'satin_max'      => self::build_clause_schema( 'Satin / Single-Layer / Max Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                    'satin_standard' => self::build_clause_schema( 'Satin / Single-Layer / Standard Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                ],
+            ],
+            'case_10' => [
+                'title'       => 'Case 10. Exterior Floor / Car Traffic (Driveways)',
+                'description' => 'Grouped by optional sealer protection and sheen.',
+                'sections'    => ['monolith'],
+                'clauses'     => [
+                    'no_sealer'      => self::build_clause_schema( 'No Sealer', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                    ] ),
+                    'matte_max'      => self::build_clause_schema( 'Matte / Dual-Layer / Max Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte'            => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'matte_standard' => self::build_clause_schema( 'Matte / Dual-Layer / Standard Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte'            => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'satin_max'      => self::build_clause_schema( 'Satin / Single-Layer / Max Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                    'satin_standard' => self::build_clause_schema( 'Satin / Single-Layer / Standard Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                ],
+            ],
+            'case_11' => [
+                'title'       => 'Case 11. Exterior Floor / Car Traffic with Turning Wheels (Heavy Vehicles, Tight Turns)',
+                'description' => 'Grouped by optional sealer protection and sheen.',
+                'sections'    => ['monolith'],
+                'clauses'     => [
+                    'no_sealer'      => self::build_clause_schema( 'No Sealer', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                    ] ),
+                    'matte_max'      => self::build_clause_schema( 'Matte / Dual-Layer / Max Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte'            => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'matte_standard' => self::build_clause_schema( 'Matte / Dual-Layer / Standard Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte'            => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'satin_max'      => self::build_clause_schema( 'Satin / Single-Layer / Max Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                    'satin_standard' => self::build_clause_schema( 'Satin / Single-Layer / Standard Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                ],
+            ],
+            'case_12' => [
+                'title'       => 'Case 12. Interior Floor',
+                'description' => 'Grouped by moisture exposure, sheen, and duty level.',
+                'sections'    => ['micromosaic'],
+                'clauses'     => [
+                    'wet_matte_max'      => self::build_clause_schema( 'Wet Area / Matte / Dual-Layer / Max Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'micromosaic_fine'        => self::build_material_schema( 'System top-layer (Terrazzo Granitech Fine)', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte'            => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'wet_matte_standard' => self::build_clause_schema( 'Wet Area / Matte / Dual-Layer / Standard Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'micromosaic_fine'        => self::build_material_schema( 'System top-layer (Terrazzo Granitech Fine)', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte'            => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'dry_matte_max'      => self::build_clause_schema( 'Dry Area / Matte / Dual-Layer / Max Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'micromosaic_fine'        => self::build_material_schema( 'System top-layer (Terrazzo Granitech Fine)', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte'            => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'dry_matte_standard' => self::build_clause_schema( 'Dry Area / Matte / Dual-Layer / Standard Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'micromosaic_fine'        => self::build_material_schema( 'System top-layer (Terrazzo Granitech Fine)', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte'            => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'dry_satin_max'      => self::build_clause_schema( 'Dry Area / Satin / Single-Layer / Max Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'micromosaic_fine'        => self::build_material_schema( 'System top-layer (Terrazzo Granitech Fine)', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                    'dry_satin_standard' => self::build_clause_schema( 'Dry Area / Satin / Single-Layer / Standard Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'micromosaic_fine'        => self::build_material_schema( 'System top-layer (Terrazzo Granitech Fine)', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                    ] ),
+                ],
+            ],
+            'case_13' => [
+                'title'       => 'Case 13. Exterior Floor',
+                'description' => 'Locked Matte Anti-Slip finish, grouped by duty level.',
+                'sections'    => ['micromosaic'],
+                'clauses'     => [
+                    'max'      => self::build_clause_schema( 'Matte / Dual-Layer / Max Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'micromosaic_fine'        => self::build_material_schema( 'System top-layer (Terrazzo Granitech Fine)', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte'            => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
+                    ] ),
+                    'standard' => self::build_clause_schema( 'Matte / Dual-Layer / Standard Duty', [
+                        'epoxy_primer_pair'       => self::build_material_schema( 'Primer (Hydro Stop Epoxy Primer)', ['', '', ''] ),
+                        'monolith_stone'          => self::build_material_schema( 'Stone', ['', '', ''] ),
+                        'monolith_resin_ratio'    => self::build_material_schema( 'Stone : resin ratio', ['', '', ''] ),
+                        'monolith_flowtech_ratio' => self::build_material_schema( 'FLOWTECH ratio', ['', '', ''] ),
+                        'monolith_silica'         => self::build_material_schema( 'Silica sand', ['', '', ''] ),
+                        'micromosaic_fine'        => self::build_material_schema( 'System top-layer (Terrazzo Granitech Fine)', ['', '', ''] ),
+                        'sealer_satin'            => self::build_material_schema( 'Sealer (Armour Coat Satin PU Sealer)', ['', '', ''] ),
+                        'sealer_matte'            => self::build_material_schema( 'Sealer (Anti-Slip Matte PU)', ['', '', ''] ),
                     ] ),
                 ],
             ],
@@ -461,6 +697,14 @@ class Ad_Materials_Calculator_Coverage_Schema {
 
         if ( $section === 'gaia' ) {
             return $material_key === 'system_gaia';
+        }
+
+        if ( $section === 'monolith' ) {
+            return in_array( $material_key, ['monolith_stone', 'monolith_resin_ratio', 'monolith_flowtech_ratio', 'monolith_silica'], true );
+        }
+
+        if ( $section === 'micromosaic' ) {
+            return in_array( $material_key, ['monolith_stone', 'monolith_resin_ratio', 'monolith_flowtech_ratio', 'monolith_silica', 'micromosaic_fine'], true );
         }
 
         return false;

@@ -74,7 +74,9 @@ function ad_materials_calc_get_debug_user_ids() {
 
 function ad_materials_calc_get_calculation_from_answers( array $answers ) {
 
-    $surface_type = isset( $answers['surface_type'] ) ? (string) $answers['surface_type'] : '';
+    $surface_type          = isset( $answers['surface_type'] ) ? (string) $answers['surface_type'] : '';
+    $surface_type_field_id = isset( $answers['surface_type_field_id'] ) ? absint( $answers['surface_type_field_id'] ) : 0;
+    $system_label          = isset( $answers['terrazzo_system'] ) ? (string) $answers['terrazzo_system'] : '';
 
     if ( $surface_type === '' ) {
         return [
@@ -83,52 +85,42 @@ function ad_materials_calc_get_calculation_from_answers( array $answers ) {
     }
 
     $case_map = [
-        'Interior / Exterior Walls'         => [
-            'callback'    => 'ad_materials_calc_case_1_line_items',
-            'debug_title' => 'Case 1 calculation debug:',
+        2  => [
+            'Interior / Exterior Walls'         => 1,
+            'Wet Area Walls'                    => 2,
+            'Interior Floor'                    => 3,
+            'Exterior Floor (incl. Pool Decks)' => 4,
+            'Pool Interior'                     => 5,
+            'Countertop / Vanity'               => 6,
         ],
-        'Wet Area Walls'                    => [
-            'callback'    => 'ad_materials_calc_case_2_line_items',
-            'debug_title' => 'Case 2 calculation debug:',
+        48 => [
+            'Interior / Pre-Painted Drywall' => 7,
+            'Wet Areas & Exterior Walls'     => 8,
         ],
-        'Interior Floor'                    => [
-            'callback'    => 'ad_materials_calc_case_3_line_items',
-            'debug_title' => 'Case 3 calculation debug:',
+        57 => [
+            'Exterior Floor / Foot Traffic (Walkways, Patios)'                               => 9,
+            'Exterior Floor / Car Traffic (Driveways)'                                       => 10,
+            'Exterior Floor / Car Traffic with Turning Wheels (Heavy Vehicles, Tight Turns)' => 11,
         ],
-        'Exterior Floor (incl. Pool Decks)' => [
-            'callback'    => 'ad_materials_calc_case_4_line_items',
-            'debug_title' => 'Case 4 calculation debug:',
-        ],
-        'Pool Interior'                     => [
-            'callback'    => 'ad_materials_calc_case_5_line_items',
-            'debug_title' => 'Case 5 calculation debug:',
-        ],
-        'Countertop / Vanity'               => [
-            'callback'    => 'ad_materials_calc_case_6_line_items',
-            'debug_title' => 'Case 6 calculation debug:',
-        ],
-        'Interior / Pre-Painted Drywall'    => [
-            'callback'    => 'ad_materials_calc_case_7_line_items',
-            'debug_title' => 'Case 7 calculation debug:',
-        ],
-        'Wet Areas & Exterior Walls'        => [
-            'callback'    => 'ad_materials_calc_case_8_line_items',
-            'debug_title' => 'Case 8 calculation debug:',
+        58 => [
+            'Interior Floor' => 12,
+            'Exterior Floor' => 13,
         ],
     ];
 
-    if ( empty( $case_map[$surface_type] ) ) {
+    $case_number = isset( $case_map[$surface_type_field_id][$surface_type] ) ? absint( $case_map[$surface_type_field_id][$surface_type] ) : 0;
+
+    if ( $case_number === 0 ) {
         return [
-            'error' => 'Unsupported Surface Type: ' . $surface_type,
+            'error' => 'Unsupported calculator route: ' . $system_label . ' / ' . $surface_type,
         ];
     }
 
-    $case_config = $case_map[$surface_type];
-    $callback    = $case_config['callback'];
+    $callback = 'ad_materials_calc_case_' . $case_number . '_line_items';
 
     if ( ! function_exists( $callback ) ) {
         return [
-            'error' => 'Calculation callback is unavailable for Surface Type: ' . $surface_type,
+            'error' => 'Calculation callback is unavailable for calculator route: ' . $system_label . ' / ' . $surface_type,
         ];
     }
 
@@ -143,12 +135,12 @@ function ad_materials_calc_get_calculation_from_answers( array $answers ) {
 
     if ( ! is_array( $calc ) ) {
         return [
-            'error' => 'Calculation did not return a valid result for Surface Type: ' . $surface_type,
+            'error' => 'Calculation did not return a valid result for calculator route: ' . $system_label . ' / ' . $surface_type,
         ];
     }
 
     $calc['surface_type'] = $surface_type;
-    $calc['debug_title']  = $case_config['debug_title'];
+    $calc['debug_title']  = 'Case ' . $case_number . ' calculation debug:';
     $calc['pricing_tier'] = $pricing_tier;
 
     return $calc;
@@ -400,6 +392,7 @@ function ad_materials_calc_build_project_title_from_answers( array $answers ) {
     $surface_type  = isset( $answers['surface_type'] ) ? trim( (string) $answers['surface_type'] ) : '';
     $system_label  = isset( $answers['terrazzo_system'] ) ? trim( (string) $answers['terrazzo_system'] ) : '';
     $pigment_color = isset( $answers['pigment_color'] ) ? trim( (string) $answers['pigment_color'] ) : '';
+    $stone         = isset( $answers['stone'] ) ? trim( (string) $answers['stone'] ) : '';
 
     if ( $area_sqft > 0 ) {
         $parts[] = rtrim( rtrim( number_format( $area_sqft, 1, '.', '' ), '0' ), '.' ) . ' sq.ft.';
@@ -415,6 +408,10 @@ function ad_materials_calc_build_project_title_from_answers( array $answers ) {
 
     if ( $pigment_color !== '' && ! ad_materials_calc_is_unpigmented( $pigment_color ) ) {
         $parts[] = $pigment_color;
+    }
+
+    if ( $stone !== '' ) {
+        $parts[] = $stone;
     }
 
     $parts = array_values( array_unique( array_filter( $parts ) ) );
@@ -462,38 +459,54 @@ function ad_materials_calc_get_project_meta_keys( $surface_type ) {
 
     $common_keys = [
         'finish_color',
+        'stone',
     ];
 
     $surface_specific_keys = [
-        'Interior / Exterior Walls'         => [
+        'Interior / Exterior Walls'                                                      => [
             'substrate_type_wall',
             'sheen_wall',
             'usage_level_wall',
         ],
-        'Wet Area Walls'                    => [
+        'Wet Area Walls'                                                                 => [
             'sheen_wet_area',
             'usage_level_wet_area',
         ],
-        'Interior Floor'                    => [
+        'Interior Floor'                                                                 => [
             'moisture_exposure_interior_floor',
             'usage_level_interior_floor',
             'sheen_interior_floor',
         ],
-        'Exterior Floor (incl. Pool Decks)' => [
+        'Exterior Floor (incl. Pool Decks)'                                              => [
             'usage_level_exterior_floor',
         ],
-        'Pool Interior'                     => [],
-        'Countertop / Vanity'               => [
+        'Pool Interior'                                                                  => [],
+        'Countertop / Vanity'                                                            => [
             'sheen_countertop_vanity',
             'usage_level_countertop_vanity',
         ],
-        'Interior / Pre-Painted Drywall'    => [
+        'Interior / Pre-Painted Drywall'                                                 => [
             'sheen_gaia_interior',
             'usage_level_gaia_interior',
         ],
-        'Wet Areas & Exterior Walls'        => [
+        'Wet Areas & Exterior Walls'                                                     => [
             'sheen_gaia_wet_area',
             'usage_level_gaia_wet_area',
+        ],
+        'Exterior Floor / Foot Traffic (Walkways, Patios)'                               => [
+            'sealer_level_monolith',
+            'sheen_monolith',
+        ],
+        'Exterior Floor / Car Traffic (Driveways)'                                       => [
+            'sealer_level_monolith',
+            'sheen_monolith',
+        ],
+        'Exterior Floor / Car Traffic with Turning Wheels (Heavy Vehicles, Tight Turns)' => [
+            'sealer_level_monolith',
+            'sheen_monolith',
+        ],
+        'Exterior Floor'                                                                 => [
+            'usage_level_exterior_floor',
         ],
     ];
 
@@ -523,6 +536,9 @@ function ad_materials_calc_get_project_answer_labels() {
         'usage_level_gaia_interior'        => 'Usage Level',
         'sheen_gaia_wet_area'              => 'Sheen',
         'usage_level_gaia_wet_area'        => 'Usage Level',
+        'stone'                            => 'Stone',
+        'sealer_level_monolith'            => 'Sealer Protection',
+        'sheen_monolith'                   => 'Sheen',
     ];
 }
 
@@ -623,7 +639,7 @@ function ad_materials_calc_get_colorant_line_data( $system_label, array $system_
         return $result;
     }
 
-    if ( $system_label === 'Terrazzo Granitech Fine' ) {
+    if ( $system_label === 'Terrazzo Granitech Fine' || $system_label === 'Terrazzo Granitech Micromosaic' ) {
         $result['medium_small_fraction'] = ad_materials_calc_format_fraction_debug( $medium_small, 19 );
         $result['fine_small_fraction']   = ad_materials_calc_format_fraction_debug( $fine_small, 10 );
 
@@ -1331,7 +1347,7 @@ function ad_materials_calc_find_pigment_product_by_family_label( $pigment_family
             continue;
         }
 
-        $color_slug = $variation->get_attribute( 'pa_color' );
+        $color_slug = (string) ( $variation->get_attributes()['pa_color'] ?? '' );
 
         if ( $color_slug === '' ) {
             continue;
@@ -1361,7 +1377,7 @@ function ad_materials_calc_find_pigment_product_by_label( $system_label, $pigmen
 
     if ( $system_label === 'Terrazzo Granitech Medium' || $system_label === 'Terrazzo Granitech Microterrazzo' ) {
         $pigment_family = 'medium';
-    } elseif ( $system_label === 'Terrazzo Granitech Fine' ) {
+    } elseif ( $system_label === 'Terrazzo Granitech Fine' || $system_label === 'Terrazzo Granitech Micromosaic' ) {
         $pigment_family = 'fine';
     } elseif ( $system_label === 'Terrazzo Granitech Gaia' ) {
         $pigment_family = 'gaia';
@@ -1372,9 +1388,66 @@ function ad_materials_calc_find_pigment_product_by_label( $system_label, $pigmen
     return ad_materials_calc_find_pigment_product_by_family_label( $pigment_family, $pigment_label );
 }
 
-function ad_materials_calc_get_silica_notice_html( $silica_packages ) {
+/**
+ * Resolve a selected pa_stone label to its enabled Monolith variation.
+ */
+function ad_materials_calc_find_monolith_stone_product_by_label( $stone_label ) {
+
+    static $stone_cache = [];
+
+    $stone_label = trim( (string) $stone_label );
+
+    if ( $stone_label === '' ) {
+        return false;
+    }
+
+    if ( array_key_exists( $stone_label, $stone_cache ) ) {
+        return $stone_cache[$stone_label];
+    }
+
+    $parent = wc_get_product( 14739 );
+
+    if ( ! $parent || ! $parent->is_type( 'variable' ) ) {
+        $stone_cache[$stone_label] = false;
+
+        return false;
+    }
+
+    foreach ( $parent->get_children() as $variation_id ) {
+        $variation = wc_get_product( $variation_id );
+
+        if ( ! $variation instanceof WC_Product_Variation || $variation->get_status() !== 'publish' ) {
+            continue;
+        }
+
+        $stone_slug = (string) ( $variation->get_attributes()['pa_stone'] ?? '' );
+
+        if ( $stone_slug === '' ) {
+            continue;
+        }
+
+        $term = get_term_by( 'slug', $stone_slug, 'pa_stone' );
+
+        if ( ! $term || is_wp_error( $term ) ) {
+            continue;
+        }
+
+        if ( $term->name === $stone_label ) {
+            $stone_cache[$stone_label] = $variation;
+
+            return $stone_cache[$stone_label];
+        }
+    }
+
+    $stone_cache[$stone_label] = false;
+
+    return false;
+}
+
+function ad_materials_calc_get_silica_notice_html( $silica_packages, $package_size_kg = 23 ) {
 
     $silica_packages = (int) $silica_packages;
+    $package_size_kg = (float) $package_size_kg;
 
     if ( $silica_packages <= 0 ) {
         return '';
@@ -1393,8 +1466,11 @@ function ad_materials_calc_get_silica_notice_html( $silica_packages ) {
         $silica_packages
     );
     $notice .= ' ';
-    $notice .= wp_kses_post(
-        __( 'For the calculations, a <strong>50lb / 23kg</strong> silica sand package was used.', 'ad-materials-calculator' )
+    $notice .= sprintf(
+        wp_kses_post(
+            __( 'For the calculations, a <strong>50lb / %skg</strong> silica sand package was used.', 'ad-materials-calculator' )
+        ),
+        esc_html( ad_materials_calc_format_weight( $package_size_kg ) )
     );
 
     $notice .= '<br><br><strong>' . esc_html__( 'Indicative Sources For Silica Sand', 'ad-materials-calculator' ) . '</strong>';
@@ -1663,6 +1739,14 @@ function ad_materials_calc_get_system_section_slug( $system_label ) {
 
     if ( 'Terrazzo Granitech Gaia' === $system_label ) {
         return 'gaia';
+    }
+
+    if ( 'Terrazzo Granitech Monolith' === $system_label ) {
+        return 'monolith';
+    }
+
+    if ( 'Terrazzo Granitech Micromosaic' === $system_label ) {
+        return 'micromosaic';
     }
 
     return '';

@@ -1028,7 +1028,7 @@ class Ad_Materials_Calculator_Settings {
             $section = sanitize_key( wp_unslash( $_GET['section'] ) );
         }
 
-        if ( ! in_array( $section, ['medium', 'fine', 'microterrazzo', 'gaia'], true ) ) {
+        if ( ! in_array( $section, ['medium', 'fine', 'microterrazzo', 'gaia', 'monolith', 'micromosaic'], true ) ) {
             $section = 'medium';
         }
 
@@ -1048,6 +1048,8 @@ class Ad_Materials_Calculator_Settings {
             'fine'          => __( 'Fine', 'ad-materials-calculator' ),
             'microterrazzo' => __( 'Microterrazzo', 'ad-materials-calculator' ),
             'gaia'          => __( 'Gaia', 'ad-materials-calculator' ),
+            'monolith'      => __( 'Monolith', 'ad-materials-calculator' ),
+            'micromosaic'   => __( 'Micromosaic', 'ad-materials-calculator' ),
         ];
 
         echo '<ul class="subsubsub ad-mc-settings-sections">';

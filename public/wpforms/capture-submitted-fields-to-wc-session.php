@@ -23,31 +23,57 @@ function ad_materials_calc_capture_answers( $fields, $entry, $form_data, $entry_
     // System: Drop-down field (#16)
     $system = ad_materials_calc_get_entry_value( $entry_fields, 16 );
 
-    // Resolve finish-specific fields without relying on hidden fields being empty
-    $surface_type = '';
-    $pigment      = '';
-    $finish_color = '';
+    // Resolve system-specific fields without relying on hidden fields being empty
+    $surface_type_field_id = 0;
+    $surface_type          = '';
+    $pigment               = '';
+    $finish_color          = '';
+    $stone                 = '';
+    $sealer_level          = '';
+    $monolith_sheen        = '';
 
     switch ( $system ) {
         case 'Terrazzo Granitech Medium':
-            $surface_type = ad_materials_calc_get_entry_value( $entry_fields, 2 );
-            $pigment      = ad_materials_calc_get_entry_value( $entry_fields, 23 );
-            break;
-
-        case 'Terrazzo Granitech Microterrazzo':
-            $surface_type = ad_materials_calc_get_entry_value( $entry_fields, 2 );
-            $pigment      = ad_materials_calc_get_entry_value( $entry_fields, 23 );
-            $finish_color = ad_materials_calc_get_entry_value( $entry_fields, 30 );
+            $surface_type_field_id = 2;
+            $surface_type          = ad_materials_calc_get_entry_value( $entry_fields, 2 );
+            $pigment               = ad_materials_calc_get_entry_value( $entry_fields, 23 );
             break;
 
         case 'Terrazzo Granitech Fine':
-            $surface_type = ad_materials_calc_get_entry_value( $entry_fields, 2 );
-            $pigment      = ad_materials_calc_get_entry_value( $entry_fields, 24 );
+            $surface_type_field_id = 2;
+            $surface_type          = ad_materials_calc_get_entry_value( $entry_fields, 2 );
+            $pigment               = ad_materials_calc_get_entry_value( $entry_fields, 24 );
+            break;
+
+        case 'Terrazzo Granitech Microterrazzo':
+            $surface_type_field_id = 2;
+            $surface_type          = ad_materials_calc_get_entry_value( $entry_fields, 2 );
+            $pigment               = ad_materials_calc_get_entry_value( $entry_fields, 23 );
+            $finish_color          = ad_materials_calc_get_entry_value( $entry_fields, 30 );
             break;
 
         case 'Terrazzo Granitech Gaia':
-            $surface_type = ad_materials_calc_get_entry_value( $entry_fields, 48 );
-            $pigment      = ad_materials_calc_get_entry_value( $entry_fields, 49 );
+            $surface_type_field_id = 48;
+            $surface_type          = ad_materials_calc_get_entry_value( $entry_fields, 48 );
+            $pigment               = ad_materials_calc_get_entry_value( $entry_fields, 49 );
+            break;
+
+        case 'Terrazzo Granitech Monolith':
+            $surface_type_field_id = 57;
+            $surface_type          = ad_materials_calc_get_entry_value( $entry_fields, 57 );
+            $stone                 = ad_materials_calc_get_entry_value( $entry_fields, 59 );
+            $sealer_level          = ad_materials_calc_get_entry_value( $entry_fields, 60 );
+
+            if ( $sealer_level === 'Standard Duty' || $sealer_level === 'Max Duty' ) {
+                $monolith_sheen = ad_materials_calc_get_entry_value( $entry_fields, 61 );
+            }
+            break;
+
+        case 'Terrazzo Granitech Micromosaic':
+            $surface_type_field_id = 58;
+            $surface_type          = ad_materials_calc_get_entry_value( $entry_fields, 58 );
+            $pigment               = ad_materials_calc_get_entry_value( $entry_fields, 24 );
+            $stone                 = ad_materials_calc_get_entry_value( $entry_fields, 59 );
             break;
     }
 
@@ -88,29 +114,31 @@ function ad_materials_calc_capture_answers( $fields, $entry, $form_data, $entry_
     $answers = [
         'total_area_sqft'                  => $total_area,
         'surface_type'                     => $surface_type,
+        'surface_type_field_id'            => $surface_type_field_id,
         'terrazzo_system'                  => $system,
         'pigment_color'                    => $pigment,
+        'stone'                            => $stone,
         'finish_color'                     => $finish_color,
         'discount_type'                    => $discount['discount_type'],
         'discount_label'                   => $discount['discount_label'],
         'discount_value'                   => $discount['discount_value'],
         'discount_allowed'                 => $discount['discount_allowed'],
 
-        // Surface type option 1: Interior / Exterior Walls
+        // Case 1: Interior / Exterior Walls
         'substrate_type_wall'              => ad_materials_calc_get_entry_value( $entry_fields, 3 ),
         'sheen_wall'                       => ad_materials_calc_get_entry_value( $entry_fields, 4 ),
         'usage_level_wall'                 => ad_materials_calc_get_entry_value( $entry_fields, 5 ),
 
-        // Surface type option 2: Wet Area Walls
+        // Case 2: Wet Area Walls
         'sheen_wet_area'                   => $sheen_wet_area,
         'usage_level_wet_area'             => $usage_level_wet_area,
 
-        // Surface type option 3: Interior Floor
+        // Cases 3 & 12: Interior Floor
         'moisture_exposure_interior_floor' => ad_materials_calc_get_entry_value( $entry_fields, 12 ),
         'usage_level_interior_floor'       => ad_materials_calc_get_entry_value( $entry_fields, 26 ),
         'sheen_interior_floor'             => $sheen_interior_floor,
 
-        // Surface type option 4: Exterior Floor
+        // Cases 4 & 13: Exterior Floor
         'usage_level_exterior_floor'       => ad_materials_calc_get_entry_value( $entry_fields, 15 ),
 
         // Case 6: Countertop / Vanity
@@ -124,6 +152,10 @@ function ad_materials_calc_capture_answers( $fields, $entry, $form_data, $entry_
         // Case 8: Gaia Wet Areas & Exterior Walls
         'sheen_gaia_wet_area'              => $sheen_gaia_wet_area,
         'usage_level_gaia_wet_area'        => $usage_level_gaia_wet_area,
+
+        // Cases 9-11: Monolith
+        'sealer_level_monolith'            => $sealer_level,
+        'sheen_monolith'                   => $monolith_sheen,
     ];
 
     // Store in WooCommerce session for the next step (results rendering / add-to-cart)

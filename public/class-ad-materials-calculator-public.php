@@ -73,12 +73,18 @@ class Ad_Materials_Calculator_Public {
 		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-6.php';
 		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-7.php';
 		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-8.php';
+		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-9.php';
+		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-10.php';
+		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-11.php';
+		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-12.php';
+		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-13.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/rewrite-wpforms-redirect-url.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/capture-submitted-fields-to-wc-session.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/show-calculator-discount-smart-tag.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/render-secondary-submit-cta.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/dynamic-image-choices-pigment-color.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/dynamic-image-choices-microterrazzo-finish.php';
+		require_once plugin_dir_path( __FILE__ ) . 'wpforms/dynamic-image-choices-monolith-stones.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/format-webhook-checkbox-values.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/sync-b2bking-registration-meta.php';
 

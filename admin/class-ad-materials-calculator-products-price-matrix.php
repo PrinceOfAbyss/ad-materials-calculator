@@ -408,17 +408,17 @@ class Ad_Materials_Calculator_Products_Price_Matrix {
             return true;
         }
 
-        if ( $product->is_type( 'variation' ) && in_array( (int) $product->get_parent_id(), $this->get_calculator_pigment_parent_product_ids(), true ) ) {
+        if ( $product->is_type( 'variation' ) && in_array( (int) $product->get_parent_id(), $this->get_calculator_variation_parent_product_ids(), true ) ) {
             return true;
         }
 
-        return in_array( (int) $product->get_id(), $this->get_calculator_pigment_parent_product_ids(), true );
+        return in_array( (int) $product->get_id(), $this->get_calculator_variation_parent_product_ids(), true );
     }
 
     /**
      * Return hardcoded SKUs that can be calculated into a cart.
      *
-     * Pigment variations are covered by parent product IDs because their SKUs are dynamic.
+     * Pigment and stone variations are covered by parent product IDs because their SKUs are dynamic.
      *
      * @since    1.0.3
      * @return   string[]
@@ -441,6 +441,7 @@ class Ad_Materials_Calculator_Products_Price_Matrix {
             '5200433501692',
             '5200433501769',
             '5200433501770',
+            '5200433501773',
             '5200433501776',
             '5200433501777',
             '5200433501785',
@@ -448,6 +449,7 @@ class Ad_Materials_Calculator_Products_Price_Matrix {
             '5200433501795',
             '5200433501796',
             '5200433501809',
+            '5200433501810',
             '5200433501811',
             '5200433501812',
             '5200433501814',
@@ -460,16 +462,17 @@ class Ad_Materials_Calculator_Products_Price_Matrix {
     }
 
     /**
-     * Return pigment parent product IDs used by the calculator.
+     * Return variable parent product IDs used by the calculator.
      *
      * @since    1.0.3
      * @return   int[]
      */
-    private function get_calculator_pigment_parent_product_ids() {
+    private function get_calculator_variation_parent_product_ids() {
 
         return [
             9838,
             9932,
+            14739,
             14769,
         ];
     }
