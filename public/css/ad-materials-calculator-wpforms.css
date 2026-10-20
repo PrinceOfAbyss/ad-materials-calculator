@@ -99,12 +99,14 @@
     min-height: calc(2 * var(--ad-wpforms-image-choice-label-line-height) * 0.8em);
 }
 
-.ad-materials-calculator-wpforms-form .ad-minimal-duty-disclaimer {
+.ad-materials-calculator-wpforms-form .ad-minimal-duty-disclaimer,
+.ad-materials-calculator-wpforms-form .ad-gaia-colorant-notice {
     margin-top: -20px !important;
     font-size: 12px !important;
 }
 
-.ad-materials-calculator-wpforms-form .ad-minimal-duty-disclaimer-prefix {
+.ad-materials-calculator-wpforms-form .ad-minimal-duty-disclaimer-prefix,
+.ad-materials-calculator-wpforms-form .ad-gaia-colorant-notice-prefix {
     color: #c62828;
     font-weight: 600;
 }
