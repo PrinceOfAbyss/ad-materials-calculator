@@ -685,11 +685,11 @@ function ad_materials_calc_get_colorant_line_data( $system_label, array $system_
     }
 
     if ( $system_label === 'Terrazzo Granitech Gaia' ) {
-        $gaia_small_kg = ( $gaia_gallon * 6 ) + ( $gaia_quart * 1.5 );
+        $gaia_small_kg = ( $gaia_gallon * 3.75 ) + $gaia_quart;
 
         $result['gaia_small_fraction'] = ad_materials_calc_format_fraction_debug( $gaia_small_kg, 15 );
 
-        $qty = $gaia_pail + ( $gaia_small_kg > 0 ? 1 : 0 );
+        $qty = $gaia_pail + (int) ceil( $gaia_small_kg / 15 );
 
         if ( $qty > 0 ) {
             $result['lines'][] = [

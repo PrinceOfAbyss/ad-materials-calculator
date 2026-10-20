@@ -100,20 +100,20 @@ function ad_materials_calc_case_7_line_items( array $answers ) {
 
         $gaia_kg = round( $sqm * array_sum( $gaia_components ), 2 );
 
-        // Half-kilogram units keep the 1.5kg quart as an exact integer optimizer key
-        $gaia_weight_unit_kg = 0.5;
+        // Quarter-kilogram units keep the 3.75kg gallon as an exact integer optimizer key
+        $gaia_weight_unit_kg = 0.25;
         $gaia_target_units   = $gaia_kg / $gaia_weight_unit_kg;
 
         $gaia_bucket_prices = [
-            30 => ad_materials_calc_get_product_price_by_sku( '5200433501809' ),
-            12 => ad_materials_calc_get_product_price_by_sku( '5200433501949' ),
-            3  => ad_materials_calc_get_product_price_by_sku( '5200433501948' ),
+            60 => ad_materials_calc_get_product_price_by_sku( '5200433501809' ),
+            15 => ad_materials_calc_get_product_price_by_sku( '5200433501949' ),
+            4  => ad_materials_calc_get_product_price_by_sku( '5200433501948' ),
         ];
 
         $gaia_combo      = ad_materials_calc_get_best_3bucket_combo( $gaia_target_units, $gaia_bucket_prices );
-        $gaia_pail_qty   = ad_materials_calc_get_combo_bucket_count( $gaia_combo, 30 );
-        $gaia_gallon_qty = ad_materials_calc_get_combo_bucket_count( $gaia_combo, 12 );
-        $gaia_quart_qty  = ad_materials_calc_get_combo_bucket_count( $gaia_combo, 3 );
+        $gaia_pail_qty   = ad_materials_calc_get_combo_bucket_count( $gaia_combo, 60 );
+        $gaia_gallon_qty = ad_materials_calc_get_combo_bucket_count( $gaia_combo, 15 );
+        $gaia_quart_qty  = ad_materials_calc_get_combo_bucket_count( $gaia_combo, 4 );
 
         $debug['lines'][] = [
             'line'                  => 'System - Gaia',
@@ -124,14 +124,14 @@ function ad_materials_calc_case_7_line_items( array $answers ) {
             'bucket_prices'         => $gaia_bucket_prices,
             'combo_result'          => $gaia_combo,
             'resolved_qty'          => [
-                30 => $gaia_pail_qty,
-                12 => $gaia_gallon_qty,
-                3  => $gaia_quart_qty,
+                60 => $gaia_pail_qty,
+                15 => $gaia_gallon_qty,
+                4  => $gaia_quart_qty,
             ],
             'sku_map'               => [
-                30 => '5200433501809',
-                12 => '5200433501949',
-                3  => '5200433501948',
+                60 => '5200433501809',
+                15 => '5200433501949',
+                4  => '5200433501948',
             ],
         ];
 
@@ -140,9 +140,9 @@ function ad_materials_calc_case_7_line_items( array $answers ) {
             ad_materials_calc_expand_combo_to_line_items(
                 $gaia_combo,
                 [
-                    30 => '5200433501809',
-                    12 => '5200433501949',
-                    3  => '5200433501948',
+                    60 => '5200433501809',
+                    15 => '5200433501949',
+                    4  => '5200433501948',
                 ]
             )
         );
