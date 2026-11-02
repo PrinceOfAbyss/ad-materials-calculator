@@ -78,6 +78,16 @@ class Ad_Materials_Calculator_Public {
 		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-11.php';
 		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-12.php';
 		require_once plugin_dir_path( __FILE__ ) . 'calculator/case-13.php';
+		require_once plugin_dir_path( __FILE__ ) . 'area-calculators/ajax-and-result-helpers.php';
+		require_once plugin_dir_path( __FILE__ ) . 'area-calculators/preset-rendering-and-calculation.php';
+		require_once plugin_dir_path( __FILE__ ) . 'area-calculators/bathroom-shower.php';
+		require_once plugin_dir_path( __FILE__ ) . 'area-calculators/kitchen.php';
+		require_once plugin_dir_path( __FILE__ ) . 'area-calculators/wall-ceiling.php';
+		require_once plugin_dir_path( __FILE__ ) . 'area-calculators/floor.php';
+		require_once plugin_dir_path( __FILE__ ) . 'area-calculators/pool.php';
+		require_once plugin_dir_path( __FILE__ ) . 'area-calculators/countertop.php';
+		require_once plugin_dir_path( __FILE__ ) . 'area-calculators/facade.php';
+		require_once plugin_dir_path( __FILE__ ) . 'area-calculators/balcony.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/rewrite-wpforms-redirect-url.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/capture-submitted-fields-to-wc-session.php';
 		require_once plugin_dir_path( __FILE__ ) . 'wpforms/preselect-finish-from-page.php';
@@ -112,6 +122,7 @@ class Ad_Materials_Calculator_Public {
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/ad-materials-calculator-public.css', array(), $this->version, 'all' );
 		wp_enqueue_style( $this->plugin_name . '-wpforms', plugin_dir_url( __FILE__ ) . 'css/ad-materials-calculator-wpforms.css', array( 'wpforms-modern-full' ), $this->version, 'all' );
+		wp_register_style( $this->plugin_name . '-areas', plugin_dir_url( __FILE__ ) . 'css/ad-materials-calculator-areas.css', array(), $this->version, 'all' );
 
 		$wpforms_accent_color_css = $this->get_wpforms_accent_color_css();
 
@@ -157,6 +168,7 @@ class Ad_Materials_Calculator_Public {
 				),
 			)
 		);
+		wp_register_script( $this->plugin_name . '-areas', plugin_dir_url( __FILE__ ) . 'js/ad-materials-calculator-areas.js', array( 'jquery' ), $this->version, true );
 
 		if ( $this->is_materials_calculator_wpforms_page() ) {
 			wp_enqueue_script( $this->plugin_name . '-wpforms', plugin_dir_url( __FILE__ ) . 'js/ad-materials-calculator-wpforms.js', array( 'jquery' ), $this->version, false );

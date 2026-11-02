@@ -733,6 +733,11 @@ function ad_materials_calc_get_pricing_tier_from_answers( array $answers ) {
 
     $sqft = isset( $answers['total_area_sqft'] ) ? (float) $answers['total_area_sqft'] : 0.0;
 
+    // Area presets size recipes per surface, but qualify partner pricing per project
+    if ( isset( $answers['pricing_area_sqft'] ) && is_scalar( $answers['pricing_area_sqft'] ) && is_numeric( $answers['pricing_area_sqft'] ) && is_finite( (float) $answers['pricing_area_sqft'] ) ) {
+        $sqft = max( $sqft, (float) $answers['pricing_area_sqft'] );
+    }
+
     if ( $sqft <= 0 ) {
         return 'normal';
     }
@@ -1292,7 +1297,7 @@ function ad_materials_calc_is_unpigmented( $pigment_label ) {
 
 /**
  * Resolve the selected pigment label to the actual variation product object
- * for a specific pigment family.
+ * for a specific pigment family
  */
 function ad_materials_calc_find_pigment_product_by_family_label( $pigment_family, $pigment_label ) {
 
@@ -1389,7 +1394,7 @@ function ad_materials_calc_find_pigment_product_by_label( $system_label, $pigmen
 }
 
 /**
- * Resolve a selected pa_stone label to its enabled Monolith variation.
+ * Resolve a selected pa_stone label to its enabled Monolith variation
  */
 function ad_materials_calc_find_monolith_stone_product_by_label( $stone_label ) {
 
